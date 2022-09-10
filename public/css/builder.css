@@ -1,0 +1,914 @@
+html {
+  opacity: 1
+}
+
+body {
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0
+}
+
+#mainBody {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background-color: #000
+}
+
+#creditsCont {
+  padding-top: 2em;
+  padding-bottom: 200px;
+  align-items: center;
+  display: flex;
+  flex-direction: column
+}
+
+header,
+footer {
+  background: #272727;
+  width: calc(100% - 14px);
+  padding: 7px
+}
+
+main header,
+main footer {
+  background: #272727;
+  width: calc(100% - 24px);
+  padding: 7px;
+  margin: 5px;
+  border-radius: 8px;
+  border-top: 1px solid #333
+}
+
+header>div {
+  pointer-events: none
+}
+
+#creditsBody {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+#creditsScroller {
+  overflow-y: auto;
+  transition: .3s;
+  margin-top: -5px;
+  margin-bottom: -5px
+}
+
+.editing #creditsScroller {
+  margin-right: 5px
+}
+
+#creditsScroller.noScroll {
+  overflow-y: hidden;
+  width: 100%;
+  top: 0;
+  position: absolute
+}
+
+.flexCol {
+  display: flex;
+  flex-direction: column
+}
+
+.label {
+  margin-bottom: 5px
+}
+
+.hidden {
+  display: none !important
+}
+
+.endFadeGroup.hidden {
+  transition: opacity 1s 0s;
+  opacity: 0;
+  display: flex !important;
+  pointer-events: none;
+}
+
+.extraHidden {
+  transition: opacity 1s 0s;
+  opacity: 0 !important
+}
+
+header button,
+footer button,
+.popup button,
+#editorCont button,
+nav button {
+  font-size: 16px;
+  cursor: pointer;
+  height: 2.5em;
+  padding: .5em 1em;
+  box-sizing: border-box;
+  border-radius: 5px;
+  min-width: 50px;
+  color: #fff;
+  transition: .2s;
+  margin-left: 7px;
+  background-color: transparent;
+  border: none;
+  border-top: transparent 1px solid
+}
+
+#editorCont button {
+  margin: 5px;
+  height: unset;
+  background-color: #2d2d2d;
+  border-top: 1px #474747 solid
+}
+
+button[disabled] {
+  cursor: not-allowed;
+  color: #333;
+  background-color: #000 !important
+}
+
+header button:hover,
+footer button:hover,
+.popup button:hover,
+#editorCont button:hover,
+nav button {
+  background-color: #161616;
+  border-top: 1px rgb(47, 47, 47) solid;
+}
+
+nav button:hover {
+  background-color: #0e0e0e;
+  border-top: 1px #2c2c2c solid
+}
+
+button.active {
+  background-color: #12426b;
+  border-top: #0d304e 1px solid
+}
+
+input[type=text],
+.editorProp,
+.settingProp {
+  font-size: 16px;
+  padding: .5em;
+  box-sizing: border-box;
+  background-color: #525252;
+  border: #080808 1px solid;
+  box-shadow: #404040 0 0 7px 0 inset;
+  border-radius: 5px;
+  min-width: 50px;
+  color: #fff;
+  transition: .2s;
+  user-select: text
+}
+
+header select,
+footer select,
+.popup select {
+  background-image: url(../img/arrow_down.png);
+  color: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+  background-position-x: right;
+  background-position-y: center;
+  background-repeat: no-repeat;
+  background-size: 2em;
+  font-size: 16px;
+  cursor: pointer;
+  height: 2.5em;
+  padding: .5em;
+  padding-right: 2em;
+  box-sizing: border-box;
+  background-color: #111;
+  border: 1px #2a2a2a solid;
+  border-radius: 5px;
+  min-width: 50px;
+  filter: none
+}
+
+header select:focus {
+  background-color: #161616
+}
+
+.right {
+  float: right
+}
+
+input[type=checkbox] {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  margin: 0;
+  position: relative;
+  overflow: visible;
+  border: none;
+  box-shadow: #000 0 0 5px -3px !important;
+  cursor: pointer
+}
+
+input[type=checkbox]:checked::before {
+  left: 22px;
+}
+
+input[type=checkbox]::before {
+  content: "";
+  background: #f3f3f3;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  border-radius: 100%;
+  top: 2px;
+  box-sizing: border-box;
+  left: 2px;
+  z-index: 1
+}
+
+input[type=radio][readonly],
+input[type=checkbox][readonly] {
+  border-radius: 12px;
+  padding: 0;
+  border: none;
+  cursor: not-allowed
+}
+
+input[type=checkbox] {
+  margin: 2px
+}
+
+input[type=checkbox]:checked {
+  background-color: #090
+}
+
+input[type=checkbox] {
+  background-color: red
+}
+
+input[type=checkbox],
+input[type=checkbox]::before {
+  transition: .1s
+}
+
+.endFadeGroup {
+  transition: opacity 1s 1s;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 1
+}
+
+#creditsLogos {
+  transition: opacity .5s;
+  height: 100%;
+  position: relative;
+  display: block;
+  opacity: 1
+}
+
+#creditsLogos.hidden {
+  display: block;
+  opacity: 0
+}
+
+.popup {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, .13);
+  display: flex;
+  flex-direction: column
+}
+
+.popup>* {
+  margin: auto;
+  min-width: 300px;
+  box-shadow: #000 0 0 7px 0;
+  border-radius: 10px;
+  overflow: hidden
+}
+
+.popup>*>section {
+  background-color: #000;
+  padding: 10px;
+  font-size: 16pt
+}
+
+.popup footer {
+  display: flex
+}
+
+.popup header,
+.popup footer {
+  width: calc(100% - 14px);
+  border-radius: 0;
+  border-top: 0;
+  background: #292828;
+  margin: 0
+}
+
+.popup footer button {
+  flex: 1
+}
+
+.popup button {
+  background: #3d3d3d;
+  border-top: 1px solid rgb(79, 79, 79);
+}
+
+#tutHead {
+  padding: 11px
+}
+
+#tutBody {
+  font-size: 12pt
+}
+
+#tutClose {
+  margin-left: 0
+}
+
+#uploadFileBut {
+  width: 100%
+}
+
+#uploadName {
+  width: 100%;
+  margin-bottom: 10px
+}
+
+#saveExisting *,
+#saveNew *,
+#uploadExisting *,
+#uploadNew * {
+  pointer-events: none
+}
+
+.selectable {
+  margin-bottom: 10px;
+}
+
+.selectable:last-child {
+  margin-bottom: 0;
+}
+
+.selectable select,
+#saveExisting select,
+#saveNew select,
+#uploadExisting select,
+#uploadNew select {
+  cursor: not-allowed;
+  color: #555;
+  background-color: #1e1e1e !important;
+  transition: .3s
+}
+
+.selectable.selected select,
+#saveExisting.selected select,
+#saveNew.selected select,
+#uploadExisting.selected select,
+#uploadNew.selected select {
+  cursor: pointer;
+  color: #fff;
+  background-color: #111
+}
+
+.selectable.selected *,
+#saveExisting.selected *,
+#saveNew.selected *,
+#uploadExisting.selected *,
+#uploadNew.selected * {
+  pointer-events: all
+}
+
+#saveNew,
+#uploadNew {
+  margin-top: 10px
+}
+
+#saveFile,
+#uploadFile {
+  margin-bottom: 10px
+}
+
+.selectable,
+#saveExisting,
+#saveNew,
+#uploadExisting,
+#uploadNew {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #000;
+  color: #525252;
+  padding: 5px;
+  padding-left: 5px;
+  cursor: pointer;
+  transition: .3s
+}
+
+.selectable.selected,
+#saveExisting.selected,
+#saveNew.selected,
+#uploadExisting.selected,
+#uploadNew.selected {
+  background-color: #262626;
+  color: #fff;
+  cursor: auto;
+  padding-left: 15px
+}
+
+.selectable.selected::before,
+#saveExisting.selected::before,
+#saveNew.selected::before,
+#uploadExisting.selected::before,
+#uploadNew.selected::before {
+  width: 5px
+}
+
+.selectable::before,
+#saveExisting::before,
+#saveNew::before,
+#uploadExisting::before,
+#uploadNew::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  height: calc(100% - 10px);
+  width: 0;
+  background-color: #090;
+  transition: .3s;
+  border-radius: 10px
+}
+
+#creditsButton,
+#saveButSave,
+#uploadButSave,
+#downloadButDone {
+  margin: 0 !important
+}
+
+.popup::before {
+  content: "";
+  flex: 100
+}
+
+.popup::after {
+  content: "";
+  flex: 200
+}
+
+#creditsFooter {
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#newFade {
+  order: 1;
+  display: none;
+}
+
+.editing #newFade {
+  display: block;
+}
+
+#editorCont {
+  background-color: #272727;
+  transition: .3s;
+  width: 0;
+  box-sizing: border-box;
+  border-left: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-top: 1px solid #333;
+  border-bottom: 3px solid #272727;
+}
+
+#editorCont.open {
+  width: 400px;
+  margin: 5px;
+  border-radius: 8px;
+  margin-left: 0
+}
+
+#editorCont .settingProperty.active header,
+#editorCont .settingProperty header:hover,
+#editorCont .editorProperty.active header,
+#editorCont .editorProperty header:hover {
+  background: #1a1a1a
+}
+
+.editing .block.inEditor {
+  background-color: rgba(0, 136, 255, .23);
+  border-radius: 8px
+}
+
+.editing .block.navSelected {
+  background-color: rgba(255, 136, 136, .23)
+}
+
+.editing .columns:hover {
+  background-color: rgba(0, 4, 254, .18)
+}
+
+.editing .block:empty {
+  padding: 20vh 0 !important;
+  width: 80%;
+  background-color: rgba(124, 193, 85, 0.23);
+  max-height: 80vh;
+  margin: auto;
+}
+
+.editing .block:empty::before {
+  content: "Click to edit";
+  text-align: center;
+  justify-content: center;
+  font-family: Ubuntu;
+}
+
+#creditsCont .block.hover {
+  margin-bottom: 2em;
+  margin-top: 2em
+}
+
+#creditsCont .block {
+  position: relative;
+  margin-bottom: 0;
+  margin-top: 0;
+  transition: .2s;
+  border-radius: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  width: 100%;
+}
+
+#creditsCont .columns>.block.hover {
+  margin-left: 1.5em;
+  margin-right: 1.5em;
+  margin-bottom: 0;
+  margin-top: 0
+}
+
+#creditsCont .columns>.block {
+  margin-right: 0
+}
+
+#creditsCont .addNewButAfter,
+#creditsCont .addNewButBefore {
+  position: absolute;
+  width: 100%;
+  height: 2em;
+  bottom: -2em;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column
+}
+
+#creditsCont .addNewButBefore {
+  top: -2em;
+  bottom: unset
+}
+
+#creditsCont .addNewButPlus {
+  height: 1.3em;
+  width: 1.3em;
+  background-image: url(img/plus.svg);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  border-radius: 100%;
+  box-shadow: #404040 0 1px 5px -3px;
+  transition: .1s;
+  margin: auto
+}
+
+#creditsCont .columns>.block .addNewButAfter {
+  width: 1.5em;
+  height: 100%;
+  bottom: 0;
+  right: -1.5em;
+  left: unset
+}
+
+#creditsCont .columns>.block .addNewButBefore {
+  width: 1.5em;
+  height: 100%;
+  top: 0;
+  left: -1.5em;
+  right: unset
+}
+
+#creditsCont .addNewButPlus:hover {
+  height: 1.5em;
+  width: 1.5em
+}
+
+.editing #editButton,
+#navDelete {
+  background-color: #d00000;
+  border-top: 1px #960000 solid
+}
+
+.settings #settings,
+#navDelete {
+  background-color: #d00000;
+  border-top: 1px #960000 solid
+}
+
+.editing .block:hover {
+  background-color: rgba(255, 255, 255, .05);
+  cursor: pointer
+}
+
+.editorImg,
+.editorImgGrouped {
+  max-width: 92%;
+  padding: 4%;
+}
+
+#editorCont header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: .3s;
+  background: 0 0
+}
+
+.propertyLabel {
+  padding: 4px 5px;
+  font-size: 12pt;
+}
+
+.settingProperty,
+.editorProperty {
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  border-top: 1px solid transparent
+}
+
+.settingProperty.active,
+.editorProperty.active,
+.settingProperty:hover,
+.editorProperty:hover {
+  border-top: 1px solid #2f2f2f
+}
+
+.settingPropCont,
+.editorPropCont {
+  max-height: 0;
+  background-color: #000;
+  transition: .3s;
+  display: flex
+}
+
+.active .settingPropCont,
+.active .editorPropCont {
+  max-height: 100%
+}
+
+.settingProp,
+.editorProp {
+  margin: 5px;
+  flex: 1;
+  width: calc(100% - 10px);
+  padding: 3px
+}
+
+.settingRulePair,
+.editorNamesPair {
+  column-count: 2;
+  column-gap: 0
+}
+
+.settingRulePair {
+  display: flex;
+}
+
+.editorNameGroup {
+  break-inside: avoid
+}
+
+#editorProp_image,
+#editorProp_names,
+#editorProp_text,
+.settingPropCont {
+  flex-direction: column
+}
+
+.editorNewGroup,
+.settingNewGroup {
+  width: 100%;
+  display: flex;
+  overflow: hidden
+}
+
+.editorNewRole,
+.editorNewName,
+.settingNewRule {
+  flex: 1
+}
+
+#editorColsBut {
+  width: 100%
+}
+
+#editorCont button.editorNewPairName,
+#editorCont button.editorNewText,
+#editorCont button.editorNewImage {
+  background-image: url(img/plus.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  height: 1em;
+  margin: 0;
+  display: block
+}
+
+.editorNewImage {
+  margin-bottom: 6px !important
+}
+
+.editorInput_text {
+  flex: auto;
+  max-width: calc(100% - 10px);
+  min-width: calc(100% - 10px);
+}
+
+.dragging {
+  position: absolute;
+  transform: scale(1.05);
+  width: calc(100% - 20px);
+}
+
+.dragging header>* {
+  pointer-events: none
+}
+
+header *,
+footer *,
+header,
+footer,
+.popup,
+#editorCont {
+  font-family: Ubuntu
+}
+
+.cols1>*.hover {
+  width: calc(100% - 3em - 20px);
+  min-width: calc(100% - 3em - 20px)
+}
+
+.cols2>*.hover {
+  width: calc(50% - 3em - 20px);
+  min-width: calc(50% - 3em - 20px);
+}
+
+.cols3>*.hover {
+  width: calc(33% - 3em - 20px);
+  min-width: calc(33% - 3em - 20px)
+}
+
+.cols4>*.hover {
+  width: calc(25% - 3em - 20px);
+  min-width: calc(25% - 3em - 20px)
+}
+
+.cols5>*.hover {
+  width: calc(20% - 3em - 20px);
+  min-width: calc(20% - 3em - 20px)
+}
+
+.cols6>*.hover {
+  width: calc(16.6% - 3em - 20px);
+  min-width: calc(16.6% - 3em - 20px)
+}
+
+#editorCont::after {
+  content: "";
+  padding: 5px;
+  order: 100
+}
+
+.editorNewText {
+  margin-bottom: 6px !important
+}
+
+.editorNameInput.editorProp {
+  margin: 0 5px
+}
+
+nav {
+  opacity: 0;
+  z-index: -1;
+  position: fixed;
+  background-color: #272727;
+  box-shadow: #000 0 0 7px 0;
+  border-radius: 10px;
+  padding: 10px;
+  transition: top 0s .2s, left 0s .2s, opacity .2s;
+  padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0
+}
+
+nav>button {
+  margin-bottom: 10px;
+  background-color: #414141
+}
+
+.navActive {
+  opacity: 1;
+  z-index: 1;
+  transition: top 0s, left 0s, opacity .2s
+}
+
+.navDelete #navMoveUp,
+.navDelete #navMoveDown {
+  display: none
+}
+
+.navMove #navDelete {
+  display: none
+}
+
+.navNoUp #navMoveUp {
+  display: none
+}
+
+.navNoDown #navMoveDown {
+  display: none
+}
+
+.navFade > #navDelete::after {
+  content: " fade";
+}
+
+.navBlock > #navDelete::after {
+  content: " block";
+}
+
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none
+}
+
+.navActive.above::after {
+  position: absolute;
+  content: "";
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #272727;
+  transform: translate(-50%, 100%)
+}
+
+.navActive.bellow::after {
+  position: absolute;
+  content: "";
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #272727;
+  transform: translate(-50%, -100%)
+}
+
+#toutorial>div {
+  max-width: 600px
+}
