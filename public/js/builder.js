@@ -57,7 +57,7 @@ function makeObject(element) {
       if (image == "../../../img/Placeholder.jpg") {
         object.image = "../../../img/Placeholder.jpg";
       } else {
-        let search = "saves/"+$("#loadFile").find(":selected").val()+"/logo/";
+        let search = "saves/"+$("#loadFile").find(":selected").val()+"/images/";
         object.image = image.substring(search.length);
       }
     } else if ($(this).hasClass("imageGroup")) {
@@ -71,7 +71,7 @@ function makeObject(element) {
         if (image == "../../../img/Placeholder.jpg") {
           imageGroup.push("../../../img/Placeholder.jpg");
         } else {
-          let search = "saves/"+$("#loadFile").find(":selected").val()+"/logo/";
+          let search = "saves/"+$("#loadFile").find(":selected").val()+"/images/";
           imageGroup.push(image.substring(search.length));
         }
       });
@@ -437,7 +437,7 @@ function settingsDoOpen() {
     },{
       "prop": "background-image",
       "name": "Background Image - url(path/to/image)",
-      "values": ["url('saves/"+$("#loadFile").find(":selected").val()+"/logo/IMAGE_NAME.png')"]
+      "values": ["url('saves/"+$("#loadFile").find(":selected").val()+"/images/IMAGE_NAME.png')"]
     },{
       "prop": "color",
       "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
@@ -848,7 +848,7 @@ $(document).ready(function() {
       contentType: false,
       success: function (result) {
         if (typeof result !== 'undefined') {
-          data = JSON.parse(result);
+          data = result;
           if (data.type == "success") {
             if (data.new) {
               let project = data.project;
@@ -869,7 +869,7 @@ $(document).ready(function() {
         }
       }
     }).done(function(data) {
-      let result = JSON.parse(data);
+      let result = data;
       images = result.images;
     });
 

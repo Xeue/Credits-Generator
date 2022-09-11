@@ -97,11 +97,11 @@ function buildProperty(property, block) {
       if (typeof block[property] == "object") {
         subHtml += "<div class='imageGroup'>";
         for (var i = 0; i < block[property].length; i++) {
-          subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/logo/"+block[property][i]+"' style='max-height: "+height+"vh'>";
+          subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/images/"+block[property][i]+"' style='max-height: "+height+"vh'>";
         }
         subHtml += "</div>";
       } else {
-        subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/logo/"+block[property]+"' style='max-height: "+height+"vh'>";
+        subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/images/"+block[property]+"' style='max-height: "+height+"vh'>";
       }
       break;
     case "spacing":

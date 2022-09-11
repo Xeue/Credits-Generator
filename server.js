@@ -19,7 +19,7 @@ import fs from 'fs';
 import {log, logObj, logs} from './logs.js';
 import path from 'path';
 import {fileURLToPath} from 'url';
-import { request } from 'http';
+import AmdZip from "adm-zip";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,6 +69,43 @@ app.listen(config.port, "0.0.0.0", () => {
 })
 
 app.get('/',  (req, res) =>  {
+    doHome(req, res)
+});
+
+app.get('/run', (req, res) => {
+    log("Requesting run dialog", "A");
+    res.header('Content-type', 'text/html');
+    res.render('run', {});
+})
+
+app.post('/save', (req, res) => {
+    doSave(req, res);
+})
+app.post('/media', (req, res) => {
+    doMedia(req, res);
+})
+
+app.get('/fonts', (req, res) => {
+    log("Request for fonts", "D");
+    const project = req.query.project;
+    sendZip(res, [`public/fonts`], project+"_fonts");
+})
+app.get('/images', (req, res) => {
+    log("Request for images", "D");
+    const project = req.query.project;
+    sendZip(res, [`public/saves/${project}/images`], project+"_images");
+})
+app.get('/template', (req, res) => {
+    log("Request for template", "D");
+    const project = req.query.project;
+    sendZip(res, [`public/template`], project+"_template");
+})
+
+
+/* Request functions */
+
+
+function doHome(req, res) {
     log("New client connected", "A");
     res.header('Content-type', 'text/html');
 
@@ -79,7 +116,7 @@ app.get('/',  (req, res) =>  {
 
     Promise.all(fileSearches).then((values) => {
 
-        var savesObj = {}
+        let savesObj = {}
         values[0].forEach(function(path) {
             path.split('/').reduce( function(prev, current) {
                 if (typeof current == "string" && current.indexOf(".js") !== -1) {
@@ -90,7 +127,7 @@ app.get('/',  (req, res) =>  {
                         count = current;
                     }
                     return prev.count = count;
-                } else if (typeof current == "string" && current == "logo") {
+                } else if (typeof current == "string" && current == "images") {
                     return prev[current] || (prev[current] = []);
                 } else if (Object.prototype.toString.call(prev) === '[object Array]') {
                     prev.push(current);
@@ -110,34 +147,7 @@ app.get('/',  (req, res) =>  {
             serverName: config.installName
         });
     });
-});
-
-app.get('/run', (req, res) => {
-    log("Requesting run dialog", "A");
-    res.header('Content-type', 'text/html');
-    res.render('run', {});
-})
-
-app.post('/save', (req, res) => {
-    doSave(req, res);
-})
-app.post('/media', (req, res) => {
-    doMedia(req, res);
-})
-
-app.get('/fonts', (req, res) => {
-    log("Request for fonts", "D");
-})
-app.get('/images', (req, res) => {
-    log("Request for images", "D");
-})
-app.get('/template', (req, res) => {
-    log("Request for template", "D");
-})
-
-
-/* Request functions */
-
+}
 
 function doSave(req, res) {
     log("Saving uploaded credits", "D");
@@ -207,6 +217,8 @@ function doMedia(req, res) {
     const project = req.body.project;
     const newProject = req.body.new;
 
+    const returnObj = {};
+
     if (project === undefined) {
         log(`Failed to get Project (${project})`);
         res.send({
@@ -223,112 +235,102 @@ function doMedia(req, res) {
                 message: 'No file uploaded'
             });
         } else {
-            /* let uploaded = req.files.JSON;
-    
+
             const projectDir = `public/saves/${project}`;
-            if (!fs.existsSync(projectDir)){
-                fs.mkdirSync(projectDir, { recursive: true });
+            const imgDir = `public/saves/${project}/images`;
+            if (!fs.existsSync(imgDir)){
+                fs.mkdirSync(imgDir, { recursive: true });
             }
 
-            if (version == "new") {
-                let files = fs.readdirSync(projectDir);
-                let count = 0;
-                files.forEach(file => {
-                    const current = parseInt(file.substring(0, file.indexOf(".js")));
-                    if (current > count) {
-                        count = current;
+            if (newProject) {
+                const template = `var credits = [
+                    {
+                        "spacing": "8",
+                        "imageHeight": "24",
+                        "image": "../../../img/Placeholder.jpg",
+                        "title": "Placeholder",
+                        "subTitle": "Placeholder",
+                        "text": "Placeholder",
+                        "maxColumns": "2",
+                        "columns": [
+                            {
+                                "title": "Column 1"
+                            },
+                            {
+                                "title": "Column 2"
+                            }
+                        ],
+                        "names": [
+                            {
+                                "role": "Role",
+                                "name": "Name"
+                            },
+                            "Name 2"
+                        ]
                     }
-                });
-                count++;
-                version = count;
+                ]`
+                fs.writeFile(`${projectDir}/1.js`, template, (err)=>{});
+                returnObj.new = true;
+                returnObj.project = project;
+            } else {
+                returnObj.new = false;
             }
 
-            uploaded.mv(`${projectDir}/${version}.js`);
+            const uploadedItems = req.files["images[]"];
 
-            res.send({
-                status: true,
-                message: {
-                    "type": "success",
-                    "project": project,
-                    "version": version
-                },
-                data: {
-                    name: uploaded.name,
-                    mimetype: uploaded.mimetype,
-                    size: uploaded.size
+            if (Array.isArray(uploadedItems)) {
+                uploadedItems.forEach((item)=>{
+                    item.mv(`${imgDir}/${item.name}`);
+                })
+            } else {
+                uploadedItems.mv(`${imgDir}/${uploadedItems.name}`);
+            }
+
+            globby(["public/saves"]).then((files)=>{
+                returnObj.type = "success";
+
+                let output = {};
+                files.forEach(function(path) {
+                    path.split('/').reduce( function(prev, current) {
+                        if (typeof current == "string" && current.indexOf(".js") !== -1) {
+                            return
+                        } else if (typeof current == "string" && current == "images") {
+                            return prev[current] || (prev[current] = []);
+                        } else if (Object.prototype.toString.call(prev) === '[object Array]') {
+                            prev.push(current);
+                            return;
+                        }
+                        return prev[current] || (prev[current] = {});
+                    }, output);
+                });
+
+                let images = output.public.saves;
+
+                for (const project in images) {
+                    if (Object.hasOwnProperty.call(images, project)) {
+                        images[project] = Object.assign({}, images[project].images);
+                    }
                 }
-            }); */
+                
+                returnObj.images = images;
+                res.send(returnObj);
+            });
         }
     } catch (err) {
         logObj("File upload error", err, "E");
         res.status(500).send(err);
     }
-
-    /* Some gross PHP EWWWWW 
-    if (isset($_FILES['images'])) {
-        $return;
-        $project = $_POST['project'];
-      
-        if ($_POST['new'] == "true") {
-          $path = "saves/$project";
-          $data = 'var credits = [
-              {
-                  "spacing": "8",
-                  "imageHeight": "24",
-                  "image": "../../../assets/Placeholder.jpg",
-                  "title": "Placeholder",
-                  "subTitle": "Placeholder",
-                  "text": "Placeholder",
-                  "maxColumns": "2",
-                  "columns": [
-                      {
-                          "title": "Column 1"
-                      },
-                      {
-                          "title": "Column 2"
-                      }
-                  ],
-                  "names": [
-                      {
-                          "role": "Role",
-                          "name": "Name"
-                      },
-                      "Name 2"
-                  ]
-              }
-          ]';
-          file_put_contents("1.js", $data);
-          $return["new"] = true;
-          $return["project"] = $project;
-        } else {
-          $return["new"] = false;
-        }
-      
-        $projPath = "saves/$project/logo/";
-        mkdir($projPath);
-      
-        $images = $_FILES['images'];
-        $fileCount = count($images["name"]);
-      
-        for ($i = 0; $i < $fileCount; $i++) {
-          $file = $images["tmp_name"][$i];
-          $name = $images["name"][$i];
-          move_uploaded_file($file, $projPath.$name);
-        }
-      
-      
-        $saves = array_flip(array_diff(scandir("saves"), array('..', '.')));
-        foreach ($saves as $key => $save) {
-          $images = array_diff(scandir("saves/$key/logo"), array('..', '.'));
-          asort($images);
-          $imagesArray[$key] = $images;
-        }
-        $return["type"] = "success";
-        $return["images"] = $imagesArray;
-        echo json_encode($return);
-      }*/
 }
 
+function sendZip(res, pathArray, zipName) {
+    const zip = new AmdZip();
+    for (const folder of pathArray) {
+        zip.addLocalFolder(folder);
+    }
+    const zipBuffer = zip.toBuffer();
+    res.set('Content-disposition', `attachment; filename=${zipName}.zip`);
+    res.send(zipBuffer);
+}
 
 /* Utility Functions */
 

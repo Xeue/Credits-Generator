@@ -87,7 +87,7 @@ function buildBlock(block) {
       if (typeof block[property] == "object") {
         subHtml += "<div class='imageGroup'>";
         for (var i = 0; i < block[property].length; i++) {
-          subHtml += "<img class='image' src='logo/"+block[property][i]+"' style='max-height: "+height+"vh'>";
+          subHtml += "<img class='image' src='images/"+block[property][i]+"' style='max-height: "+height+"vh'>";
         }
         subHtml += "</div>";
       } else {

@@ -96,7 +96,7 @@ function editorMakeProperty($json, prop, state, index) {
         for (var i = 0; i < imgs.length; i++) {
           let $img = $("<img class='editorImgGrouped img_"+i+"' id='editorImg_"+prop+"'>");
           if (state == "active") {
-            let src = "saves/"+$("#loadFile").find(":selected").val()+"/logo/"+imgs[i];
+            let src = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+imgs[i];
             $img.attr("src", src);
           }
 
@@ -120,7 +120,7 @@ function editorMakeProperty($json, prop, state, index) {
       } else {
         let $img = $("<img class='editorImg' id='editorImg_"+prop+"'>");
         if (state == "active") {
-          let src = "saves/"+$("#loadFile").find(":selected").val()+"/logo/"+imgs;
+          let src = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+imgs;
           $img.attr("src", src);
         }
         let $imgSelect = $("<select class='editorProp img_1' data-imgnum='1' id='editorInput_"+prop+"'></select>");
@@ -381,7 +381,7 @@ function updateBlock($element, value) {
       break;
     case "image":
       let $next = $element.next();
-      path = "saves/"+$("#loadFile").find(":selected").val()+"/logo/"+value;
+      path = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+value;
       if ($next.hasClass("editorImgGrouped")) {
         let index = $element.parent().children("select").index($element);
         $($target[index]).attr("src", path);

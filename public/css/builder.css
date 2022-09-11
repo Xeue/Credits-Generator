@@ -591,7 +591,7 @@ input[type=checkbox]::before {
 #creditsCont .addNewButPlus {
   height: 1.3em;
   width: 1.3em;
-  background-image: url(img/plus.svg);
+  background-image: url(../img/plus.svg);
   background-size: 100%;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -780,32 +780,32 @@ footer,
 }
 
 .cols1>*.hover {
-  width: calc(100% - 3em - 20px);
+  width: calc(100% - 3em - 20px) !important;
   min-width: calc(100% - 3em - 20px)
 }
 
 .cols2>*.hover {
-  width: calc(50% - 3em - 20px);
+  width: calc(50% - 3em - 20px) !important;
   min-width: calc(50% - 3em - 20px);
 }
 
 .cols3>*.hover {
-  width: calc(33% - 3em - 20px);
+  width: calc(33% - 3em - 20px) !important;
   min-width: calc(33% - 3em - 20px)
 }
 
 .cols4>*.hover {
-  width: calc(25% - 3em - 20px);
+  width: calc(25% - 3em - 20px) !important;
   min-width: calc(25% - 3em - 20px)
 }
 
 .cols5>*.hover {
-  width: calc(20% - 3em - 20px);
+  width: calc(20% - 3em - 20px) !important;
   min-width: calc(20% - 3em - 20px)
 }
 
 .cols6>*.hover {
-  width: calc(16.6% - 3em - 20px);
+  width: calc(16.6% - 3em - 20px) !important;
   min-width: calc(16.6% - 3em - 20px)
 }
 
