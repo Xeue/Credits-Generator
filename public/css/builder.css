@@ -1,12 +1,106 @@
+:root {
+  --transparentDark: rgb(72, 72, 72);
+  --transparentLight: rgb(118, 118, 118);
+  --accentBackground: rgb(39, 39, 39);
+  --accentBackgroundBorder: rgb(51, 51, 51);
+
+  --accentLight: rgb(61, 61, 61);
+  --accentLightBorder: rgb(79, 79, 79);
+
+  --accentMid: rgb(45, 45, 45);
+  --accentMidBorder: rgb(71, 71, 71);
+
+  --accentDark: rgb(26, 26, 26);
+  --accentDarkBorder: rgb(47, 47, 47);
+
+  --accentVeryDark: rgb(0, 0, 0);
+  
+  --textBoxBackground: rgb(82, 82, 82);
+  --textBoxShadow: rgb(64, 64, 64);
+
+  --red: rgb(255, 0, 0);
+  --redBorder: rgb(150, 0, 0);
+  --green: rgb(0, 153, 0);
+
+  --blue: rgb(18, 66, 107);
+  --blueBorder: rgb(13, 48, 78);
+
+  --inEditor: rgba(0, 136, 255, .23);
+  --navSelected: rgba(255, 136, 136, .23);
+  --editorHover: rgba(0, 4, 254, .18);
+  --emptyBlock: rgba(124, 193, 85, 0.23);
+
+  --white: rgb(255, 255, 255);
+  --text: rgb(255, 255, 255);
+  --transparent: transparent;
+  --halfTransparent: rgba(255, 255, 255, .05);
+  --semiTransparent: rgba(255, 255, 255, .13);
+}
+
+.light {
+  --transparentDark: rgb(226, 226, 226);
+  --transparentLight: rgb(206, 206, 206);
+  --accentBackground: rgb(234, 234, 234);
+  --accentBackgroundBorder: hsl(0, 0%, 84%);
+
+  --accentLight: hsl(0, 0%, 88%);
+  --accentLightBorder: hsl(0, 0%, 95%);
+
+  --accentMid: rgb(241, 241, 241);
+  --accentMidBorder: hsl(0, 0%, 92%);
+
+  --accentDark: rgb(245, 245, 245);
+  --accentDarkBorder: rgb(234, 234, 234);
+
+  --accentVeryDark: rgb(255, 255, 255);
+  
+  --textBoxBackground: hsl(0, 0%, 96%);
+  --textBoxShadow: hsl(0, 0%, 89%);
+
+  --red: rgb(255, 46, 46);
+  --redBorder: rgb(255, 120, 120);
+  --green: hsl(120, 100%, 30%);
+
+  --inEditor: hsla(208, 100%, 50%, 0.23);
+  --navSelected: hsla(0, 100%, 77%, 0.23);
+  --editorHover: hsla(239, 100%, 50%, 0.18);
+  --emptyBlock: hsla(98, 47%, 55%, 0.23);
+
+  --white: hsl(0, 0%, 100%);
+  --text: rgb(39, 39, 39);
+  --transparent: transparent;
+  --halfTransparent: rgba(0, 0, 0, 0.05);
+  --semiTransparent: hsla(0, 0%, 100%, 0.13);
+}
+
+.light .settingProperty,
+.light .editorProperty {
+  border: 1px solid var(--accentBackgroundBorder) !important;
+}
+
+.light .selectable,
+.light #saveExisting,
+.light #saveNew,
+.light #uploadExisting,
+.light #uploadNew {
+  color: var(--text);
+}
+
 html {
-  opacity: 1
+  opacity: 1;
+  color: var(--text);
 }
 
 html::before {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(45deg, rgb(204, 204, 204) 25%, transparent 25%), linear-gradient(135deg, rgb(204, 204, 204) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgb(204, 204, 204) 75%), linear-gradient(135deg, transparent 75%, rgb(204, 204, 204) 75%);
+  background-color: var(--transparentLight);
+  background-image:
+    linear-gradient(45deg, var(--transparentDark) 25%, transparent 25%),
+    linear-gradient(135deg, var(--transparentDark) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--transparentDark) 75%),
+    linear-gradient(135deg, transparent 75%, var(--transparentDark) 75%);
   background-size: 25px 25px;
   background-position: 0 0, 12.5px 0, 12.5px -12.5px, 0px 12.5px;
 }
@@ -39,19 +133,19 @@ body {
 
 header,
 footer {
-  background: #272727;
+  background: var(--accentBackground);
   width: calc(100% - 14px);
   padding: 7px
 }
 
 main header,
 main footer {
-  background: #272727;
+  background: var(--accentBackground);
   width: calc(100% - 24px);
   padding: 7px;
   margin: 5px;
   border-radius: 8px;
-  border-top: 1px solid #333
+  border-top: 1px solid var(--accentBackgroundBorder)
 }
 
 header>div {
@@ -123,7 +217,7 @@ nav button {
   box-sizing: border-box;
   border-radius: 5px;
   min-width: 50px;
-  color: #fff;
+  color: var(--text);
   transition: .2s;
   margin-left: 7px;
   background-color: transparent;
@@ -134,14 +228,14 @@ nav button {
 #editorCont button {
   margin: 5px;
   height: unset;
-  background-color: #2d2d2d;
-  border-top: 1px #474747 solid
+  background-color: var(--accentMid);
+  border-top: 1px var(--accentMidBorder) solid
 }
 
 button[disabled] {
   cursor: not-allowed;
-  color: #333;
-  background-color: #000 !important
+  color: var(--accentBackgroundBorder);
+  background-color: var(--accentVeryDark) !important
 }
 
 header button:hover,
@@ -149,18 +243,18 @@ footer button:hover,
 .popup button:hover,
 #editorCont button:hover,
 nav button {
-  background-color: #161616;
-  border-top: 1px rgb(47, 47, 47) solid;
+  background-color: var(--accentDark);
+  border-top: 1px var(--accentDarkBorder) solid;
 }
 
 nav button:hover {
-  background-color: #0e0e0e;
-  border-top: 1px #2c2c2c solid
+  background-color: var(--accentDark);
+  border-top: 1px var(--accentDarkBorder) solid
 }
 
 button.active {
-  background-color: #12426b;
-  border-top: #0d304e 1px solid
+  background-color: var(--blue);
+  border-top: var(--blueBorder) 1px solid
 }
 
 input[type=text],
@@ -169,12 +263,12 @@ input[type=text],
   font-size: 16px;
   padding: .5em;
   box-sizing: border-box;
-  background-color: #525252;
-  border: #080808 1px solid;
-  box-shadow: #404040 0 0 7px 0 inset;
+  background-color: var(--textBoxBackground);
+  border: var(--accentVeryDark) 1px solid;
+  box-shadow: var(--textBoxShadow) 0 0 7px 0 inset;
   border-radius: 5px;
   min-width: 50px;
-  color: #fff;
+  color: var(--text);
   transition: .2s;
   user-select: text
 }
@@ -183,7 +277,7 @@ header select,
 footer select,
 .popup select {
   background-image: url(../img/arrow_down.png);
-  color: #fff;
+  color: var(--text);
   appearance: none;
   -webkit-appearance: none;
   background-position-x: right;
@@ -196,15 +290,15 @@ footer select,
   padding: .5em;
   padding-right: 2em;
   box-sizing: border-box;
-  background-color: #111;
-  border: 1px #2a2a2a solid;
+  background-color: var(--accentDark);
+  border: 1px var(--accentMid) solid;
   border-radius: 5px;
   min-width: 50px;
   filter: none
 }
 
 header select:focus {
-  background-color: #161616
+  background-color: var(--accentDark)
 }
 
 .right {
@@ -222,7 +316,7 @@ input[type=checkbox] {
   position: relative;
   overflow: visible;
   border: none;
-  box-shadow: #000 0 0 5px -3px !important;
+  box-shadow: var(--accentVeryDark) 0 0 5px -3px !important;
   cursor: pointer
 }
 
@@ -232,7 +326,7 @@ input[type=checkbox]:checked::before {
 
 input[type=checkbox]::before {
   content: "";
-  background: #f3f3f3;
+  background: var(--white);
   width: 20px;
   height: 20px;
   position: absolute;
@@ -256,11 +350,11 @@ input[type=checkbox] {
 }
 
 input[type=checkbox]:checked {
-  background-color: #090
+  background-color: var(--green)
 }
 
 input[type=checkbox] {
-  background-color: red
+  background-color: var(--red)
 }
 
 input[type=checkbox],
@@ -300,21 +394,23 @@ input[type=checkbox]::before {
   height: 100%;
   top: 0;
   left: 0;
-  background-color: rgba(255, 255, 255, .13);
+  background-color: var(--semiTransparent);
   display: flex;
-  flex-direction: column
+  flex-direction: column;
+  z-index: 1;
+  color: var(--text);
 }
 
 .popup>* {
   margin: auto;
   min-width: 300px;
-  box-shadow: #000 0 0 7px 0;
+  box-shadow: var(--accentVeryDark) 0 0 7px 0;
   border-radius: 10px;
   overflow: hidden
 }
 
 .popup>*>section {
-  background-color: #000;
+  background-color: var(--accentVeryDark);
   padding: 10px;
   font-size: 16pt
 }
@@ -328,7 +424,7 @@ input[type=checkbox]::before {
   width: calc(100% - 14px);
   border-radius: 0;
   border-top: 0;
-  background: #292828;
+  background: var(--accentMid);
   margin: 0
 }
 
@@ -337,8 +433,8 @@ input[type=checkbox]::before {
 }
 
 .popup button {
-  background: #3d3d3d;
-  border-top: 1px solid rgb(79, 79, 79);
+  background: var(--accentLight);
+  border-top: 1px solid var(--accentLightBorder);
 }
 
 #tutHead {
@@ -383,8 +479,8 @@ input[type=checkbox]::before {
 #uploadExisting select,
 #uploadNew select {
   cursor: not-allowed;
-  color: #555;
-  background-color: #1e1e1e !important;
+  color: var(--accentMidBorder);
+  background-color: var(--accentDark) !important;
   transition: .3s
 }
 
@@ -394,8 +490,7 @@ input[type=checkbox]::before {
 #uploadExisting.selected select,
 #uploadNew.selected select {
   cursor: pointer;
-  color: #fff;
-  background-color: #111
+  color: var(--text)
 }
 
 .selectable.selected *,
@@ -424,8 +519,8 @@ input[type=checkbox]::before {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #000;
-  color: #525252;
+  background-color: var(--accentVeryDark);
+  color: var(--textBoxBackground);
   padding: 5px;
   padding-left: 5px;
   cursor: pointer;
@@ -437,8 +532,8 @@ input[type=checkbox]::before {
 #saveNew.selected,
 #uploadExisting.selected,
 #uploadNew.selected {
-  background-color: #262626;
-  color: #fff;
+  background-color: var(--accentBackground);
+  color: var(--text);
   cursor: auto;
   padding-left: 15px
 }
@@ -462,7 +557,7 @@ input[type=checkbox]::before {
   left: 5px;
   height: calc(100% - 10px);
   width: 0;
-  background-color: #090;
+  background-color: var(--green);
   transition: .3s;
   border-radius: 10px
 }
@@ -504,7 +599,7 @@ input[type=checkbox]::before {
 }
 
 #editorCont {
-  background-color: #272727;
+  background-color: var(--accentBackground);
   transition: .3s;
   width: 0;
   box-sizing: border-box;
@@ -513,8 +608,9 @@ input[type=checkbox]::before {
   display: flex;
   flex-direction: column;
   position: relative;
-  border-top: 1px solid #333;
-  border-bottom: 3px solid #272727;
+  border-top: 1px solid var(--accentBackgroundBorder);
+  border-bottom: 3px solid var(--accentBackground);
+  color: var(--text);
 }
 
 #editorCont.open {
@@ -528,26 +624,26 @@ input[type=checkbox]::before {
 #editorCont .settingProperty header:hover,
 #editorCont .editorProperty.active header,
 #editorCont .editorProperty header:hover {
-  background: #1a1a1a
+  background: var(--accentDark)
 }
 
 .editing .block.inEditor {
-  background-color: rgba(0, 136, 255, .23);
+  background-color: var(--inEditor);
   border-radius: 8px
 }
 
 .editing .block.navSelected {
-  background-color: rgba(255, 136, 136, .23)
+  background-color: var(--navSelected)
 }
 
 .editing .columns:hover {
-  background-color: rgba(0, 4, 254, .18)
+  background-color: var(--editorHover)
 }
 
 .editing .block:empty {
   padding: 20vh 0 !important;
   width: 80%;
-  background-color: rgba(124, 193, 85, 0.23);
+  background-color: var(--emptyBlock);
   max-height: 80vh;
   margin: auto;
 }
@@ -612,7 +708,7 @@ input[type=checkbox]::before {
   background-repeat: no-repeat;
   cursor: pointer;
   border-radius: 100%;
-  box-shadow: #404040 0 1px 5px -3px;
+  box-shadow: var(--textBoxShadow) 0 1px 5px -3px;
   transition: .1s;
   margin: auto
 }
@@ -639,19 +735,15 @@ input[type=checkbox]::before {
 }
 
 .editing #editButton,
-#navDelete {
-  background-color: #d00000;
-  border-top: 1px #960000 solid
-}
-
+#navDelete,
 .settings #settings,
 #navDelete {
-  background-color: #d00000;
-  border-top: 1px #960000 solid
+  background-color: var(--red);
+  border-top: 1px var(--redBorder) solid
 }
 
 .editing .block:hover {
-  background-color: rgba(255, 255, 255, .05);
+  background-color: var(--halfTransparent);
   cursor: pointer
 }
 
@@ -688,13 +780,13 @@ input[type=checkbox]::before {
 .editorProperty.active,
 .settingProperty:hover,
 .editorProperty:hover {
-  border-top: 1px solid #2f2f2f
+  border-top: 1px solid var(--accentDarkBorder);
 }
 
 .settingPropCont,
 .editorPropCont {
   max-height: 0;
-  background-color: #000;
+  background-color: var(--accentVeryDark);
   transition: .3s;
   display: flex
 }
@@ -843,8 +935,8 @@ nav {
   opacity: 0;
   z-index: -1;
   position: fixed;
-  background-color: #272727;
-  box-shadow: #000 0 0 7px 0;
+  background-color: var(--accentBackground);
+  box-shadow: var(--accentVeryDark) 0 0 7px 0;
   border-radius: 10px;
   padding: 10px;
   transition: top 0s .2s, left 0s .2s, opacity .2s;
@@ -856,7 +948,8 @@ nav {
 
 nav>button {
   margin-bottom: 10px;
-  background-color: #414141
+  background-color: var(--accentLight);
+  border-top: 1px var(--accentLightBorder) solid;
 }
 
 .navActive {
@@ -908,7 +1001,7 @@ nav>button {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 10px solid #272727;
+  border-top: 10px solid var(--accentBackground);
   transform: translate(-50%, 100%)
 }
 
@@ -921,7 +1014,7 @@ nav>button {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 10px solid #272727;
+  border-bottom: 10px solid var(--accentBackground);
   transform: translate(-50%, -100%)
 }
 
