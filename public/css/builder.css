@@ -60,6 +60,8 @@
   --red: rgb(255, 46, 46);
   --redBorder: rgb(255, 120, 120);
   --green: hsl(120, 100%, 30%);
+  --blue: rgb(82, 175, 255);
+  --blueBorder: rgb(70, 170, 255);
 
   --inEditor: hsla(208, 100%, 50%, 0.23);
   --navSelected: hsla(0, 100%, 77%, 0.23);
