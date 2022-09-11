@@ -382,6 +382,11 @@ function updateSettings() {
       }
     }
   }
+  if ($("html").hasClass("settings")) {
+    settingsDoOpen();
+  } else if ($("html").hasClass("editing")) {
+    editorClose();
+  }
 }
 
 function listFonts() {
@@ -970,12 +975,18 @@ $(document).ready(function() {
         $("#creditsLogos").addClass("hidden");
         $("#creditsScroller").removeClass("hidden");
         $(".endFadeGroup").addClass("hidden");
+        if ($("html").hasClass("editing")) {
+          editorOpen($($("#creditsCont").find(".block")[0]));
+        }
       } else {
         let tabID = $target.attr("id").substring(4);
         $("#creditsScroller").addClass("hidden");
         $("#creditsLogos").removeClass("hidden");
         $(".endFadeGroup").addClass("hidden");
         $("#fadeCont"+tabID).removeClass("hidden");
+        if ($("html").hasClass("editing")) {
+          editorOpen($($("#fadeCont"+tabID).find(".block")[0]));
+        }
       }
     } else if ($target.is("#newFade")) {
       $(".tabButton").removeClass("active");
@@ -1082,7 +1093,7 @@ $(document).ready(function() {
       $pair.append($key);
       $pair.append($value);
       $group.append($pair);
-    } else if (($("html").hasClass("editing") || $("html").hasClass("settings")) && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
+    } else if ($("html").hasClass("editing") && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
       let $block = $target.closest(".block");
       if ($block.length > 0) {
         editorOpen($block);
