@@ -25,7 +25,7 @@
   --blue: rgb(18, 66, 107);
   --blueBorder: rgb(13, 48, 78);
 
-  --inEditor: rgba(0, 136, 255, .23);
+  --inEditor: rgb(255 0 0 / 23%);
   --navSelected: rgba(255, 136, 136, .23);
   --editorHover: rgba(0, 4, 254, .18);
   --emptyBlock: rgba(124, 193, 85, 0.23);
@@ -629,6 +629,12 @@ input[type=checkbox]::before {
   background: var(--accentDark)
 }
 
+
+.editing .block:hover {
+  background-color: var(--halfTransparent);
+  cursor: pointer
+}
+
 .editing .block.inEditor {
   background-color: var(--inEditor);
   border-radius: 8px
@@ -742,11 +748,6 @@ input[type=checkbox]::before {
 #navDelete {
   background-color: var(--red);
   border-top: 1px var(--redBorder) solid
-}
-
-.editing .block:hover {
-  background-color: var(--halfTransparent);
-  cursor: pointer
 }
 
 .editorImg,
