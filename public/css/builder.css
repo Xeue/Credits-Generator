@@ -847,7 +847,7 @@ input[type=checkbox]::before {
 #editorCont button.editorNewPairName,
 #editorCont button.editorNewText,
 #editorCont button.editorNewImage {
-  background-image: url(img/plus.svg);
+  background-image: url(../img/plus.svg);
   background-repeat: no-repeat;
   background-position: center;
   width: 100%;
