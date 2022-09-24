@@ -377,6 +377,11 @@ input[type=checkbox]::before {
   opacity: 1
 }
 
+.settings .endFadeGroup,
+.editing .endFadeGroup {
+  transition: opacity 0s 0s;
+}
+
 #creditsLogos {
   transition: opacity .5s;
   height: 100%;
