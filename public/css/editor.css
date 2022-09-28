@@ -26,7 +26,7 @@
   --blueBorder: rgb(13, 48, 78);
 
   --inEditor: rgb(255 0 0 / 23%);
-  --navSelected: rgba(255, 136, 136, .23);
+  --menuSelected: rgba(255, 136, 136, .23);
   --editorHover: rgba(0, 4, 254, .18);
   --emptyBlock: rgba(124, 193, 85, 0.23);
 
@@ -64,7 +64,7 @@
   --blueBorder: rgb(70, 170, 255);
 
   --inEditor: hsla(208, 100%, 50%, 0.23);
-  --navSelected: hsla(0, 100%, 77%, 0.23);
+  --menuSelected: hsla(0, 100%, 77%, 0.23);
   --editorHover: hsla(239, 100%, 50%, 0.18);
   --emptyBlock: hsla(98, 47%, 55%, 0.23);
 
@@ -110,6 +110,13 @@ html::before {
 body {
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0
+}
+
+h2 {
+  background: none;
+  padding: 5px 15px;
+  margin: 0;
+  font-size: 1.2em;
 }
 
 #mainBody {
@@ -209,9 +216,9 @@ header>div {
 
 header button,
 footer button,
-.popup button,
+dialog button,
 #editorCont button,
-nav button {
+menu button {
   font-size: 16px;
   cursor: pointer;
   height: 2.5em;
@@ -237,19 +244,20 @@ nav button {
 button[disabled] {
   cursor: not-allowed;
   color: var(--accentBackgroundBorder);
-  background-color: var(--accentVeryDark) !important
+  background-color: var(--accentVeryDark) !important;
+  border-color: var(--accentDark) !important;
 }
 
 header button:hover,
 footer button:hover,
-.popup button:hover,
+dialog button:hover,
 #editorCont button:hover,
-nav button {
+menu button {
   background-color: var(--accentDark);
   border-top: 1px var(--accentDarkBorder) solid;
 }
 
-nav button:hover {
+menu button:hover {
   background-color: var(--accentDark);
   border-top: 1px var(--accentDarkBorder) solid
 }
@@ -277,7 +285,7 @@ input[type=text],
 
 header select,
 footer select,
-.popup select {
+dialog select {
   background-image: url(../img/arrow_down.png);
   color: var(--text);
   appearance: none;
@@ -336,7 +344,6 @@ input[type=checkbox]::before {
   top: 2px;
   box-sizing: border-box;
   left: 2px;
-  z-index: 1
 }
 
 input[type=radio][readonly],
@@ -395,39 +402,43 @@ input[type=checkbox]::before {
   opacity: 0
 }
 
-.popup {
-  position: fixed;
+dialog {
   width: 100%;
   height: 100%;
-  top: 0;
-  left: 0;
   background-color: var(--semiTransparent);
   display: flex;
   flex-direction: column;
-  z-index: 1;
   color: var(--text);
+  border: none;
+  margin: 0;
+  padding: 0;
+  font-family: montserrat, sans-serif;
 }
 
-.popup>* {
+dialog>* {
   margin: auto;
   min-width: 300px;
   box-shadow: var(--accentVeryDark) 0 0 7px 0;
   border-radius: 10px;
-  overflow: hidden
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 100px);
+  max-height: calc(100% - 100px);
+  background-color: var(--accentVeryDark);
 }
 
-.popup>*>section {
-  background-color: var(--accentVeryDark);
+dialog>*>section {
   padding: 10px;
   font-size: 16pt
 }
 
-.popup footer {
+dialog footer {
   display: flex
 }
 
-.popup header,
-.popup footer {
+dialog header,
+dialog footer {
   width: calc(100% - 14px);
   border-radius: 0;
   border-top: 0;
@@ -435,13 +446,138 @@ input[type=checkbox]::before {
   margin: 0
 }
 
-.popup footer button {
+dialog footer button {
   flex: 1
 }
 
-.popup button {
+dialog button {
   background: var(--accentLight);
   border-top: 1px solid var(--accentLightBorder);
+}
+
+.downloadRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.downloadRow:last-of-type {
+  margin-bottom: 0;
+}
+
+.downloadRow input {
+  margin-left: 15px;
+}
+
+#galleryImages, #galleryFonts {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#galleryCont {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.galleryFontDemo,
+.galleryFontDemoMore {
+  margin: 15px;
+  margin-bottom: 5px;
+  font-size: 1.5em;
+}
+
+.galleryFontDemoMore {
+  display: none;
+}
+
+.galleryMore::before {
+  content: "More";
+}
+
+.moreFonts .galleryMore::before {
+  content: "Less";
+}
+
+.moreFonts .galleryFontDemo {
+  display: none;
+}
+
+.moreFonts .galleryFontDemoMore {
+  display: block;
+}
+
+.gallerySize::before {
+  content: "Bigger";
+}
+
+.biggerImages .gallerySize::before {
+  content: "Smaller";
+}
+
+.galleryImages {
+  max-width: calc(100vw - 160px);
+  width: 150px;
+}
+
+.biggerImages .galleryImages {
+  width: 450px;
+}
+
+.galleryPreviews {
+  background-color: var(--accentDark);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 10px;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+}
+
+.galleryInfo {
+  font-size: 0.8em;
+  padding: 10px;
+}
+
+.galleryType-png,
+.galleryType-svg,
+.galleryType-jpg,
+.galleryType-jpeg,
+.galleryType-otf,
+.galleryType-ttf {
+  background-repeat: no-repeat;
+  background-position-x: calc(100% - 3px);
+  background-size: 1.5em;
+  background-position-y: center;
+}
+.galleryType-png {
+  background-image: url(../img/png.svg);
+}
+.galleryType-jpg,
+.galleryType-jpeg {
+  background-image: url(../img/jpg.svg);
+}
+.galleryType-svg {
+  background-image: url(../img/svg.svg);
+}
+.galleryType-ttf {
+  background-image: url(../img/ttf.svg);
+}
+.galleryType-otf {
+  background-image: url(../img/otf.svg);
+}
+
+.galleryPreviews header {
+  margin-right: 2em;
+}
+
+dialog figure {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  margin: 15px auto;
+  padding: 0px 10px;
 }
 
 #tutHead {
@@ -458,6 +594,13 @@ input[type=checkbox]::before {
 
 #uploadFileBut {
   width: 100%
+}
+
+.uploadFont #uploadHead::before {
+  content: "Upload Fonts";
+}
+.uploadMedia #uploadHead::before {
+  content: "Upload Images";
 }
 
 #uploadName {
@@ -569,21 +712,8 @@ input[type=checkbox]::before {
   border-radius: 10px
 }
 
-#creditsButton,
-#saveButSave,
-#uploadButSave,
-#downloadButDone {
+dialog footer button:first-of-type {
   margin: 0 !important
-}
-
-.popup::before {
-  content: "";
-  flex: 100
-}
-
-.popup::after {
-  content: "";
-  flex: 200
 }
 
 #creditsFooter {
@@ -594,6 +724,10 @@ input[type=checkbox]::before {
   left: 0;
   display: flex;
   flex-wrap: wrap;
+}
+
+#creditsButton {
+  margin-left: 0px;
 }
 
 #newFade {
@@ -645,12 +779,8 @@ input[type=checkbox]::before {
   border-radius: 8px
 }
 
-.editing .block.navSelected {
-  background-color: var(--navSelected)
-}
-
-.editing .columns:hover {
-  background-color: var(--editorHover)
+.editing .block.menuSelected {
+  background-color: var(--menuSelected)
 }
 
 .editing .block:empty {
@@ -668,16 +798,16 @@ input[type=checkbox]::before {
   font-family: Ubuntu;
 }
 
-#creditsCont .block.hover {
+.editing #creditsCont .block:hover {
   margin-bottom: 2em;
-  margin-top: 2em
+  margin-top: 2em;
 }
 
 #creditsCont .block {
   position: relative;
   margin-bottom: 0;
   margin-top: 0;
-  transition: .2s;
+  transition: .1s;
   border-radius: 8px;
   padding-left: 10px;
   padding-right: 10px;
@@ -685,15 +815,16 @@ input[type=checkbox]::before {
   width: 100%;
 }
 
-#creditsCont .columns>.block.hover {
+.editing #creditsCont .columns > .block:hover {
   margin-left: 1.5em;
-  margin-right: 1.5em;
   margin-bottom: 0;
-  margin-top: 0
+  margin-top: 0;
+  width: calc(100% - 3em);
 }
 
 #creditsCont .columns>.block {
-  margin-right: 0
+  margin-right: 0;
+  padding: 0 0 10px 0;
 }
 
 #creditsCont .addNewButAfter,
@@ -748,9 +879,9 @@ input[type=checkbox]::before {
 }
 
 .editing #editButton,
-#navDelete,
+#menuDelete,
 .settings #settings,
-#navDelete {
+#menuDelete {
   background-color: var(--red);
   border-top: 1px var(--redBorder) solid
 }
@@ -890,39 +1021,9 @@ header *,
 footer *,
 header,
 footer,
-.popup,
+dialog,
 #editorCont {
   font-family: Ubuntu
-}
-
-.cols1>*.hover {
-  width: calc(100% - 3em - 20px) !important;
-  min-width: calc(100% - 3em - 20px)
-}
-
-.cols2>*.hover {
-  width: calc(50% - 3em - 20px) !important;
-  min-width: calc(50% - 3em - 20px);
-}
-
-.cols3>*.hover {
-  width: calc(33% - 3em - 20px) !important;
-  min-width: calc(33% - 3em - 20px)
-}
-
-.cols4>*.hover {
-  width: calc(25% - 3em - 20px) !important;
-  min-width: calc(25% - 3em - 20px)
-}
-
-.cols5>*.hover {
-  width: calc(20% - 3em - 20px) !important;
-  min-width: calc(20% - 3em - 20px)
-}
-
-.cols6>*.hover {
-  width: calc(16.6% - 3em - 20px) !important;
-  min-width: calc(16.6% - 3em - 20px)
 }
 
 #editorCont::after {
@@ -939,7 +1040,7 @@ footer,
   margin: 0 5px
 }
 
-nav {
+menu {
   opacity: 0;
   z-index: -1;
   position: fixed;
@@ -951,43 +1052,44 @@ nav {
   padding-left: 5px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 0
+  padding-bottom: 0;
+  margin: 0;
 }
 
-nav>button {
+menu>button {
   margin-bottom: 10px;
   background-color: var(--accentLight);
   border-top: 1px var(--accentLightBorder) solid;
 }
 
-.navActive {
+.menuActive {
   opacity: 1;
   z-index: 1;
   transition: top 0s, left 0s, opacity .2s
 }
 
-.navDelete #navMoveUp,
-.navDelete #navMoveDown {
+.menuDelete #menuMoveUp,
+.menuDelete #menuMoveDown {
   display: none
 }
 
-.navMove #navDelete {
+.menuMove #menuDelete {
   display: none
 }
 
-.navNoUp #navMoveUp {
+.menuNoUp #menuMoveUp {
   display: none
 }
 
-.navNoDown #navMoveDown {
+.menuNoDown #menuMoveDown {
   display: none
 }
 
-.navFade > #navDelete::after {
+.menuFade > #menuDelete::after {
   content: " fade";
 }
 
-.navBlock > #navDelete::after {
+.menuBlock > #menuDelete::after {
   content: " block";
 }
 
@@ -1000,7 +1102,7 @@ nav>button {
   user-select: none
 }
 
-.navActive.above::after {
+.menuActive.above::after {
   position: absolute;
   content: "";
   left: 50%;
@@ -1013,7 +1115,7 @@ nav>button {
   transform: translate(-50%, 100%)
 }
 
-.navActive.bellow::after {
+.menuActive.bellow::after {
   position: absolute;
   content: "";
   left: 50%;

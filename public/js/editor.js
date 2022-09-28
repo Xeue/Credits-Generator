@@ -9,7 +9,6 @@ function editorHover($block) {
 
   let $after = $("<div class='addNewButAfter'><div class='addNewButPlus'></div></div>");
   $block.append($after);
-  $block.addClass("hover");
 
   let $before = $("<div class='addNewButBefore'><div class='addNewButPlus'></div></div>");
   $block.prepend($before);
@@ -18,7 +17,6 @@ function editorUnHover($block) {
   if ($("html").hasClass("editing")) {
     $block.children().filter(".addNewButAfter").remove();
     $block.children().filter(".addNewButBefore").remove();
-    $block.removeClass("hover");
   }
 }
 
@@ -96,7 +94,7 @@ function editorMakeProperty($json, prop, state, index) {
         for (var i = 0; i < imgs.length; i++) {
           let $img = $("<img class='editorImgGrouped img_"+i+"' id='editorImg_"+prop+"'>");
           if (state == "active") {
-            let src = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+imgs[i];
+            let src = `saves/${currentProject}/images/${imgs[i]}`;
             $img.attr("src", src);
           }
 
@@ -120,7 +118,7 @@ function editorMakeProperty($json, prop, state, index) {
       } else {
         let $img = $("<img class='editorImg' id='editorImg_"+prop+"'>");
         if (state == "active") {
-          let src = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+imgs;
+          let src = `saves/${currentProject}/images/${imgs}`;
           $img.attr("src", src);
         }
         let $imgSelect = $("<select class='editorProp img_1' data-imgnum='1' id='editorInput_"+prop+"'></select>");
@@ -381,7 +379,7 @@ function updateBlock($element, value) {
       break;
     case "image":
       let $next = $element.next();
-      path = "saves/"+$("#loadFile").find(":selected").val()+"/images/"+value;
+      path = `saves/${currentProject}/images/${value}`;
       if ($next.hasClass("editorImgGrouped")) {
         let index = $element.parent().children("select").index($element);
         $($target[index]).attr("src", path);
@@ -477,6 +475,223 @@ function orderEditor(curIndex, newIndex) {
       $($props[prop]).css("order", parseInt(prop)+1);
     }
   }
+}
+
+function updateSettings() {
+  $("#settingsCSS").remove();
+  let $settings = $("<style id='settingsCSS' type='text/css'></style>");
+  let style = $settings[0];
+  $("head").append($settings);
+  for (var setting in settings) {
+    if (settings.hasOwnProperty(setting)) {
+      let rulesTxt = "";
+      let rules = settings[setting];
+      for (var rule in rules) {
+        if (rules.hasOwnProperty(rule)) {
+          rulesTxt += rule+":"+rules[rule]+";";
+        }
+      }
+      if (!(style.sheet || {}).insertRule) {
+        (style.styleSheet || style.sheet).addRule("."+setting, rulesTxt);
+      } else {
+        style.sheet.insertRule("."+setting+"{"+rulesTxt+"}",0);
+      }
+    }
+  }
+
+  if (isLight(window.getComputedStyle($("#mainBody")[0]).backgroundColor)) {
+    $("html").addClass("light");
+  } else {
+    $("html").removeClass("light");
+  }
+
+  if ($("html").hasClass("settings")) {
+    settingsDoOpen();
+  } else if ($("html").hasClass("editing")) {
+    editorClose();
+  }
+}
+
+function isLight(color) {
+    var r, g, b, hsp;
+    if (color.match(/^rgb/)) {
+        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+        r = color[1];
+        g = color[2];
+        b = color[3];
+    }
+    else {
+        color = +("0x" + color.slice(1).replace(
+        color.length < 5 && /./g, '$&$&'));
+        r = color >> 16;
+        g = color >> 8 & 255;
+        b = color & 255;
+    }
+    hsp = Math.sqrt(
+    0.299 * (r * r) +
+    0.587 * (g * g) +
+    0.114 * (b * b)
+    );
+    if (hsp>127.5) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function listFonts() {
+  let { fonts } = document;
+  const it = fonts.entries();
+
+  let arr = [];
+  let done = false;
+
+  while (!done) {
+    const font = it.next();
+    if (!font.done) {
+      arr.push(font.value[0].family);
+    } else {
+      done = font.done;
+    }
+  }
+
+  // converted to set then arr to filter repetitive values
+  return [...new Set(arr)];
+}
+
+function settingsOpen() {
+  $("html").removeClass("editing");
+
+  if ($("html").hasClass("settings")) {
+    return;
+  }
+  settingsDoOpen();
+}
+
+function settingsToggle() {
+  $("html").removeClass("editing");
+
+  if ($("html").hasClass("settings")) {
+    $("#editorCont").removeClass("open");
+    $("html").removeClass("settings");
+    return;
+  }
+  settingsDoOpen();
+}
+
+function settingsDoOpen() {
+  $("html").addClass("settings");
+  $(".inEditor").removeClass("inEditor");
+  let $editor = $("#editorCont");
+  $editor.html("");
+  let dataOptions = [
+    {
+      "prop": "background-color",
+      "name": "Background Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"]
+    },{
+      "prop": "background-image",
+      "name": "Background Image - url(path/to/image)",
+      "values": [`url('saves/${currentProject}/images/IMAGE_NAME.png')`]
+    },{
+      "prop": "color",
+      "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"]
+    },{
+      "prop": "font-family",
+      "name": "Font",
+      "values": listFonts()
+    },{
+      "prop": "font-size",
+      "name": "Font Size - units of px, pt, % & em",
+      "values": ["8pt","10pt","12pt","16pt","20pt","24pt","28pt","32pt","36pt","40pt","44pt","48pt"]
+    },{
+      "prop": "font-weight",
+      "name": "Font Weight - bold, bolder, lighter & normal",
+      "values": ["lighter","normal","bold","bolder"]
+    },{
+      "prop": "font-style",
+      "name": "Font Style - italic & normal",
+      "values": ["italic","normal"]
+    }
+  ];
+  let $dataList = $("<datalist id='CSSList'></datalist>");
+  for (var i = 0; i < dataOptions.length; i++) {
+    let $dataOption = $("<option value='"+dataOptions[i].prop+"'>"+dataOptions[i].name+"</option>");
+    $dataList.append($dataOption);
+    let $optionsList = $("<datalist id='"+dataOptions[i].prop+"'></datalist>");
+    for (var j = 0; j < dataOptions[i].values.length; j++) {
+      let $dataListOption = $("<option value='"+dataOptions[i].values[j]+"'>"+dataOptions[i].values[j]+"</option>");
+      $optionsList.append($dataListOption);
+    }
+    $editor.append($optionsList);
+  }
+  $editor.append($dataList);
+  let properties = ["background","title","subTitle","image","text","name","role"];
+
+  for (var setting in settings) {
+    if (settings.hasOwnProperty(setting)) {
+      $editor.append(settingsMakeProperty(setting, "active"));
+    }
+  }
+
+  for (var i = 0; i < properties.length; i++) {
+    if (!settings.hasOwnProperty(properties[i])){
+      $editor.append(settingsMakeProperty(properties[i], "notActive"));
+    }
+  }
+
+  $editor.addClass("open");
+}
+
+function settingsMakeProperty(setting, state) {
+  let $property = $("<section class='settingProperty' data-setting='"+setting+"'></section>");
+  let $header = $("<header></header>");
+  let $title = $("<div class='settingHeading' id='setting_"+setting+"'></div>");
+  let $check = $("<input type='checkbox' id='settingEnable_"+setting+"' class='settingCheckBox'>");
+  let propertyName = setting.replace( /([A-Z])/g, " $1" );
+  let title = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
+  $title.html(title);
+  $header.append($title);
+  $header.append($check);
+  $property.append($header);
+
+  if (state == "active") {
+    $property.addClass("active");
+    $check.prop("checked", true);
+  }
+
+  let $edit = $("<div class='settingPropCont' id='settingProp_"+setting+"'></div>");
+  let $input = $("<input class='settingProp' id='settingInput_"+setting+"'>");
+
+
+  let rules = settings[setting];
+
+  let $rulesGroup = $("<div class='settingRuleGroup'></div>");
+
+  for (var key in rules) {
+    if (rules.hasOwnProperty(key)) {
+      let value = rules[key];
+      let $pair = $("<div class='settingRulePair'></div>");
+      let $key = $("<input class='settingKeyInput settingProp' list='CSSList'>");
+      $key.val(key);
+      $key.data("prev", key);
+      $pair.append($key);
+      let $value = $("<input class='settingValueInput settingProp'>");
+      $value.val(value);
+      $pair.append($value);
+      $rulesGroup.append($pair);
+    }
+  }
+
+  let $newGroup = $("<div class='settingNewGroup'></div>");
+  let $newRule = $("<button class='settingNewRule'>New Rule</button>");
+  $newGroup.append($newRule);
+  $edit.append($rulesGroup);
+  $edit.append($newGroup);
+
+  $property.append($edit);
+  return $property;
 }
 
 $(document).click(function(e) {

@@ -97,11 +97,11 @@ function buildProperty(property, block) {
       if (typeof block[property] == "object") {
         subHtml += "<div class='imageGroup'>";
         for (var i = 0; i < block[property].length; i++) {
-          subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/images/"+block[property][i]+"' style='max-height: "+height+"vh'>";
+          subHtml += `<img class='image' src='saves/${currentProject}/images/${block[property][i]}' style='max-height: ${height}vh'>`;
         }
         subHtml += "</div>";
       } else {
-        subHtml += "<img class='image' src='saves/"+$("#loadFile").find(":selected").val()+"/images/"+block[property]+"' style='max-height: "+height+"vh'>";
+        subHtml += `<img class='image' src='saves/${currentProject}/images/${block[property]}' style='max-height: ${height}vh'>`;
       }
       break;
     case "spacing":
@@ -136,11 +136,6 @@ function loadScript(source) {
   });
 }
 
-
-function initRunInBrowser() {
-  window.open("/run", 1, "directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=750,height=70");
-}
-
 function runNextFade() {
   currentFade++;
   if (currentFade < logoCount) {
@@ -171,61 +166,3 @@ function runCredits() {
     }, (++runTime)*1000));
   }
 }
-
-function runCommand(event) {
-  obj = JSON.parse(event.data);
-  switch (obj.command) {
-    case "run":
-      runCredits();
-      break;
-    case "toggleUI":
-      $("header").toggleClass("hidden");
-      $("footer").toggleClass("hidden");
-      $("#creditsScroller").toggleClass("noScroll");
-      $("#creditsScroller").css("transition", "");
-      $("#creditsScroller").css("top", "");
-      $("html").removeClass("editing");
-      $("html").removeClass("settings");
-      $("#editorCont").removeClass("open");
-      break;
-    case "hideUI":
-      $("header").addClass("hidden");
-      $("footer").addClass("hidden");
-      $("#creditsScroller").addClass("noScroll");
-      $("#creditsScroller").css("transition", "");
-      $("#creditsScroller").css("top", "");
-      $("html").removeClass("editing");
-      $("html").removeClass("settings");
-      $("#editorCont").removeClass("open");
-      break;
-    case "setTime":
-      runTime = parseInt(obj.time);
-      break;
-    case "reset":
-      $("header").removeClass("hidden");
-      $("footer").removeClass("hidden");
-      $("#creditsScroller").removeClass("noScroll");
-      $("#creditsScroller").css("transition", "");
-      $("#creditsScroller").css("top", "");
-      for (var i=0; i<timeouts.length; i++) {
-        clearTimeout(timeouts[i]);
-      }
-      break;
-    case "full":
-      if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      } else {
-        console.log(document.documentElement);
-        document.documentElement.requestFullscreen();
-      }
-      break;
-    default:
-
-  }
-}
-
-jQuery(document).ready(function($) {
-  window.addEventListener("message", runCommand, false);
-});

@@ -82,13 +82,16 @@ app.post('/save', (req, res) => {
     doSave(req, res);
 })
 app.post('/media', (req, res) => {
-    doMedia(req, res);
+    doUpload(req, res, "images");
+})
+app.post('/fonts', (req, res) => {
+    doUpload(req, res, "fonts");
 })
 
 app.get('/fonts', (req, res) => {
     log("Request for fonts", "D");
     const project = req.query.project;
-    sendZip(res, [`public/fonts`], project+"_fonts");
+    sendZip(res, [`public/fonts`,`public/saves/${project}/fonts`], project+"_fonts");
 })
 app.get('/images', (req, res) => {
     log("Request for images", "D");
@@ -100,6 +103,13 @@ app.get('/template', (req, res) => {
     const project = req.query.project;
     sendZip(res, [`public/template`], project+"_template");
 })
+
+app.delete('/fonts', (req, res) => {
+    doDelete(req, res, "fonts");
+});
+app.delete('/images', (req, res) => {
+    doDelete(req, res, "images");
+});
 
 
 /* Request functions */
@@ -127,10 +137,11 @@ function doHome(req, res) {
                         count = current;
                     }
                     return prev.count = count;
-                } else if (typeof current == "string" && current == "images") {
+                } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
                     return prev[current] || (prev[current] = []);
                 } else if (Object.prototype.toString.call(prev) === '[object Array]') {
                     prev.push(current);
+                    return;
                 }
                 return prev[current] || (prev[current] = {});
             }, savesObj)
@@ -141,9 +152,17 @@ function doHome(req, res) {
             fonts.push(font.substring(13));
         })
 
+        let saves = savesObj.public.saves;
+        for (const project in saves) {
+            if (Object.hasOwnProperty.call(saves, project)) {
+                saves[project].images = Object.assign({}, saves[project].images);
+                saves[project].fonts = Object.assign({}, saves[project].fonts);
+            }
+        }
+
         res.render('home', {
-            saves: savesObj.public.saves,
-            fonts: fonts,
+            saves: saves,
+            globalFonts: fonts,
             serverName: config.installName
         });
     });
@@ -212,7 +231,7 @@ function doSave(req, res) {
     }
 }
 
-function doMedia(req, res) {
+function doUpload(req, res, uploadType) {
     log("Saving uploaded Images/Fonts", "D");
     const project = req.body.project;
     const newProject = req.body.new;
@@ -237,7 +256,7 @@ function doMedia(req, res) {
         } else {
 
             const projectDir = `public/saves/${project}`;
-            const imgDir = `public/saves/${project}/images`;
+            const imgDir = `public/saves/${project}/${uploadType}`;
             if (!fs.existsSync(imgDir)){
                 fs.mkdirSync(imgDir, { recursive: true });
             }
@@ -276,7 +295,7 @@ function doMedia(req, res) {
                 returnObj.new = false;
             }
 
-            const uploadedItems = req.files["images[]"];
+            const uploadedItems = req.files["files[]"];
 
             if (Array.isArray(uploadedItems)) {
                 uploadedItems.forEach((item)=>{
@@ -286,33 +305,9 @@ function doMedia(req, res) {
                 uploadedItems.mv(`${imgDir}/${uploadedItems.name}`);
             }
 
-            globby(["public/saves"]).then((files)=>{
+            getUpdatedProjects().then((saves)=>{
                 returnObj.type = "success";
-
-                let output = {};
-                files.forEach(function(path) {
-                    path.split('/').reduce( function(prev, current) {
-                        if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                            return
-                        } else if (typeof current == "string" && current == "images") {
-                            return prev[current] || (prev[current] = []);
-                        } else if (Object.prototype.toString.call(prev) === '[object Array]') {
-                            prev.push(current);
-                            return;
-                        }
-                        return prev[current] || (prev[current] = {});
-                    }, output);
-                });
-
-                let images = output.public.saves;
-
-                for (const project in images) {
-                    if (Object.hasOwnProperty.call(images, project)) {
-                        images[project] = Object.assign({}, images[project].images);
-                    }
-                }
-                
-                returnObj.images = images;
+                returnObj.saves = saves;
                 res.send(returnObj);
             });
         }
@@ -322,10 +317,66 @@ function doMedia(req, res) {
     }
 }
 
+function doDelete(req, res, deleteType) {
+    const file = req.query.file;
+    const project = req.query.project;
+    const returnObj = {};
+    fs.promises.unlink(`public/saves/${project}/${deleteType}/${file}`)
+    .then(getUpdatedProjects)
+    .then((saves)=>{
+        returnObj.type = "success";
+        returnObj.saves = saves;
+        res.send(returnObj);
+    }).catch((err)=>{
+        getUpdatedProjects().then((saves)=>{
+            logObj("File error", err, "W");
+            res.status(500);
+            returnObj.type = "fail";
+            returnObj.saves = saves;
+            returnObj.error = err;
+            res.send(returnObj);
+        })
+    });
+}
+
+function getUpdatedProjects() {
+    const promise = new Promise((resolve, reject) => {
+        globby(["public/saves"]).then((files)=>{
+            let output = {};
+            files.forEach(function(path) {
+                path.split('/').reduce( function(prev, current) {
+                    if (typeof current == "string" && current.indexOf(".js") !== -1) {
+                        return
+                    } else if (typeof current == "string" && (current == "images" || current == "fonts" )) {
+                        return prev[current] || (prev[current] = []);
+                    } else if (Object.prototype.toString.call(prev) === '[object Array]') {
+                        prev.push(current);
+                        return;
+                    }
+                    return prev[current] || (prev[current] = {});
+                }, output);
+            });
+
+            let saves = output.public.saves;
+
+            for (const project in saves) {
+                if (Object.hasOwnProperty.call(saves, project)) {
+                    saves[project].images = Object.assign({}, saves[project].images);
+                    saves[project].fonts = Object.assign({}, saves[project].fonts);
+                }
+            }
+            resolve(saves);
+        });
+    });
+    return promise;
+}
+
 function sendZip(res, pathArray, zipName) {
     const zip = new AmdZip();
     for (const folder of pathArray) {
-        zip.addLocalFolder(folder);
+        if (fs.existsSync(folder)) {
+            zip.addLocalFolder(folder);
+        }
     }
     const zipBuffer = zip.toBuffer();
     res.set('Content-disposition', `attachment; filename=${zipName}.zip`);

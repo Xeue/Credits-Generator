@@ -19,6 +19,31 @@ html {
   margin-top: 2em;
 }
 
+.cols1 {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+}
+.cols2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+.cols3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.cols4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.cols5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.cols6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
 .background {
   background-color: black;
   opacity: 1;
@@ -137,12 +162,6 @@ body {
   flex-direction: column;
 }
 
-.columns {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
 .subTitle {
   margin-bottom: 2em;
   margin-top: 5em;
@@ -186,36 +205,6 @@ body {
   height: fit-content;
 }
 
-.cols1>* {
-  width: 100%;
-  min-width: 100%;
-}
-
-.cols2>* {
-  width: calc(50% - 20px) !important;
-  min-width: calc(50% - 20px);
-}
-
-.cols3>* {
-  width: calc(33% - 20px) !important;
-  min-width: calc(33% - 20px);
-}
-
-.cols4>* {
-  width: calc(25% - 20px) !important;
-  min-width: calc(25% - 20px);
-}
-
-.cols5>* {
-  width: calc(20% - 20px) !important;
-  min-width: calc(20% - 20px);
-}
-
-.cols6>* {
-  width: calc(16.6% - 20px) !important;
-  min-width: calc(16.6% - 20px);
-}
-
 .stay {
   opacity: 1 !important;
 }
@@ -243,14 +232,4 @@ body {
   100% {
     opacity: 0;
   }
-}
-
-@font-face {
-  font-family: "Libre Caslon Text";
-  src: url("librecaslontext-regular.otf");
-}
-
-@font-face {
-  font-family: "Libre Caslon Italic";
-  src: url("librecaslontext-italic.otf");
 }
