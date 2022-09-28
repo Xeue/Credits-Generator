@@ -35,6 +35,8 @@
   --transparent: transparent;
   --halfTransparent: rgba(255, 255, 255, .05);
   --semiTransparent: rgba(255, 255, 255, .13);
+
+  --system-ui: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 .light {
@@ -412,7 +414,6 @@ dialog {
   border: none;
   margin: 0;
   padding: 0;
-  font-family: montserrat, sans-serif;
 }
 
 dialog>* {
@@ -570,6 +571,7 @@ dialog button {
 
 .galleryPreviews header {
   margin-right: 2em;
+  text-transform: capitalize;
 }
 
 dialog figure {
@@ -795,7 +797,6 @@ dialog footer button:first-of-type {
   content: "Click to edit";
   text-align: center;
   justify-content: center;
-  font-family: Ubuntu;
 }
 
 .editing #creditsCont .block:hover {
@@ -1022,8 +1023,9 @@ footer *,
 header,
 footer,
 dialog,
-#editorCont {
-  font-family: Ubuntu
+#editorCont,
+.editing .block:empty::before {
+  font-family: var(--system-ui);
 }
 
 #editorCont::after {
