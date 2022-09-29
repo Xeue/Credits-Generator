@@ -825,10 +825,10 @@ dialog footer button:first-of-type {
 }
 
 .editing .columns > .block:hover {
-  margin-left: 1.5em;
+  /*! margin-left: 1.5em; */
   margin-bottom: 0;
   margin-top: 0;
-  width: calc(100% - 3em);
+  /*! width: calc(100% - 3em); */
 }
 
 .columns > .block {
@@ -870,12 +870,18 @@ dialog footer button:first-of-type {
   transition: .1s;
   margin: auto
 }
-
+.columns:hover {
+  column-gap: 40px;
+}
+.columns {
+  transition: .2s;
+  column-gap: 0px;
+}
 .columns>.block .addNewButAfter {
   width: 1.5em;
   height: 100%;
   bottom: 0;
-  right: -1.5em;
+  right: -1.4em;
   left: unset
 }
 

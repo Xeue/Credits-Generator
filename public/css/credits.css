@@ -1,234 +1,189 @@
 html {
-  /* Explicitly set background color */
-  background-color: #0000;
-  opacity: 0;
-  /* Set default box-sizing to border-box for easier sizing of elements */
-  box-sizing: border-box;
-  /* Disable scrollbars by clipping page overflow */
-  overflow: hidden;
-  /* Set default font family */
-  font-family: montserrat, sans-serif;
-  /* Set responsive root font size to 43.2px at 1080p */
-  font-size: 3vh;
-  color: white;
-  scroll-behavior: smooth;
-  transition: 1s;
+ background-color:#0000;
+ opacity:0;
+ box-sizing:border-box;
+ overflow:hidden;
+ font-family:montserrat,sans-serif;
+ font-size:3vh;
+ color:#fff;
+ scroll-behavior:smooth;
+ transition:1s
 }
-
 .columns .subTitle {
-  margin-top: 2em;
+ margin-top:2em
 }
-
 .cols1 {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
+ display:grid;
+ grid-template-columns:repeat(1,1fr)
 }
 .cols2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+ display:grid;
+ grid-template-columns:repeat(2,1fr)
 }
 .cols3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+ display:grid;
+ grid-template-columns:repeat(3,1fr)
 }
 .cols4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+ display:grid;
+ grid-template-columns:repeat(4,1fr)
 }
 .cols5 {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+ display:grid;
+ grid-template-columns:repeat(5,1fr)
 }
 .cols6 {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+ display:grid;
+ grid-template-columns:repeat(6,1fr)
 }
-
 .background {
-  background-color: black;
-  opacity: 1;
+ background-color:#000;
+ opacity:1
 }
-
 body {
-  overflow-anchor: none;
-  margin: 0;
-  position: absolute;
-  top: 0;
+ overflow-anchor:none;
+ margin:0;
+ position:absolute;
+ top:0
 }
-
 .hidden {
-  /*! opacity: 0; */
-  transition: 0.3s;
+ transition:.3s
 }
-
 #creditsCont {
-  text-align: center;
-  width: 60vw;
-  margin: auto;
-  padding-top: 100vh;
+ text-align:center;
+ width:60vw;
+ margin:auto;
+ padding-top:100vh
 }
-
 #creditsLogos {
-  opacity: 0;
-  width: 100%;
-  height: 100vh;
-  top: 0;
-  left: 0;
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+ opacity:0;
+ width:100%;
+ height:100vh;
+ top:0;
+ left:0;
+ position:fixed;
+ display:flex;
+ flex-direction:column;
+ justify-content:center
 }
-
 #creditsLogoSingle,
 #creditsLogoGroup {
-  padding: 0 24%;
-  height: 100%;
-  display: flex;
+ padding:0 24%;
+ height:100%;
+ display:flex
 }
-
 #creditsLogoSingle {
-  padding: 0 31%;
+ padding:0 31%
 }
-
 #creditsLogoSingle img,
 #creditsLogoGroup img {
-  padding-left: 3vw;
-  padding-right: 3vw;
+ padding-left:3vw;
+ padding-right:3vw
 }
-
 #creditsLogoGroup img {
-  box-sizing: border-box;
+ box-sizing:border-box
 }
-
 #creditsLogos .text {
-  text-align: center;
-  max-width: 49%;
-  margin: auto;
-  margin-top: 1em;
+ text-align:center;
+ max-width:49%;
+ margin:auto;
+ margin-top:1em
 }
-
 #creditsLogos .block {
-  justify-content: center;
-  align-items: center;
+ justify-content:center;
+ align-items:center
 }
-
 #creditsLogos .subTitle {
-  margin: 0;
+ margin:0
 }
-
 .imageGroup {
-  width: 60%;
-  height: 100%;
-  display: flex;
-  justify-content: space-around;
-  padding: 0 20%;
+ width:60%;
+ height:100%;
+ display:flex;
+ justify-content:space-around;
+ padding:0 20%
 }
-
 .imageGroup .image {
-  /*! margin: unset; */
 }
-
 .subTitle,
 .role {
-  font-weight: bold;
-  font-style: italic;
+ font-weight:700;
+ font-style:italic
 }
-
 .image~.names {
-  margin-top: 3em;
+ margin-top:3em
 }
-
 .imageGroup .image~.image {
-  margin-left: 3em;
+ margin-left:3em
 }
-
 .names {
-  font-size: 0.8em;
-  margin-top: 3px;
-  margin-bottom: 3px;
+ font-size:.8em;
+ margin-top:3px;
+ margin-bottom:3px
 }
-
 .title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 2em;
-  margin-top: 2em;
+ font-size:1.2em;
+ font-weight:700;
+ margin-bottom:2em;
+ margin-top:2em
 }
-
 .block {
-  display: flex;
-  flex-direction: column;
+ display:flex;
+ flex-direction:column
 }
-
 .subTitle {
-  margin-bottom: 2em;
-  margin-top: 5em;
-  font-size: 0.8em;
+ margin-bottom:2em;
+ margin-top:5em;
+ font-size:.8em
 }
-
 .image~.subTitle {
-  margin-top: 2em;
+ margin-top:2em
 }
-
 .pair {
-  display: flex;
-  margin-top: 10px;
-  margin-bottom: 10px;
+ display:flex;
+ margin-top:10px;
+ margin-bottom:10px
 }
-
 .pair>* {
-  flex: 1;
+ flex:1
 }
-
 .pair>.name,
 .pair>.nameGroup {
-  text-align: left;
-  margin-left: 0.4em;
+ text-align:left;
+ margin-left:.4em
 }
-
 .pair>.role {
-  text-align: right;
-  margin-right: 0.4em;
+ text-align:right;
+ margin-right:.4em
 }
-
 .text {
-  margin-top: 1em;
-  font-size: 0.8em;
-  white-space: break-spaces;
+ margin-top:1em;
+ font-size:.8em;
+ white-space:break-spaces
 }
-
 .image {
-  max-width: 75%;
-  margin: auto;
-  height: fit-content;
+ max-width:75%;
+ margin:auto;
+ height:fit-content
 }
-
 .stay {
-  opacity: 1 !important;
+ opacity:1!important
 }
-
 .fade {
-  animation-name: fade;
-  animation-timing-function: ease;
+ animation-name:fade;
+ animation-timing-function:ease
 }
-
 @keyframes fade {
-
-  /* Fade out by reducing opacity to 0 */
-  0% {
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  80% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
+ 0% {
+  opacity:0
+ }
+ 20% {
+  opacity:1
+ }
+ 80% {
+  opacity:1
+ }
+ 100% {
+  opacity:0
+ }
 }
