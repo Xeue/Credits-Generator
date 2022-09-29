@@ -355,12 +355,6 @@ function updateBlock($element, value) {
   } else {
     findClass = type;
   }
-  let $target = $targetBlock.find("."+findClass);
-  if ($target.length == 0) {
-    l("Depreceated?");
-    let html = buildProperty(type, dummyBlock);
-    $targetBlock.append(html);
-  }
   switch (type) {
     case "spacing":
       $target.css("height",value+"em");
@@ -402,6 +396,9 @@ function updateBlock($element, value) {
       l($element);
       l(value);
       l(type);
+  }
+  if ($targetBlock.closest(".endFadeGroup").length != 0) {
+    updateFadesObject();
   }
 }
 

@@ -57,6 +57,9 @@
             .cont {
                 display: flex;
             }
+            .fadesLength {
+                margin-top: 10px;
+            }
         </style>
     </head>
     <body>
@@ -67,13 +70,19 @@
             <button class="" onclick="triggerStart()" type="button">Run</button>
             <div style="width: 10px;"></div>
             <button class="" onclick="reset()" type="button">Reset</button>
-            <!--<div style="width: 10px;"></div>
-            <button class="" onclick="toggleFull()" type="button">Fullscreen</button>-->
+            <div style="width: 10px;"></div>
+            <button class="" onclick="toggleUI()" type="button">Hide UI</button>
+        </div>
+        <div class="fadesLength">
+            <span>The end fades will take up: </span>
+            <span id="fadesTime"></span>
+            <span> seconds of the above duration</span>
         </div>
         <script type="text/javascript">
+            let fadesDuration = 0;
             function triggerStart() {
                 if (window.opener) {
-                    let time = document.getElementById("time").value;
+                    let time = document.getElementById("time").value - fadesDuration;
                     window.opener.postMessage('{"command":"setTime","time":'+time+'}', "*");
                     window.opener.postMessage('{"command":"hideUI"}', "*");
                     window.opener.postMessage('{"command":"run"}', "*");
@@ -100,6 +109,23 @@
                     window.opener.postMessage('{"command":"setTime","time":'+time+'}', "*");
                 }
             }
+            window.addEventListener("message", (e)=>{
+                const command = e.data.command;
+                const data = e.data.data;
+                switch (command) {
+                    case "fadesDuration":
+                        fadesDuration = data.reduce((a, b) => a + b, 0);
+                        document.getElementById("fadesTime").innerHTML = fadesDuration;
+                        break;
+                
+                    default:
+                        break;
+                }
+            });
+
+            window.addEventListener('load', (e) => {
+                window.opener.postMessage('{"command":"loaded"}', "*");
+            });
         </script>
     </body>
 </html>

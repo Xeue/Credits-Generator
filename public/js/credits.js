@@ -5,30 +5,24 @@ var currentFade = 0;
 var logoCount = 0;
 var timeouts = [];
 
-function endFade(logoCount, logoTotal) {
-  let logoCurrent = logoTotal - logoCount;
-
+function renderFades(endFades) {
   let $cont = $('#creditsLogos');
-  let $subCont = $("<div class='endFadeGroup hidden'></div>");
-  $subCont.attr("id","fadeCont"+(logoCurrent+1));
-
-  $subCont.html(buildBlock(endFades[logoCurrent]));
-  $subCont.data("duration", endFades[logoCurrent].duration);
-
-  $cont.append($subCont);
-
   let $footer = $("#creditsFooter");
+  
+  $footer.data("tabs", endFades.length);
+  for (let index = 0; index < endFades.length; index++) {
+    const fade = endFades[index];
+    let $subCont = $("<div class='endFadeGroup hidden'></div>");
+    $subCont.attr("id",`fadeCont${index+1}`);
+    $subCont.html(buildBlock(fade));
+    $subCont.data("duration", fade.duration);
+    $cont.append($subCont);
 
-  let $button = $("<button id='fade"+(logoCurrent+1)+"' class='tabButton'>Fade "+(logoCurrent+1)+"</button>");
-
-  $footer.append($button);
-  $footer.data("tabs", (logoCurrent+1));
-
-  --logoCount;
-  if (logoCount > 0) {
-    endFade(logoCount, logoTotal);
+    let $button = $(`<button id='fade${index+1}' class='tabButton'>Fade ${index+1}</button>`);
+    $footer.append($button);
   }
 }
+
 function buildBlock(block) {
   let subHtml = "<section class='block'>";
   for (const property in block) {
@@ -118,7 +112,7 @@ function buildProperty(property, block) {
   return subHtml;
 }
 
-var getCurrentScriptPathWithTrailingSlash = function (document) {
+function pagePath() {
   if (!document || typeof document !== 'object') { return ''; }
   if (!document.currentScript) { return ''; }
   if (!document.currentScript.src || typeof document.currentScript.src !== 'string') { return ''; }
@@ -131,7 +125,7 @@ function loadScript(source) {
     var script = document.createElement("script");
     script.onload = resolve;
     script.onerror = reject;
-    script.src = getCurrentScriptPathWithTrailingSlash(document) + source;
+    script.src = pagePath() + source;
     document.getElementsByTagName("head")[0].appendChild(script);
   });
 }

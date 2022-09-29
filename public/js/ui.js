@@ -206,62 +206,78 @@ function selectForMenu($ele, prop) {
     }
 }
 
+function toggleUI() {
+  $("header").toggleClass("hidden");
+  $("footer").toggleClass("hidden");
+  $("#creditsScroller").removeClass("noScroll");
+  $("html").removeClass("editing");
+  $("html").removeClass("settings");
+  $("#editorCont").removeClass("open");
+}
+
+function reset() {
+  $("#creditsScroller").css("transition", "");
+  $("#creditsScroller").css("top", "");
+  $("#creditsScroller").addClass("noScroll");
+  for (var i=0; i<timeouts.length; i++) {
+    clearTimeout(timeouts[i]);
+  }
+  $("#creditsButton").click();
+}
+
 function initRunInBrowser() {
-    window.open("/run", 1, "directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=750,height=70");
+  runWindow = window.open("/run", 1, "directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=900,height=128");
 }
 
 function runCommand(event) {
-    obj = JSON.parse(event.data);
-    switch (obj.command) {
-        case "run":
-            runCredits();
-            break;
-        case "toggleUI":
-            $("header").toggleClass("hidden");
-            $("footer").toggleClass("hidden");
-            $("#creditsScroller").toggleClass("noScroll");
-            $("#creditsScroller").css("transition", "");
-            $("#creditsScroller").css("top", "");
-            $("html").removeClass("editing");
-            $("html").removeClass("settings");
-            $("#editorCont").removeClass("open");
-            break;
-        case "hideUI":
-            $("header").addClass("hidden");
-            $("footer").addClass("hidden");
-            $("#creditsScroller").addClass("noScroll");
-            $("#creditsScroller").css("transition", "");
-            $("#creditsScroller").css("top", "");
-            $("html").removeClass("editing");
-            $("html").removeClass("settings");
-            $("#editorCont").removeClass("open");
-            break;
-        case "setTime":
-            runTime = parseInt(obj.time);
-            break;
-        case "reset":
-            $("header").removeClass("hidden");
-            $("footer").removeClass("hidden");
-            $("#creditsScroller").removeClass("noScroll");
-            $("#creditsScroller").css("transition", "");
-            $("#creditsScroller").css("top", "");
-            for (var i=0; i<timeouts.length; i++) {
-                clearTimeout(timeouts[i]);
-            }
-            break;
-        case "full":
-            if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            } else {
-                console.log(document.documentElement);
-                document.documentElement.requestFullscreen();
-            }
-            break;
-        default:
+  obj = JSON.parse(event.data);
+  switch (obj.command) {
+    case "loaded":
+      sendRunMessage("fadesDuration");
+      break;
+    case "run":
+      runCredits();
+      break;
+    case "toggleUI":
+      toggleUI()
+      break;
+    case "hideUI":
+      $("header").addClass("hidden");
+      $("footer").addClass("hidden");
+      $("#creditsScroller").addClass("noScroll");
+      $("html").removeClass("editing");
+      $("html").removeClass("settings");
+      $("#editorCont").removeClass("open");
+      break;
+    case "setTime":
+      runTime = parseInt(obj.time);
+      break;
+    case "reset":
+      reset();
+      break;
+    default:
 
-    }
+  }
+}
+
+function sendRunMessage(type) {
+  if (!runWindow) return
+  switch (type) {
+    case "fadesDuration":
+      let data;
+      if (!endFades) {
+        data = [0];
+      } else {
+        data = endFades.map((val)=>val.duration)
+      }
+      runWindow.postMessage({
+        "command":"fadesDuration",
+        "data": data
+      });
+      break;
+    default:
+      break;
+  }
 }
 
 function doSave() {
@@ -734,9 +750,9 @@ $(document).ready(function() {
       if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
         if (document.exitFullscreen) {
           document.exitFullscreen();
-          $("header").removeClass("hidden");
-          $("footer").removeClass("hidden");
-          $("#creditsScroller").removeClass("noScroll");
+          //$("header").removeClass("hidden");
+          //$("footer").removeClass("hidden");
+          //$("#creditsScroller").removeClass("noScroll");
           $("#creditsScroller").css("transition", "");
           $("#creditsScroller").css("top", "");
           for (var i=0; i<timeouts.length; i++) {
@@ -745,14 +761,14 @@ $(document).ready(function() {
         }
       } else {
         document.documentElement.requestFullscreen();
-        $("header").toggleClass("hidden");
-        $("footer").toggleClass("hidden");
-        $("#creditsScroller").toggleClass("noScroll");
+        //$("header").toggleClass("hidden");
+        //$("footer").toggleClass("hidden");
+        //$("#creditsScroller").toggleClass("noScroll");
         $("#creditsScroller").css("transition", "");
         $("#creditsScroller").css("top", "");
-        $("html").removeClass("editing");
-        $("html").removeClass("settings");
-        $("#editorCont").removeClass("open");
+        //$("html").removeClass("editing");
+        //$("html").removeClass("settings");
+        //$("#editorCont").removeClass("open");
       }
     })
   
@@ -1005,4 +1021,13 @@ jQuery.each( [ "put", "delete" ], function( i, method ) {
       success: callback
     });
   };
+});
+
+$(document).keyup(function(e) {
+  if (e.key === "Escape") {
+    if ($("#creditsFooter").hasClass("hidden")) {
+      toggleUI();
+      reset();
+    }
+ }
 });

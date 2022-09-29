@@ -130,22 +130,13 @@ function makeObject(element) {
 }
 
 function getCreditsJSON() {
-  var creditsObject = [];
-  $("#creditsCont").children().each(function(){
-    let credit = makeObject(this);
-    creditsObject.push(credit);
-  });
+  updateCreditsObject();
+  updateFadesObject();
 
-  var fadesObject = [];
-  $("#creditsLogos").children().children().each(function(){
-    let fade = makeObject(this);
-    fadesObject.push(fade);
-  });
+  let returnStr = "var credits = "+JSON.stringify(credits, null, "\t")+"\n";
 
-  let returnStr = "var credits = "+JSON.stringify(creditsObject, null, "\t")+"\n";
-
-  if (fadesObject.length != 0) {
-    returnStr += "var endFades = "+JSON.stringify(fadesObject, null, "\t")+"\n";
+  if (endFades.length != 0) {
+    returnStr += "var endFades = "+JSON.stringify(endFades, null, "\t")+"\n";
   }
 
   if (settings.length != 0) {
@@ -153,6 +144,23 @@ function getCreditsJSON() {
   }
 
   return returnStr;
+}
+
+function updateCreditsObject() {
+  credits = [];
+  $("#creditsCont").children().each(function(){
+    let credit = makeObject(this);
+    credits.push(credit);
+  });
+}
+
+function updateFadesObject() {
+  endFades = [];
+  $("#creditsLogos").children().children().each(function(){
+    let fade = makeObject(this);
+    endFades.push(fade);
+  });
+  sendRunMessage("fadesDuration");
 }
 
 function getDummyJSON() {
@@ -178,13 +186,12 @@ function load() {
     $('#creditsCont').html(html);
 
     if (typeof endFades !== 'undefined') {
-      var logoCount = endFades.length;
-      var logoTotal = endFades.length;
-      endFade(logoCount, logoTotal);
+      renderFades(endFades);
     }
     fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
     addBlockMouseOvers();
     updateSettings();
+    sendRunMessage("fadesDuration");
   });
   $("#creditsButton").click();
 }
