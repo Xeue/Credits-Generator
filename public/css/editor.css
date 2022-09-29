@@ -659,6 +659,10 @@ dialog figure {
   margin-top: 10px
 }
 
+.hidden + #saveNew {
+  margin-top: 0;
+}
+
 #saveFile,
 #uploadFile {
   margin-bottom: 10px
