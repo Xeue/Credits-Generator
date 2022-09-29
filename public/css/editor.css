@@ -156,7 +156,8 @@ main footer {
   padding: 7px;
   margin: 5px;
   border-radius: 8px;
-  border-top: 1px solid var(--accentBackgroundBorder)
+  border-top: 1px solid var(--accentBackgroundBorder);
+  font-size: initial;
 }
 
 header>div {
