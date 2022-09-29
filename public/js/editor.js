@@ -1,4 +1,5 @@
 /*jshint esversion: 6 */
+
 function editorHover($block) {
   if (!$("html").hasClass("editing")) {
     return;
@@ -477,7 +478,7 @@ function orderEditor(curIndex, newIndex) {
   }
 }
 
-function updateSettings() {
+function updateSettings(refresh = true) {
   $("#settingsCSS").remove();
   let $settings = $("<style id='settingsCSS' type='text/css'></style>");
   let style = $settings[0];
@@ -505,7 +506,7 @@ function updateSettings() {
     $("html").removeClass("light");
   }
 
-  if ($("html").hasClass("settings")) {
+  if ($("html").hasClass("settings") && refresh) {
     settingsDoOpen();
   } else if ($("html").hasClass("editing")) {
     editorClose();
@@ -539,26 +540,6 @@ function isLight(color) {
     }
 }
 
-function listFonts() {
-  let { fonts } = document;
-  const it = fonts.entries();
-
-  let arr = [];
-  let done = false;
-
-  while (!done) {
-    const font = it.next();
-    if (!font.done) {
-      arr.push(font.value[0].family);
-    } else {
-      done = font.done;
-    }
-  }
-
-  // converted to set then arr to filter repetitive values
-  return [...new Set(arr)];
-}
-
 function settingsOpen() {
   $("html").removeClass("editing");
 
@@ -580,41 +561,48 @@ function settingsToggle() {
 }
 
 function settingsDoOpen() {
+  dataOptions = [
+    {
+      "prop": "background-color",
+      "name": "Background Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"],
+      "helper": "colourPicker"
+    },{
+      "prop": "background-image",
+      "name": "Background Image - url(path/to/image)",
+      "values": Object.values(images[currentProject]).map((val)=>`url("saves/${currentProject}/images/${val}")`),
+      "helper": "values"
+    },{
+      "prop": "color",
+      "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"],
+      "helper": "colourPicker"
+    },{
+      "prop": "font-family",
+      "name": "Font",
+      "values": fonts.map((val)=>val.split('.')[0]),
+      "helper": "values"
+    },{
+      "prop": "font-size",
+      "name": "Font Size - units of px, pt, % & em",
+      "values": ["8pt","10pt","12pt","16pt","20pt","24pt","28pt","32pt","36pt","40pt","44pt","48pt"],
+      "helper": "values"
+    },{
+      "prop": "font-weight",
+      "name": "Font Weight - bold, bolder, lighter & normal",
+      "values": ["lighter","normal","bold","bolder"],
+      "helper": "values"
+    },{
+      "prop": "font-style",
+      "name": "Font Style - italic & normal",
+      "values": ["italic","normal"],
+      "helper": "values"
+    }
+  ]
   $("html").addClass("settings");
   $(".inEditor").removeClass("inEditor");
   let $editor = $("#editorCont");
   $editor.html("");
-  let dataOptions = [
-    {
-      "prop": "background-color",
-      "name": "Background Colour - rgba(255,255,255,1), #rrggbbaa",
-      "values": ["Black","White","Red","Green","Blue"]
-    },{
-      "prop": "background-image",
-      "name": "Background Image - url(path/to/image)",
-      "values": [`url('saves/${currentProject}/images/IMAGE_NAME.png')`]
-    },{
-      "prop": "color",
-      "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
-      "values": ["Black","White","Red","Green","Blue"]
-    },{
-      "prop": "font-family",
-      "name": "Font",
-      "values": listFonts()
-    },{
-      "prop": "font-size",
-      "name": "Font Size - units of px, pt, % & em",
-      "values": ["8pt","10pt","12pt","16pt","20pt","24pt","28pt","32pt","36pt","40pt","44pt","48pt"]
-    },{
-      "prop": "font-weight",
-      "name": "Font Weight - bold, bolder, lighter & normal",
-      "values": ["lighter","normal","bold","bolder"]
-    },{
-      "prop": "font-style",
-      "name": "Font Style - italic & normal",
-      "values": ["italic","normal"]
-    }
-  ];
   let $dataList = $("<datalist id='CSSList'></datalist>");
   for (var i = 0; i < dataOptions.length; i++) {
     let $dataOption = $("<option value='"+dataOptions[i].prop+"'>"+dataOptions[i].name+"</option>");
@@ -640,7 +628,7 @@ function settingsDoOpen() {
       $editor.append(settingsMakeProperty(properties[i], "notActive"));
     }
   }
-
+  jscolor.install();
   $editor.addClass("open");
 }
 
@@ -677,7 +665,16 @@ function settingsMakeProperty(setting, state) {
       $key.val(key);
       $key.data("prev", key);
       $pair.append($key);
-      let $value = $("<input class='settingValueInput settingProp'>");
+
+      let list = "";
+      if (key == "color" || key == "background-color") {
+        list = `data-jscolor="{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333',
+        palette:'rgba(0,0,0,0) #fff #808080 #000 #996e36 #f55525 #ffe438 #88dd20 #22e0cd #269aff #bb1cd4',
+        paletteCols:11, hideOnPaletteClick:true}"`;
+      } else if (dataOptions.map((val)=>val.prop).includes(key)) {
+        list = `list="${key}"`;
+      }
+      let $value = $(`<input class='settingValueInput settingProp'${list}>`);
       $value.val(value);
       $pair.append($value);
       $rulesGroup.append($pair);

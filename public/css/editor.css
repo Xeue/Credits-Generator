@@ -759,6 +759,9 @@ dialog footer button:first-of-type {
   border-top: 1px solid var(--accentBackgroundBorder);
   border-bottom: 3px solid var(--accentBackground);
   color: var(--text);
+  font-style: normal;
+  font-size: 3vh;
+  font-weight: normal;
 }
 
 #editorCont.open {

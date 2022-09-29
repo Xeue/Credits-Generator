@@ -423,12 +423,7 @@ function doUploadSave() {
         }
       }
     }).done(function(data) {
-      saves = data.saves;
-      for (const key in saves) {
-        images[key] = saves[key].images;
-        projectFonts[key] = saves[key].fonts;
-        fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
-      }
+      updateSaves(data.saves);
       if (!$("#gallery").hasClass("hidden")) {
         doOpenGallery();
       }
@@ -510,6 +505,31 @@ function doOpenGallery() {
       $("#galleryImages").append($image);
     }
   }
+}
+
+function updateSaves(saves) {
+  for (const key in saves) {
+    projectFonts[key] = saves[key].fonts;
+    images[key] = saves[key].images;
+  }
+  fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
+
+  let $list = $("#font-family");
+  $list.html();
+  fonts.forEach(font => {
+    let fontArr = font.split('.');
+    fontArr.pop();
+    const fontName = fontArr.join('.');
+    let $dataOption = $(`<option value='${fontName}'>${fontName}</option>`);
+    $list.append($dataOption);
+  });
+
+  let $backgroundImg = $("#background-image");
+  $backgroundImg.html();
+  images[currentProject].forEach(image => {
+    let $dataOption = $(`<option value='${image}'>${image}</option>`);
+    $backgroundImg.append($dataOption);
+  });
 }
 
 var mouseY = 0;
@@ -895,21 +915,11 @@ $(document).ready(function() {
         $target.closest(".galleryPreviews").toggleClass("biggerImages");
       } else if ($target.hasClass("galleryDelete")) {
         $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
-          saves = data.saves;
-          for (const key in saves) {
-            images[key] = saves[key].images;
-            projectFonts[key] = saves[key].fonts;
-            fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
-          }
+          updateSaves(data.saves);
           doOpenGallery();
         }).fail(function(data) {
           alert("Failed to delete font error: "+JSON.stringify(data.responseJSON.error));
-          saves = data.responseJSON.saves;
-          for (const key in saves) {
-            images[key] = saves[key].images;
-            projectFonts[key] = saves[key].fonts;
-            fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
-          }
+          updateSaves(data.responseJSON.saves);
           doOpenGallery();
         });
       } else if ($("html").hasClass("editing") && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
@@ -949,8 +959,7 @@ $(document).ready(function() {
         delete cls[prev];
         cls[value] = $target.next().val();
         $target.next().attr("list", value);
-        updateSettings();
-        settingsOpen();
+        updateSettings(true);
       } else if ($target.hasClass("settingValueInput")) {
         let $cont = $target.closest(".settingProperty");
         let setting = $cont.data("setting");
@@ -961,8 +970,7 @@ $(document).ready(function() {
         let key = $target.prev().val();
   
         cls[key] = value;
-        updateSettings();
-        settingsOpen();
+        updateSettings(false);
       }
     });
   
