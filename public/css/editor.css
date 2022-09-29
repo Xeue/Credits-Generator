@@ -870,7 +870,7 @@ dialog footer button:first-of-type {
   transition: .1s;
   margin: auto
 }
-.columns:hover {
+.editing .columns:hover {
   column-gap: 40px;
 }
 .columns {
