@@ -8,6 +8,20 @@
         fonts[key] = saves[key].fonts;
     }
     const defaultProject = project ? project : Object.keys(saves)[0];
+    let hide = "";
+    let noScroll = "";
+    if (render) {
+      hide = "hidden";
+      noScroll = "noScroll";
+    }
+    let fpsCalc = fps;
+    let framesCalc = frames;
+    if (typeof fps === "undefined") {
+      fpsCalc = 25;
+    }
+    if (typeof frames === "undefined") {
+      framesCalc = 250;
+    }
 %>
 
 <html lang="en">
@@ -42,16 +56,16 @@
         let runWindow;
         var endFades;
         const loadedEvent = new Event('loaded');
+        const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         const defaultProject = "<%=defaultProject%>";
         window.addEventListener('loaded', (e) => {
           loaded = true;
           <% if (render) { %>
-            toggleUI();
-            reset();
-            processRenderInfo(<%=fps%>, <%=frames%>, <%=resolution%>);
+            processRenderInfo(<%=fpsCalc%>, <%=framesCalc%>);
+            window.dispatchEvent(renderReadyEvent);
           <% } %>
-          console.log("Loaded");
+          console.log("Container loaded");
         }, false);
     </script>
     <script src="js/builder.js"></script>
@@ -62,8 +76,9 @@
   </head>
 
   <body id="mainBody" class="background">
+    <iframe id="downloadIframe" style="display:none;"></iframe>
     <main id="scene" class="background creditsBody">
-      <header>
+      <header class="<%=hide%>">
         <select id="loadFile" data-projects="<%- Object.keys(saves).join(",") %>">
             <% for (const save in saves) {%>
                 <option id='proj_<%-save%>>' value='<%-save%>' data-versions="<%- Array(saves[save].count - 1 + 1).fill().map((_, idx) => 1 + idx).join(',') %>"><%-save%></option>
@@ -92,7 +107,7 @@
         <button id="settings" class="right">Settings</button>
       </header>
 
-      <div id="creditsScroller">
+      <div id="creditsScroller" class="<%=noScroll%>">
         <div id="creditsCont">
         </div>
       </div>
@@ -101,11 +116,14 @@
 
       </div>
 
-      <footer id="creditsFooter">
+      <footer id="creditsFooter" class="<%=hide%>">
         <button id="creditsButton" class="tabButton active">Main</button>
         <button id='newFade'>+</button>
       </footer>
     </main>
+    
+    <% if (!render) { %>
+
     <aside id="editorCont">
     </aside>
 
@@ -300,6 +318,7 @@
     <menu>
       <button id="menuMoveUp">Move Up</button><button id="menuMoveDown">Move Down</button><button id="menuDelete">Delete</button>
     </menu>
+    <% } %>
   </body>
 
 </html>

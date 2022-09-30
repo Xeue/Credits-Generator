@@ -20,6 +20,9 @@ import {log, logObj, logs} from './logs.js';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import AmdZip from "adm-zip";
+import puppeteer from 'puppeteer';
+import { spawn } from 'child_process';
+import OS from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +106,39 @@ app.get('/template', (req, res) => {
     const project = req.query.project;
     sendZip(res, [`public/template`], project+"_template");
 })
+app.get('/render', (req, res) => {
+    let project = req.query.project;
+    let version = req.query.version;
+    let fps = parseInt(req.query.fps);
+    let frames = parseInt(req.query.frames);
+    let width = 1920;
+    let height = 1080;
+    switch (parseInt(req.query.resolution)) {
+        case 1440:
+            height = 720;
+            width = 1440;
+            break;
+        case 1920:
+            height = 1080;
+            width = 1920;
+            break;
+        case 3840:
+            height = 2160;
+            width = 3840;
+            break;
+        case 4096:
+            height = 2160;
+            width = 4096;
+            break;
+        default:
+            break;
+    }
+    render(`http://localhost:${config.port}/?render=true&project=${project}&fps=${fps}&frames=${frames}`, `public/saves/${project}/renders/${project}_v${version}.mp4`, fps, frames, width, height).then(()=>{
+        setTimeout(()=>{
+            res.sendFile(`${__dirname}/public/saves/${project}/renders/${project}_v${version}.mp4`);
+        },1000)
+    });
+})
 
 app.delete('/fonts', (req, res) => {
     doDelete(req, res, "fonts");
@@ -163,7 +199,6 @@ function doHome(req, res) {
         let render = false;
         let frames = undefined;
         let fps = undefined;
-        let resolution = undefined;
         let project = undefined;
         if (req.query.render == "true") {
             render = true;
@@ -173,9 +208,6 @@ function doHome(req, res) {
         }
         if (req.query.fps) {
             fps = req.query.fps;
-        }
-        if (req.query.resolution) {
-            resolution = req.query.resolution;
         }
         if (req.query.project) {
             project = req.query.project;
@@ -188,7 +220,6 @@ function doHome(req, res) {
             render: render,
             frames: frames,
             fps: fps,
-            resolution: resolution,
             project: project
         });
     });
@@ -426,4 +457,220 @@ function printConfig() {
             log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`,"H");
         }
     }
+}
+
+
+
+
+/* Rendering */
+
+function createRendererFactory(
+  url,
+  info,
+  { scale = 1, alpha = false, launchArgs = [] } = {},
+) {
+  const DATA_URL_PREFIX = 'data:image/png;base64,'
+  return function createRenderer({ name = 'Worker' } = {}) {
+    const promise = (async () => {
+      const browser = await puppeteer.launch({
+        args: launchArgs,
+      })
+      const page = await browser.newPage()
+      page.on('console', (msg) => log('Host page log: '+msg.text(), "D"))
+      page.on('pageerror', (msg) => logObj('Host page error', msg, "E"))
+      await page.goto(url, { waitUntil: 'load' })
+      await page.setViewport({
+        width: info.width,
+        height: info.height,
+        deviceScaleFactor: scale,
+      })
+      return {browser, page}
+    })()
+    let rendering = false
+    return {
+      async render(i) {
+        if (rendering) {
+          throw new Error('render() may not be called concurrently!')
+        }
+        rendering = true
+        try {
+          const marks = [Date.now()]
+          const {page} = await promise
+          marks.push(Date.now())
+          const result = await page.evaluate(`seekToFrame(${i})`)
+          marks.push(Date.now())
+          const buffer =
+            typeof result === 'string' && result.startsWith(DATA_URL_PREFIX)
+              ? Buffer.from(result.substr(DATA_URL_PREFIX.length), 'base64')
+              : await page.screenshot({
+                  clip: { x: 0, y: 0, width: info.width, height: info.height },
+                  omitBackground: alpha,
+                })
+          marks.push(Date.now())
+          log(`${name} render(${i}) finished, timing=${marks
+              .map((v, i, a) => (i === 0 ? null : v - a[i - 1]))
+              .slice(1)}`, "A"
+          )
+          return buffer
+        } finally {
+          rendering = false
+        }
+      },
+      async end() {
+        const { browser } = await promise
+        browser.close()
+      },
+    }
+  }
+}
+
+function createParallelRender(max, rendererFactory) {
+  const available = []
+  const working = new Set()
+  let nextWorkerId = 1
+  let waiting = null
+  function obtainWorker() {
+    if (available.length + working.size < max) {
+      const id = nextWorkerId++
+      const worker = { id, renderer: rendererFactory(`Worker ${id}`) }
+      available.push(worker)
+      log('Spawn worker '+worker.id, "D")
+      if (waiting) waiting.nudge()
+    }
+    if (available.length > 0) {
+      const worker = available.shift()
+      working.add(worker)
+      return worker
+    }
+    return null
+  }
+  const work = async (fn, taskDescription) => {
+    for (;;) {
+      const worker = obtainWorker()
+      if (!worker) {
+        if (!waiting) {
+          let nudge
+          const promise = new Promise((resolve) => {
+            nudge = () => {
+              waiting = null
+              resolve()
+            }
+          })
+          waiting = { promise, nudge }
+        }
+        await waiting.promise
+        continue
+      }
+      try {
+        log(`Worker ${worker.id} is starting ${taskDescription}`, "A")
+        const result = await fn(worker.renderer)
+        available.push(worker)
+        if (waiting) waiting.nudge()
+        return result
+      } catch (e) {
+        worker.renderer.end()
+        throw e
+      } finally {
+        working.delete(worker)
+      }
+    }
+  }
+  return {
+    async render(i) {
+      return work((r) => r.render(i), `render(${i})`)
+    },
+    async end() {
+      return Promise.all(
+        [...available, ...working].map((r) => r.renderer.end()),
+      )
+    },
+  }
+}
+
+function ffmpegOutput(fps, outPath, { alpha }) {
+    let folderArr = outPath.split('.');
+    folderArr.pop();
+    const folder = folderArr.join('.');
+
+    if (!fs.existsSync(folder)){
+        fs.mkdirSync(folder, { recursive: true });
+    }
+  const ffmpeg = spawn('ffmpeg', [
+    ...['-f', 'image2pipe'],
+    ...['-framerate', `${fps}`],
+    ...['-i', '-'],
+    ...(alpha
+      ? [
+          // https://stackoverflow.com/a/12951156/559913
+          ...['-c:v', 'qtrle'],
+
+          // https://unix.stackexchange.com/a/111897
+          // ...['-c:v', 'prores_ks'],
+          // ...['-pix_fmt', 'yuva444p10le'],
+          // ...['-profile:v', '4444'],
+          // https://www.ffmpeg.org/ffmpeg-codecs.html#Speed-considerations
+          // ...['-qscale', '4']
+        ]
+      : [
+          ...['-c:v', 'libx264'],
+          ...['-crf', '16'],
+          ...['-preset', 'ultrafast'],
+          // https://trac.ffmpeg.org/wiki/Encode/H.264#Encodingfordumbplayers
+          ...['-pix_fmt', 'yuv420p'],
+        ]),
+    '-y',
+    outPath,
+  ])
+  ffmpeg.stderr.pipe(process.stderr)
+  ffmpeg.stdout.pipe(process.stdout)
+  return {
+    writePNGFrame(buffer, _frameNumber) {
+      ffmpeg.stdin.write(buffer)
+    },
+    end() {
+      ffmpeg.stdin.end()
+    },
+  }
+}
+
+async function render(url, fileName, fps, frames, width, height) {
+  const info = {
+    width: width,
+    height: height,
+    fps: fps,
+    numberOfFrames: frames
+  }
+  const renderer = createParallelRender(
+    //OS.cpus().length,
+    1,
+    createRendererFactory(url, info, {
+      scale: 1,
+      alpha: false,
+    }, info),
+  )
+  logObj('Rendering mp4 file '+fileName, info);
+
+  const outputs = []
+  if (fileName) {
+    outputs.push(
+      ffmpegOutput(info.fps, fileName, {
+        alpha: false,
+      }),
+    )
+  }
+
+  const promises = []
+  const start = 0
+  const end = info.numberOfFrames
+  for (let i = start; i < end; i++) {
+    promises.push({ promise: renderer.render(i), frame: i })
+  }
+  for (let i = 0; i < promises.length; i++) {
+    log(`Render progress frame ${promises[i].frame} ${i}/${promises.length}`,"D")
+    const buffer = await promises[i].promise
+    for (const o of outputs) o.writePNGFrame(buffer, promises[i].frame)
+  }
+  for (const o of outputs) o.end()
+  log("Rendering mp4 complete");
+  renderer.end()
 }

@@ -163,10 +163,14 @@ function runCredits() {
 
 function seekToFrame(frame) {
   if (!loaded) {
+    console.log("Waiting for load");
     return awaitLoad = new Promise((resolve, reject) => {
-      window.addEventListener('loaded', (e) => {
+      window.addEventListener('renderReady', (e) => {
+        console.log("Ready for rendering");
         renderFrame(frame);
-        resolve();
+        setTimeout(()=>{
+          resolve();
+        }, 200);
       }, false);
     });
   } else {
@@ -195,47 +199,11 @@ const renderDetails = {
   'scrollFrames': 0
 }
 
-function processRenderInfo(fps, frames, resolution) {
-  renderDetails.resolution = resolution ? resolution : $("#renderRes").val();
+function processRenderInfo(fps, frames) {
+  renderDetails.resolution = $("#renderRes").val();
   renderDetails.frameRate = fps ? fps : $("#renderRate").val();
-  renderDetails.renderDuration = $("#renderDuration").val();
+  renderDetails.renderDuration = $("#renderDuration").val() || frames/fps;
   renderDetails.totalFrames = frames ? frames : renderDetails.renderDuration*renderDetails.frameRate;
-  renderDetails.fadesFrames = $("#renderFades").val()*renderDetails.frameRate;
+  renderDetails.fadesFrames = endFades.map((val)=>val.duration).reduce((a, b) => a + b, 0)*renderDetails.frameRate;
   renderDetails.scrollFrames = renderDetails.totalFrames - renderDetails.fadesFrames;
-  let $scene = $("#scene");
-  let width = 1920;
-  let height = 1080;
-  switch (renderDetails.resolution) {
-    case 1440:
-      height = 720;
-      width = 1440;
-      break;
-    case 1920:
-      height = 1080;
-      width = 1920;
-      break;
-    case 3840:
-      height = 2160;
-      width = 3840;
-      break;
-    case 4096:
-      height = 2160;
-      width = 4096;
-      break;
-    default:
-      break;
-  }
-  $scene.css("height", height+"px");
-  $scene.css("width", width+"px");
-}
-
-$("#renderDo").click(function() {
-  processRenderInfo();
-});
-
-function getInfo() {
-  return {
-    "fps": renderDetails.frameRate,
-    "numberOfFrames": renderDetails.totalFrames
-  }
 }

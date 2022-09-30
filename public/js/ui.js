@@ -1,7 +1,7 @@
 function firstTimeCheck() {
     let firstTime = Cookies.get("tutorial");
     if (firstTime != "done") {
-        $("#toutorial").toggleClass("hidden");
+        $("#toutorial").removeClass("hidden");
     }
 }
 
@@ -632,6 +632,28 @@ $(document).ready(function() {
     });
     $("#renderClose").click(function() {
       $("#render").toggleClass("hidden");
+    });
+    $("#renderDo").click(function() {
+      processRenderInfo();
+      $.get('/render', {
+        fps: renderDetails.frameRate,
+        resolution: renderDetails.resolution,
+        frames: renderDetails.totalFrames,
+        project: currentProject,
+        version: currentVersion
+      }).done(function(data) {
+        const a = document.createElement("a");
+        a.style.display = "none";
+        document.body.appendChild(a);
+        type = "text/plain";
+        a.href = window.URL.createObjectURL(
+          new Blob([data], { type })
+        );
+        a.setAttribute("download", `${currentProject}_v${currentVersion}`);
+        a.click();
+        window.URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+      });
     });
 
     $("#galleryButton").click(function() {

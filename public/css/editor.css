@@ -175,7 +175,6 @@ header>div {
 
 #creditsScroller {
   overflow-y: auto;
-  transition: .3s;
   margin-top: -5px;
   margin-bottom: -5px
 }
