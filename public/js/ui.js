@@ -360,8 +360,7 @@ function doSave() {
               $projSel.prepend($option);
 
               $projSel.val(project);
-              $projSel.trigger("change");
-              load();
+              load(project);
             } else {
               $("#proj_"+project).data("versions", versStr);
             }
@@ -433,7 +432,7 @@ function doUploadSave() {
               let $option = $("<option id='proj_"+project+"' value='"+project+"' data-versions='1'>"+project+"</option>");
               $projSel.prepend($option);
               $projSel.val(project);
-              $projSel.change();
+              load(project);
             }
           }
         }
@@ -560,34 +559,13 @@ $(document).ready(function() {
     firstTimeCheck();
   
     $("#loadFile").change(function(){
-      currentProject = $("#loadFile").val();
-
-      let versionString = String($(this).find(":selected").data("versions"));
-      let versions = [];
-      versions = versionString.split(",");
-
-      currentVersion = versions.length;
-
-      $("#loadVersion").html("");
-      for (var i = 0; i < currentVersion; i++) {
-        $("#loadVersion").prepend($("<option value='"+versions[i]+"'>"+versions[i]+"</option>"));
-      }
-  
-      $("#loadFileBut").val(currentProject);
-      $("#loadVersion").val(currentVersion);
-      $load = $("#loadVersionBut");
-      $load.html("");
-      for (var j = 0; j < currentVersion; j++) {
-        $load.append($("<option value='"+versions[j]+"'>"+versions[j]+"</option>"));
-      }
-      $load.append($("<option value='new'>New Version</option>"));
-      load();
+      load($("#loadFile").val());
     });
   
     $("#loadVersion").change(function(){
       currentVersion = $("#loadVersion").val();
       $("#loadVersionBut").val(currentVersion);
-      load();
+      load(currentProject);
     });
   
     $("#loadFileBut").change(function(){
@@ -649,6 +627,13 @@ $(document).ready(function() {
       $("#uploadMedia").addClass("uploadFont");
     });
   
+    $("#renderButton").click(function() {
+      $("#render").toggleClass("hidden");
+    });
+    $("#renderClose").click(function() {
+      $("#render").toggleClass("hidden");
+    });
+
     $("#galleryButton").click(function() {
       doOpenGallery();
       $("#gallery").toggleClass("hidden");
@@ -990,7 +975,7 @@ $(document).ready(function() {
       }
     });
   
-    $("#loadFile").trigger("change");
+    load(defaultProject);
 });
 
 if (document.addEventListener) {

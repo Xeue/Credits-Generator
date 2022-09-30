@@ -164,7 +164,7 @@ header>div {
   pointer-events: none
 }
 
-#creditsBody {
+.creditsBody {
   height: 100%;
   width: 100%;
   display: flex;
@@ -469,6 +469,10 @@ dialog button {
 
 .downloadRow input {
   margin-left: 15px;
+}
+
+.renderLable {
+  font-size: 0.6em;
 }
 
 #galleryImages, #galleryFonts {

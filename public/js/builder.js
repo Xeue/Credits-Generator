@@ -160,6 +160,7 @@ function updateFadesObject() {
     let fade = makeObject(this);
     endFades.push(fade);
   });
+  $("#renderFades").html(endFades.map((val)=>val.duration).reduce((a, b) => a + b, 0));
   sendRunMessage("fadesDuration");
 }
 
@@ -167,7 +168,29 @@ function getDummyJSON() {
   return "var credits = ["+JSON.stringify(dummyBlock, null, "\t")+"]\n var settings = {'background':{'font-weight':'normal','font-style':'italic', 'background-color':'#000000'},'subTitle':{'margin-top':'5em','margin-bottom':'2em'},'text':{'margin-top':'1em','font-size':'0.8em'},'role':{'font-weight':'bold','font-style':'italic'},'title':{'font-size':'1.2em','font-weight':'bold','margin-top':'2em','margin-bottom':'2em'}}";
 }
 
-function load() {
+function load(project) {
+  currentProject = project;
+  $("#loadFile").val(currentProject);
+  let versionString = String($("#loadFile").find(":selected").data("versions"));
+  let versions = [];
+  versions = versionString.split(",");
+
+  currentVersion = versions.length;
+
+  $("#loadVersion").html("");
+  for (var i = 0; i < currentVersion; i++) {
+    $("#loadVersion").prepend($("<option value='"+versions[i]+"'>"+versions[i]+"</option>"));
+  }
+
+  $("#loadFileBut").val(currentProject);
+  $("#loadVersion").val(currentVersion);
+  $load = $("#loadVersionBut");
+  $load.html("");
+  for (var j = 0; j < currentVersion; j++) {
+    $load.append($("<option value='"+versions[j]+"'>"+versions[j]+"</option>"));
+  }
+  $load.append($("<option value='new'>New Version</option>"));
+
   $("#creditsLogos").html("");
   $("#creditsScroller").css("transition", "");
   $("#creditsScroller").css("top", "");
@@ -191,7 +214,8 @@ function load() {
     fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
     addBlockMouseOvers();
     updateSettings();
-    sendRunMessage("fadesDuration");
+    updateFadesObject();
+    window.dispatchEvent(loadedEvent);
   });
   $("#creditsButton").click();
 }

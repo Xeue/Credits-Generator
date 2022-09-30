@@ -9,7 +9,7 @@ let asci = [
 "                                                                                                   "
 ];
 
-const serverVersion = "1.0.0";
+const serverVersion = "2.1.0";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
@@ -160,10 +160,36 @@ function doHome(req, res) {
             }
         }
 
+        let render = false;
+        let frames = undefined;
+        let fps = undefined;
+        let resolution = undefined;
+        let project = undefined;
+        if (req.query.render == "true") {
+            render = true;
+        }
+        if (req.query.frames) {
+            frames = req.query.frames;
+        }
+        if (req.query.fps) {
+            fps = req.query.fps;
+        }
+        if (req.query.resolution) {
+            resolution = req.query.resolution;
+        }
+        if (req.query.project) {
+            project = req.query.project;
+        }
+
         res.render('home', {
             saves: saves,
             globalFonts: fonts,
-            serverName: config.installName
+            serverName: config.installName,
+            render: render,
+            frames: frames,
+            fps: fps,
+            resolution: resolution,
+            project: project
         });
     });
 }

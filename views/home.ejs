@@ -7,6 +7,7 @@
         images[key] = saves[key].images;
         fonts[key] = saves[key].fonts;
     }
+    const defaultProject = project ? project : Object.keys(saves)[0];
 %>
 
 <html lang="en">
@@ -40,6 +41,18 @@
         let dataOptions = [];
         let runWindow;
         var endFades;
+        const loadedEvent = new Event('loaded');
+        let loaded = false;
+        const defaultProject = "<%=defaultProject%>";
+        window.addEventListener('loaded', (e) => {
+          loaded = true;
+          <% if (render) { %>
+            toggleUI();
+            reset();
+            processRenderInfo(<%=fps%>, <%=frames%>, <%=resolution%>);
+          <% } %>
+          console.log("Loaded");
+        }, false);
     </script>
     <script src="js/builder.js"></script>
     <script src="js/editor.js"></script>
@@ -49,7 +62,7 @@
   </head>
 
   <body id="mainBody" class="background">
-    <main id="creditsBody" class="background">
+    <main id="scene" class="background creditsBody">
       <header>
         <select id="loadFile" data-projects="<%- Object.keys(saves).join(",") %>">
             <% for (const save in saves) {%>
@@ -69,6 +82,8 @@
           Download
         </button><button id="galleryButton">
           Gallery
+        </button><button id="renderButton">
+          Render
         </button>
         <button id="help" class="right">Help</button>
         <button id="full" class="right">Fullscreen</button>
@@ -112,6 +127,46 @@
           <button id="uploadMediaButton" type="button">Upload Images</button>
           <button id="uploadFontButton" type="button">Upload Fonts</button>
           <button id="galleryButClose" type="button">Close</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="render" class="hidden">
+      <form id="renderForm" action="/" method="POST">
+        <header>Render</header>
+        <section id="renderCont">
+          <div class="label">Resolution and framerate</div>
+          <div>
+            <select id="renderRes">
+              <option value='' selected disabled hidden>Resolution</option>
+              <option value='1440'>1440 x 720</option>
+              <option value='1920'>1920 x 1080</option>
+              <option value='3840'>3840 x 2160</option>
+              <option value='4096'>4096 x 2160</option>
+            </select>
+            <select id="renderRate">
+              <option value='' selected disabled hidden>Framerate</option>
+              <option value='24'>24p</option>
+              <option value='25'>25p</option>
+              <option value='30'>30p</option>
+              <option value='48'>48p</option>
+              <option value='50'>50p</option>
+              <option value='60'>60p</option>
+            </select>
+          </div>
+          <div class="label">Duration (seconds)</div>
+          <div>
+            <input type="text" id="renderDuration"></input>
+            <div class="renderLable">
+              <span>The end fades will take up: </span>
+              <span id="renderFades"></span>
+              <span> seconds of the total duration</span>
+            </div>
+          </div>
+        </section>
+        <footer>
+          <button id="renderDo" type="button">Render</button>
+          <button id="renderClose" type="button">Cancel</button>
         </footer>
       </form>
     </dialog>
