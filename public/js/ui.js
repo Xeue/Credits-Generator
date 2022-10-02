@@ -649,7 +649,7 @@ $(document).ready(function() {
         a.href = window.URL.createObjectURL(
           new Blob([data], { type })
         );
-        a.setAttribute("download", `${currentProject}_v${currentVersion}`);
+        a.setAttribute("download", `${currentProject}_credits`);
         a.click();
         window.URL.revokeObjectURL(a.href);
         document.body.removeChild(a);

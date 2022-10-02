@@ -23,6 +23,7 @@ import AmdZip from "adm-zip";
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 import OS from 'os';
+import events from 'events';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,9 +134,10 @@ app.get('/render', (req, res) => {
         default:
             break;
     }
-    render(`http://localhost:${config.port}/?render=true&project=${project}&fps=${fps}&frames=${frames}`, `public/saves/${project}/renders/${project}_v${version}.mp4`, fps, frames, width, height).then(()=>{
+    render(`http://localhost:${config.port}/?render=true&project=${project}&fps=${fps}&frames=${frames}`, `public/saves/${project}/renders/${version}/${project}_credits.mov`, fps, frames, width, height, true)
+    .then(()=>{
         setTimeout(()=>{
-            res.sendFile(`${__dirname}/public/saves/${project}/renders/${project}_v${version}.mp4`);
+            sendZip(res, [`public/saves/${project}/renders/${version}/`], `${project}_credits`);
         },1000)
     });
 })
@@ -588,89 +590,111 @@ function createParallelRender(max, rendererFactory) {
 }
 
 function ffmpegOutput(fps, outPath, { alpha }) {
-    let folderArr = outPath.split('.');
+    let folderArr = outPath.split('/');
     folderArr.pop();
-    const folder = folderArr.join('.');
+    const folder = folderArr.join('/');
 
     if (!fs.existsSync(folder)){
         fs.mkdirSync(folder, { recursive: true });
     }
-  const ffmpeg = spawn('ffmpeg', [
-    ...['-f', 'image2pipe'],
-    ...['-framerate', `${fps}`],
-    ...['-i', '-'],
-    ...(alpha
-      ? [
-          // https://stackoverflow.com/a/12951156/559913
-          ...['-c:v', 'qtrle'],
+    let debugLevel = 'error';
+    switch (logs.loggingLevel) {
+        case "W":
+            debugLevel = 'warning'
+            break;
+        case "D":
+            debugLevel = 'info'
+            break;
+        case "A":
+            debugLevel = 'debug'
+            break;
+        default:
+            break;
+    }
+    const ffmpeg = spawn('ffmpeg', [
+        ...['-hide_banner', '1'],
+        ...['-loglevel', debugLevel],
+        ...['-stats', '1'],
+        ...['-f', 'image2pipe'],
+        ...['-framerate', `${fps}`],
+        ...['-i', '-'],
+        ...(alpha
+            ? [
+                ...['-c:v', 'qtrle'],
+            ]
+            : [
+                ...['-c:v', 'libx264'],
+                ...['-crf', '16'],
+                ...['-preset', 'ultrafast'],
+                ...['-pix_fmt', 'yuv420p'],
+            ]),
+        '-y',
+        outPath,
+    ])
+    log("Started FFMPEG", ["D","FFMPEG"]);
 
-          // https://unix.stackexchange.com/a/111897
-          // ...['-c:v', 'prores_ks'],
-          // ...['-pix_fmt', 'yuva444p10le'],
-          // ...['-profile:v', '4444'],
-          // https://www.ffmpeg.org/ffmpeg-codecs.html#Speed-considerations
-          // ...['-qscale', '4']
-        ]
-      : [
-          ...['-c:v', 'libx264'],
-          ...['-crf', '16'],
-          ...['-preset', 'ultrafast'],
-          // https://trac.ffmpeg.org/wiki/Encode/H.264#Encodingfordumbplayers
-          ...['-pix_fmt', 'yuv420p'],
-        ]),
-    '-y',
-    outPath,
-  ])
-  ffmpeg.stderr.pipe(process.stderr)
-  ffmpeg.stdout.pipe(process.stdout)
-  return {
-    writePNGFrame(buffer, _frameNumber) {
-      ffmpeg.stdin.write(buffer)
-    },
-    end() {
-      ffmpeg.stdin.end()
-    },
-  }
+    ffmpeg.stdout.setEncoding('utf8');
+    ffmpeg.stdout.on('data', function(data) {
+        log(data, ["D","FFMPEG", logs.p, false]);
+    });
+
+    ffmpeg.stderr.setEncoding('utf8');
+    ffmpeg.stderr.on('data', function(data) {
+        log(data, ["E","FFMPEG", logs.r, false]);
+    });
+
+    return {
+        writePNGFrame(buffer, _frameNumber) {
+            ffmpeg.stdin.write(buffer)
+        },
+        end() {
+            ffmpeg.stdin.end();
+            return new Promise((resolve) => {
+                ffmpeg.on('close', function() {
+                    log('Render complete', ["C","FFMPEG"]);
+                    resolve();
+                });
+            });
+        }
+    }
 }
 
-async function render(url, fileName, fps, frames, width, height) {
-  const info = {
-    width: width,
-    height: height,
-    fps: fps,
-    numberOfFrames: frames
-  }
-  const renderer = createParallelRender(
-    //OS.cpus().length,
-    1,
-    createRendererFactory(url, info, {
-      scale: 1,
-      alpha: false,
-    }, info),
-  )
-  logObj('Rendering mp4 file '+fileName, info);
-
-  const outputs = []
-  if (fileName) {
-    outputs.push(
-      ffmpegOutput(info.fps, fileName, {
-        alpha: false,
-      }),
+async function render(url, fileName, fps, frames, width, height, alpha) {
+    const info = {
+        width: width,
+        height: height,
+        fps: fps,
+        numberOfFrames: frames
+    }
+     const renderer = createParallelRender(
+        //OS.cpus().length,
+        1,
+        createRendererFactory(url, info, {
+            scale: 1,
+            alpha: alpha,
+        }, info),
     )
-  }
+    logObj('Rendering mov file '+fileName, info);
 
-  const promises = []
-  const start = 0
-  const end = info.numberOfFrames
-  for (let i = start; i < end; i++) {
-    promises.push({ promise: renderer.render(i), frame: i })
-  }
-  for (let i = 0; i < promises.length; i++) {
-    log(`Render progress frame ${promises[i].frame} ${i}/${promises.length}`,"D")
-    const buffer = await promises[i].promise
-    for (const o of outputs) o.writePNGFrame(buffer, promises[i].frame)
-  }
-  for (const o of outputs) o.end()
-  log("Rendering mp4 complete");
-  renderer.end()
+    const output = ffmpegOutput(
+        info.fps,
+        fileName, {
+            alpha: alpha,
+        }
+    )
+
+    const promises = []
+    const start = 0
+    const end = info.numberOfFrames
+    for (let i = start; i < end; i++) {
+        promises.push({ promise: renderer.render(i), frame: i })
+    }
+    for (let i = 0; i < promises.length; i++) {
+        log(`Render progress frame ${promises[i].frame} ${i}/${promises.length}`,"D")
+        const buffer = await promises[i].promise
+        output.writePNGFrame(buffer, promises[i].frame)
+    }
+    await output.end();
+    renderer.end();
+    log("Rendering completed");
 }

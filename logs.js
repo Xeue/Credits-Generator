@@ -5,13 +5,13 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const r = "\x1b[31m";
-export const g = "\x1b[32m";
-export const y = "\x1b[33m";
-export const b = "\x1b[34m";
-export const p = "\x1b[35m";
-export const c = "\x1b[36m";
-export const w = "\x1b[37m";
+export const r = "\x1b[31m"; //red
+export const g = "\x1b[32m"; //green
+export const y = "\x1b[33m"; //yellow
+export const b = "\x1b[34m"; //blue
+export const p = "\x1b[35m"; //pruple
+export const c = "\x1b[36m"; //cyan
+export const w = "\x1b[37m"; //white
 export const reset = "\x1b[0m";
 export const dim = "\x1b[2m";
 export const bright = "\x1b[1m";
@@ -118,53 +118,99 @@ export function log(message, level, lineNumInp) {
         }
     }
 
-    if (debugLineNum == false || debugLineNum == "false") {
-        lineNum = "";
-    }
-
     message = message.replace(/true/g, g + "true" + w);
     message = message.replace(/false/g, r + "false" + w);
     message = message.replace(/null/g, y + "null" + w);
     message = message.replace(/undefined/g, y + "undefined" + w);
+    message = message.replace(/[\r\n]/g, "");
 
     const regexp = / \((.*?):(.[0-9]*):(.[0-9]*)\)"/g;
     const matches = message.matchAll(regexp);
-    for (match of matches) {
+    for (const match of matches) {
         message = message.replace(match[0], `" [${y}${match[1]}${reset}] ${p}(${match[2]}:${match[3]})${reset}`);
     }
+
+    let customColor = p;
+    let customCatagory;
+    let custom = false;
+    if (Array.isArray(level)) {
+        if (level.length > 2) {
+            customColor = level[2];
+        }
+        customCatagory = level[1];
+        level = level[0];
+        custom = true;
+    }
+    let draw = false;
+    let colour;
+    let catagory;
 
     switch (level) {
         case "A":
         case "I":
             if (loggingLevel == "A") { //White
-                logSend(`[${timeString}]${w}  INFO: ${dim}${message}${bright} ${p}${lineNum}${reset}`);
+                draw = true;
+                colour = w;
+                catagory = " INFO";
             }
             break;
         case "D":
             if (loggingLevel == "A" || loggingLevel == "D") { //Cyan
-                logSend(`[${timeString}]${c} DEBUG: ${w}${message} ${p}${lineNum}${reset}`);
+                draw = true;
+                colour = c;
+                catagory = "DEBUG";
             }
             break;
         case "S":
         case "N":
             if (loggingLevel == "A" || loggingLevel == "D") { //Blue
-                logSend(`[${timeString}]${b} NETWK: ${w}${message} ${p}${lineNum}${reset}`);
+                draw = true;
+                colour = b;
+                catagory = "NETWK";
             }
             break;
         case "W":
             if (loggingLevel != "E") { //Yellow
-                logSend(`[${timeString}]${y}  WARN: ${w}${message} ${p}${lineNum}${reset}`);
+                draw = true;
+                colour = y;
+                catagory = " WARN";
             }
             break;
         case "E": //Red
-            logSend(`[${timeString}]${r} ERROR: ${w}${message} ${p}${lineNum}${reset}`);
+            colour = r;
+            catagory = "ERROR";
+            draw = true;
             break;
         case "H": //Green
-            logSend(`[${timeString}]${g}  HELP: ${w}${message}`);
+            colour = g;
+            catagory = " HELP";
+            draw = true;
+            debugLineNum == false
             break;
         case "C":
         default: //Green
-            logSend(`[${timeString}]${g}  CORE: ${w}${message} ${p}${lineNum}${reset}`);
+            draw = true;
+            colour = g;
+            catagory = " CORE";
+    }
+
+    let lineNumString = ` ${p}${lineNum}${reset}`;
+    if (Array.isArray(level)) {
+        if (level.length > 3) {
+            if (!level[3]) {
+                debugLineNum = false;
+            }
+        }
+    }
+    if (debugLineNum == false || debugLineNum == "false") {
+        lineNumString = ``;
+    }
+    if (custom) {
+        colour = customColor;
+        catagory = customCatagory;
+    }
+    if (draw) {
+        logSend(`[${timeString}]${colour} ${catagory}: ${w}${message}${lineNumString}`);
     }
 }
 
