@@ -230,7 +230,7 @@ menu button {
   min-width: 50px;
   color: var(--text);
   transition: .2s;
-  margin-left: 7px;
+  /*! margin-left: 7px; */
   background-color: transparent;
   border: none;
   border-top: transparent 1px solid
@@ -733,8 +733,9 @@ dialog footer button:first-of-type {
   position: absolute;
   bottom: 0;
   left: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-column-gap: 7px;
 }
 
 #creditsButton {
@@ -743,7 +744,7 @@ dialog footer button:first-of-type {
 
 #newFade {
   order: 1;
-  display: none;
+  /*! display: none; */
 }
 
 .editing #newFade {
@@ -782,6 +783,9 @@ dialog footer button:first-of-type {
   background: var(--accentDark)
 }
 
+.editing .content:hover {
+  background-color: var(--semiTransparent);
+}
 
 .editing .block:hover {
   background-color: var(--halfTransparent);
@@ -811,11 +815,6 @@ dialog footer button:first-of-type {
   justify-content: center;
 }
 
-.editing .block:hover {
-  margin-bottom: 2em;
-  margin-top: 2em;
-}
-
 .block {
     position: relative;
 }
@@ -825,22 +824,19 @@ dialog footer button:first-of-type {
   margin-top: 0;
   transition: .1s;
   border-radius: 8px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
+  padding: 10px;
   width: 100%;
 }
 
-.editing .columns > .block:hover {
-  /*! margin-left: 1.5em; */
-  margin-bottom: 0;
-  margin-top: 0;
-  /*! width: calc(100% - 3em); */
+.content {
+  border-radius: 5px;
+  margin: 5px;
+  transition: .2s;
 }
 
 .columns > .block {
-  margin-right: 0;
-  padding: 0 0 10px 0;
+  margin: 5px;
+  padding: 0;
 }
 
 .addNewButAfter,
@@ -1119,15 +1115,6 @@ menu>button {
 
 .menuBlock > #menuDelete::after {
   content: " block";
-}
-
-* {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none
 }
 
 .menuActive.above::after {

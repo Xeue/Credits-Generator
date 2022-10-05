@@ -10,7 +10,7 @@ html {
  transition:1s
 }
 .columns .subTitle {
- margin-top:2em
+ padding-top:1em;
 }
 .cols1 {
  display:grid;
@@ -127,20 +127,20 @@ body {
 .title {
  font-size:1.2em;
  font-weight:700;
- margin-bottom:2em;
- margin-top:2em
+ padding-bottom:2em;
+ padding-top:2em;
 }
 .block {
  display:flex;
  flex-direction:column
 }
 .subTitle {
- margin-bottom:2em;
- margin-top:5em;
+ padding-bottom:1em;
+ padding-top:1em;
  font-size:.8em
 }
 .image~.subTitle {
- margin-top:2em
+ padding-top:1em;
 }
 .pair {
  display:flex;
@@ -166,8 +166,9 @@ body {
 }
 .image {
  max-width:75%;
- margin:auto;
- height:fit-content
+ margin:auto !important;
+ height:fit-content;
+ padding: 5px;
 }
 .stay {
  opacity:1!important

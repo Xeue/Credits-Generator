@@ -83,31 +83,44 @@ app.get('/run', (req, res) => {
     res.render('run', {});
 })
 
+app.get('/save', (req, res) => {
+    getSave(req, res);
+})
 app.post('/save', (req, res) => {
     doSave(req, res);
 })
-app.post('/media', (req, res) => {
-    doUpload(req, res, "images");
-})
-app.post('/fonts', (req, res) => {
-    doUpload(req, res, "fonts");
-})
+
 
 app.get('/fonts', (req, res) => {
     log("Request for fonts", "D");
     const project = req.query.project;
     sendZip(res, [`public/fonts`,`public/saves/${project}/fonts`], project+"_fonts");
 })
+app.post('/fonts', (req, res) => {
+    doUpload(req, res, "fonts");
+})
+app.delete('/fonts', (req, res) => {
+    doDelete(req, res, "fonts");
+});
+
+app.post('/media', (req, res) => {
+    doUpload(req, res, "images");
+})
 app.get('/images', (req, res) => {
     log("Request for images", "D");
     const project = req.query.project;
     sendZip(res, [`public/saves/${project}/images`], project+"_images");
 })
+app.delete('/images', (req, res) => {
+    doDelete(req, res, "images");
+});
+
 app.get('/template', (req, res) => {
     log("Request for template", "D");
     const project = req.query.project;
     sendZip(res, [`public/template`], project+"_template");
 })
+
 app.get('/render', (req, res) => {
     let project = req.query.project;
     let version = req.query.version;
@@ -142,13 +155,6 @@ app.get('/render', (req, res) => {
         },1000)
     });
 })
-
-app.delete('/fonts', (req, res) => {
-    doDelete(req, res, "fonts");
-});
-app.delete('/images', (req, res) => {
-    doDelete(req, res, "images");
-});
 
 
 /* Request functions */
@@ -191,8 +197,8 @@ function doHome(req, res) {
             fonts.push(font.substring(13));
         })
 
-        let saves;
-        if (typeof saves !== 'undefined') {
+        let saves = {};
+        if (typeof savesObj.public.saves !== 'undefined') {
             saves = savesObj.public.saves;
             for (const project in saves) {
                 if (Object.hasOwnProperty.call(saves, project)) {
@@ -200,8 +206,6 @@ function doHome(req, res) {
                     saves[project].fonts = Object.assign({}, saves[project].fonts);
                 }
             }
-        } else {
-            saves = {};
         }
 
         let render = false;
@@ -233,6 +237,22 @@ function doHome(req, res) {
     });
 }
 
+function getSave(req, res) {
+    log("Getting saved credits", "D")
+    const project = req.query.project
+    const version = req.query.version
+    try {
+        res.sendFile(`${__dirname}/public/saves/${project}/${version}.json`);
+    } catch (error) {
+        logObj("debugging", error);
+        res.status(500);
+        res.send(JSON.stringify({
+            "status": "error",
+            "message": "Save not found",
+            "error": error
+        }))
+    }
+}
 function doSave(req, res) {
     log("Saving uploaded credits", "D");
     const project = req.body.project;

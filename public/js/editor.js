@@ -568,7 +568,7 @@ function settingsDoOpen() {
     },{
       "prop": "background-image",
       "name": "Background Image - url(path/to/image)",
-      "values": Object.values(images[currentProject]).map((val)=>`url("saves/${currentProject}/images/${val}")`),
+      "values": images.map((val)=>`url("saves/${currentProject}/images/${val}")`),
       "helper": "values"
     },{
       "prop": "color",

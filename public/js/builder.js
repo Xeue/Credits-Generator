@@ -194,15 +194,19 @@ function load(project) {
   let $footer = $("#creditsFooter");
   $footer.data("tabs", 0);
   $footer.html('<button id="newFade">+</button>');
-  $.get(`project?project=${currentProject}&version=${currentVersion}`)
-  .then(function(data) {
+  $.get(`save?project=${currentProject}&version=${currentVersion}`)
+  .done(function(data) {
+    console.log(data);
     images = data.images;
     content = data.content;
-    settings = data.settings;
+    settings = data.globalSettings;
     fonts = globalFonts.concat(data.fonts);
     updateSettings();
     buildCredits(content);
     window.dispatchEvent(loadedEvent);
     $("#creditsFooter").first().click();
-  });
+  }).fail(function(data) {
+    const returnData = JSON.parse(data.responseText);
+    alert("Couldn't get requested file: "+JSON.stringify(returnData, "", 4));
+  });;
 }

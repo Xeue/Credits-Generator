@@ -408,39 +408,36 @@ function doUploadSave() {
     if ($("#uploadMedia").hasClass("uploadFont")) {
       destination = "fonts";
     } else {
-      destination = "media";
+      destination = "images";
     }
-    jQuery.ajax({
+    $.ajax({
       url: destination,
       type: "POST",
       data: formdata,
       processData: false,
-      contentType: false,
-      success: function (result) {
-        if (typeof result !== 'undefined') {
-          data = result;
-          if (data.type == "success") {
-            if (data.new) {
-              let project = data.project;
-              let $projSel = $("#loadFile");
-              let $verSel = $("#loadVersion");
+      contentType: false
+    }).done(function(data) {
+      if (typeof data !== 'undefined') {
+        if (data.type == "success") {
+          if (data.new) {
+            let project = data.project;
+            let $projSel = $("#loadFile");
+            let $verSel = $("#loadVersion");
 
-              let $verOption = $("<option value='1'>1</option>");
-              $verSel.prepend($verOption);
-              $verSel.val(version);
+            let $verOption = $("<option value='1'>1</option>");
+            $verSel.prepend($verOption);
+            $verSel.val(version);
 
-              let $option = $("<option id='proj_"+project+"' value='"+project+"' data-versions='1'>"+project+"</option>");
-              $projSel.prepend($option);
-              $projSel.val(project);
-              load(project);
-            }
+            let $option = $("<option id='proj_"+project+"' value='"+project+"' data-versions='1'>"+project+"</option>");
+            $projSel.prepend($option);
+            $projSel.val(project);
+            load(project);
           }
         }
-      }
-    }).done(function(data) {
-      updateSaves(data.saves);
-      if (!$("#gallery").hasClass("hidden")) {
-        doOpenGallery();
+        updateSaves(data.saves);
+        if (!$("#gallery").hasClass("hidden")) {
+          doOpenGallery();
+        }
       }
     });
 
@@ -808,6 +805,20 @@ $(document).ready(function() {
 
     $(document).click(function(e) {
       let $target = $(e.target);
+
+      if ($target.hasClass('content')) {
+        $('.content').attr('contenteditable', 'false');
+        if ($('html').hasClass('editing')) {
+          $target.attr('contenteditable', 'true');
+          $target.focus();
+          $target.on('blur', () => {
+            $target.attr('contenteditable', 'false');
+          });
+        } else {
+          $target.attr('contenteditable', 'false')
+        }
+      }
+
       if ($target.hasClass("tabButton")) {
         $(".tabButton").removeClass("active");
         $target.addClass("active");

@@ -52,6 +52,7 @@
         let projectFonts = <%- JSON.stringify(fonts) %>;
         let globalFonts = <%- JSON.stringify(globalFonts) %>;
         let fonts = <%- JSON.stringify(globalFonts) %>;
+        let content;
         let currentProject = null;
         let currentVersion = null;
         let dataOptions = [];
@@ -112,10 +113,6 @@
       <div id="creditsScroller" class="<%=noScroll%>">
         <div id="creditsCont">
         </div>
-      </div>
-
-      <div id="creditsLogos" class="hidden">
-
       </div>
 
       <footer id="creditsFooter" class="<%=hide%>">
