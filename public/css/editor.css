@@ -431,7 +431,8 @@ dialog>* {
 
 dialog>*>section {
   padding: 10px;
-  font-size: 16pt
+  font-size: 16pt;
+  overflow-y: auto;
 }
 
 dialog footer {

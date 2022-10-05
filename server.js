@@ -9,7 +9,7 @@ let asci = [
 "                                                                                                   "
 ];
 
-const serverVersion = "2.1.0";
+const serverVersion = "3.0.0";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
@@ -23,7 +23,6 @@ import AmdZip from "adm-zip";
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 import OS from 'os';
-import events from 'events';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +50,9 @@ const logsConfig = {
 logs.setConf(logsConfig);
 
 const app = express()
-
+if (!fs.existsSync(__dirname+'/public/saves')){
+    fs.mkdirSync(__dirname+'/public/saves', { recursive: true });
+}
 logs.printHeader(asci);
 printConfig();
 
@@ -190,12 +191,17 @@ function doHome(req, res) {
             fonts.push(font.substring(13));
         })
 
-        let saves = savesObj.public.saves;
-        for (const project in saves) {
-            if (Object.hasOwnProperty.call(saves, project)) {
-                saves[project].images = Object.assign({}, saves[project].images);
-                saves[project].fonts = Object.assign({}, saves[project].fonts);
+        let saves;
+        if (typeof saves !== 'undefined') {
+            saves = savesObj.public.saves;
+            for (const project in saves) {
+                if (Object.hasOwnProperty.call(saves, project)) {
+                    saves[project].images = Object.assign({}, saves[project].images);
+                    saves[project].fonts = Object.assign({}, saves[project].fonts);
+                }
             }
+        } else {
+            saves = {};
         }
 
         let render = false;

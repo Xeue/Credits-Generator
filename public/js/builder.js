@@ -191,31 +191,18 @@ function load(project) {
   }
   $load.append($("<option value='new'>New Version</option>"));
 
-  $("#creditsLogos").html("");
-  $("#creditsScroller").css("transition", "");
-  $("#creditsScroller").css("top", "");
-  if (typeof endFades !== 'undefined') {
-    endFades = undefined;
-  }
   let $footer = $("#creditsFooter");
   $footer.data("tabs", 0);
-  $footer.html('<button id="creditsButton" class="tabButton active">Main</button><button id="newFade">+</button>');
-  loadScript(`saves/${currentProject}/${currentVersion}.js`).then(function() {
-    var html = "";
-    for (var i = 0; i < credits.length; i++) {
-      let subHtml = buildBlock(credits[i]);
-      html += subHtml;
-    }
-    $('#creditsCont').html(html);
-
-    if (typeof endFades !== 'undefined') {
-      renderFades(endFades);
-    }
-    fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
-    addBlockMouseOvers();
+  $footer.html('<button id="newFade">+</button>');
+  $.get(`project?project=${currentProject}&version=${currentVersion}`)
+  .then(function(data) {
+    images = data.images;
+    content = data.content;
+    settings = data.settings;
+    fonts = globalFonts.concat(data.fonts);
     updateSettings();
-    updateFadesObject();
+    buildCredits(content);
     window.dispatchEvent(loadedEvent);
+    $("#creditsFooter").first().click();
   });
-  $("#creditsButton").click();
 }
