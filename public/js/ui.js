@@ -9,15 +9,15 @@ function download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
-  
+
     element.style.display = 'none';
     document.body.appendChild(element);
-  
+
     element.click();
-  
+
     document.body.removeChild(element);
 }
-  
+
 function savePopup(context) {
     $("#loadVersionBut").val("new");
     $("#saveButSave").html(context);
@@ -139,7 +139,7 @@ function closeMenu() {
 function selectForMenu($ele, prop) {
     let $targetBlock = $(".inEditor");
     let $target = $targetBlock.find("."+prop);
-  
+
     switch (prop) {
         case "names":
             let role;
@@ -157,7 +157,7 @@ function selectForMenu($ele, prop) {
                 type = "names";
                 $ele.addClass("menuSelected");
             }
-  
+
             let index;
             let subIndex;
             let $names = $(".inEditor .names").children();
@@ -374,7 +374,7 @@ function doSave() {
 
 function doUploadSave() {
     project = $("#uploadFileBut").val();
-  
+
     let formdata = new FormData();
 
     $upload = $("#uploadImageInput");
@@ -541,7 +541,8 @@ function updateSaves(saves) {
 
   let $backgroundImg = $("#background-image");
   $backgroundImg.html();
-  images[currentProject].forEach(image => {
+  const imagesArr = Object.values(projectFonts[currentProject]);
+  imagesArr.forEach(image => {
     let $dataOption = $(`<option value='${image}'>${image}</option>`);
     $backgroundImg.append($dataOption);
   });
@@ -557,17 +558,17 @@ $(document).mousemove(function(e) {
 $(document).ready(function() {
     window.addEventListener("message", runCommand, false);
     firstTimeCheck();
-  
+
     $("#loadFile").change(function(){
       load($("#loadFile").val());
     });
-  
+
     $("#loadVersion").change(function(){
       currentVersion = $("#loadVersion").val();
       $("#loadVersionBut").val(currentVersion);
       load(currentProject);
     });
-  
+
     $("#loadFileBut").change(function(){
       let versionString = String($(this).find(":selected").data("versions"));
       let versions = [];
@@ -579,21 +580,21 @@ $(document).ready(function() {
       }
       $load.append($("<option value='new'>New Version</option>"));
     });
-  
+
     $("#editButton").click(function() {
-  
+
       $("html").removeClass("settings");
-  
+
       if ($("html").hasClass("editing")) {
         $("#editorCont").removeClass("open");
         $("html").removeClass("editing");
         return;
       }
-  
+
       $("html").addClass("editing");
       $("#editorCont").html('<div style="padding: 20px;text-align: center;">Select a block to start editing</div>');
     });
-  
+
     $("#uploadButton").click(function() {
       $("#saveFile").removeClass("hidden");
       $("#saveNew").addClass("selected");
@@ -615,7 +616,7 @@ $(document).ready(function() {
       $("#saveExisting").addClass("hidden");
       savePopup("New");
     });
-  
+
     $("#uploadMediaButton").click(function() {
       $("#uploadMedia").toggleClass("hidden");
       $("#uploadMedia").addClass("uploadMedia");
@@ -626,7 +627,7 @@ $(document).ready(function() {
       $("#uploadMedia").removeClass("uploadMedia");
       $("#uploadMedia").addClass("uploadFont");
     });
-  
+
     $("#renderButton").click(function() {
       $("#render").toggleClass("hidden");
     });
@@ -672,11 +673,11 @@ $(document).ready(function() {
     $("#downloadMultiButton").click(function() {
       $("#downloadsPopup").toggleClass("hidden");
     });
-  
+
     $("#downloadButCancel").click(function() {
       $("#downloadsPopup").toggleClass("hidden");
     });
-  
+
     $("#downloadButDone").click(function() {
       $("#downloadsPopup").toggleClass("hidden");
       if ($("#downloadFile").next().prop("checked")) {
@@ -694,35 +695,35 @@ $(document).ready(function() {
         $("body").append(`<iframe style="display:none;" src="template?project=${currentProject}&version=${currentVersion}"></iframe>`);
       }
     });
-  
+
     $("#downloadTemplate").click(function() {
       $("#downloadTemplate").toggleClass("selected");
     });
-  
+
     $("#downloadFonts").click(function() {
       $("#downloadFonts").toggleClass("selected");
     });
-  
+
     $("#downloadImg").click(function() {
       $("#downloadImg").toggleClass("selected");
     });
-  
+
     $("#saveButCancel").click(function() {
       $("#newSave").toggleClass("hidden");
     });
-  
+
     $("#uploadButCancel").click(function() {
       $("#uploadMedia").toggleClass("hidden");
     });
-  
+
     $("#saveButSave").click(function() {
         doSave();
     });
-  
+
     $("#uploadButSave").click(function() {
         doUploadSave();
     });
-  
+
     $("#saveExisting").click(function() {
       if (!$(this).hasClass("selected")) {
         $(this).toggleClass("selected");
@@ -735,7 +736,7 @@ $(document).ready(function() {
         $("#saveExisting").toggleClass("selected");
       }
     });
-  
+
     $("#uploadExisting").click(function() {
       if (!$(this).hasClass("selected")) {
         $(this).toggleClass("selected");
@@ -748,11 +749,11 @@ $(document).ready(function() {
         $("#uploadExisting").toggleClass("selected");
       }
     });
-  
+
     $("#downloadImgButton").click(function() {
       $("body").append(`<iframe style="display:none;" src="images?project=${currentProject}"></iframe>`);
     });
-  
+
     $("#full").click(function() {
       if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
         if (document.exitFullscreen) {
@@ -778,11 +779,11 @@ $(document).ready(function() {
         //$("#editorCont").removeClass("open");
       }
     })
-  
+
     document.addEventListener("fullscreenchange", function() {
       if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
         if (document.exitFullscreen) {
-  
+
         }
       } else {
         $("header").removeClass("hidden");
@@ -795,7 +796,7 @@ $(document).ready(function() {
         }
       }
     });
-  
+
     $("#tutClose").click(function() {
       $("#toutorial").toggleClass("hidden");
       Cookies.set("tutorial", "done", { secure: true, SameSite: 'Lax' });
@@ -804,7 +805,7 @@ $(document).ready(function() {
       $("#toutorial").toggleClass("hidden");
       Cookies.set("tutorial", "done", { secure: true, SameSite: 'Lax' });
     });
-  
+
     $(document).click(function(e) {
       let $target = $(e.target);
       if ($target.hasClass("tabButton")) {
@@ -902,7 +903,7 @@ $(document).ready(function() {
           let $targetBlock = $(".inEditor");
           let $target = $targetBlock.children(".imageGroup").find(".image");
           let $next = $element.next();
-  
+
           if ($element.next().length > 0) {
             if ($next.hasClass("editorImgGrouped")) {
               let index = $element.parent().children("select").index($element);
@@ -912,7 +913,7 @@ $(document).ready(function() {
             }
             $element.next().next().next().after($selected);
           }
-  
+
         } else if ($selected.closest(".editorPropCont").length == 1) {
           $selected.each(function(){
             if (!$(this).next().is("button")) {
@@ -938,6 +939,7 @@ $(document).ready(function() {
         $target.closest(".galleryPreviews").toggleClass("biggerImages");
       } else if ($target.hasClass("galleryDelete")) {
         $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
+          console.log(data);
           updateSaves(data.saves);
           doOpenGallery();
         }).fail(function(data) {
@@ -957,7 +959,7 @@ $(document).ready(function() {
       }
       closeMenu();
     });
-  
+
     $(document).change(function(e) {
       let $target = $(e.target);
       if ($target.hasClass("settingCheckBox")) {
@@ -986,17 +988,17 @@ $(document).ready(function() {
       } else if ($target.hasClass("settingValueInput")) {
         let $cont = $target.closest(".settingProperty");
         let setting = $cont.data("setting");
-  
+
         let cls = settings[setting];
-  
+
         let value = $target.val();
         let key = $target.prev().val();
-  
+
         cls[key] = value;
         updateSettings(false);
       }
     });
-  
+
     load(defaultProject);
 });
 

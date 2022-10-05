@@ -355,6 +355,7 @@ function updateBlock($element, value) {
   } else {
     findClass = type;
   }
+  let $target = $targetBlock.find("."+findClass);
   switch (type) {
     case "spacing":
       $target.css("height",value+"em");
