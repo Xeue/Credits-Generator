@@ -1,4 +1,5 @@
 /*jshint esversion: 6 */
+
 var ordering = false;
 var runTime = 60;
 var currentFade = 0;
@@ -8,7 +9,7 @@ var timeouts = [];
 function renderFades(endFades) {
   let $cont = $('#creditsLogos');
   let $footer = $("#creditsFooter");
-  
+
   $footer.data("tabs", endFades.length);
   for (let index = 0; index < endFades.length; index++) {
     const fade = endFades[index];
@@ -21,6 +22,92 @@ function renderFades(endFades) {
     let $button = $(`<button id='fade${index+1}' class='tabButton'>Fade ${index+1}</button>`);
     $footer.append($button);
   }
+}
+
+//element.style.cssText.split("; ").forEach(style=>{
+  //let stylesArr = style.split(":");
+  //let prop = stylesArr[0].replace(/[ ;]/g, "");
+  //let value = stylesArr[1].replace(/[ ;]/g, "");
+  //stylesObj[prop] = value;
+//})
+
+function buildCredits(content) {
+  content.forEach(section => {
+    if (section.type == "fade") {
+      renderBlocks(section.blocks);
+    } else {
+      renderBlocks(section.blocks);
+    }
+  });
+}
+
+function renderBlocks(blocks) {
+  let html = "";
+  blocks.forEach(block => {
+    html += `<section class="block block_${block.type}">`;
+    block.content.forEach(content => {
+      html += renderContent(content);
+    })
+    html += `</section>`;
+  })
+  return html;
+}
+
+function renderContent(content) {
+  let subHtml = "";
+  switch (content.type) {
+    case "columns":
+      let columns = content.columns || "Full";
+      subHtml += "<div class='columns cols"+columns+"'>";
+      subHtml += renderBlocks(content.blocks);
+      subHtml += "</div>";
+      break;
+    case "names":
+      subHtml += "<div class='names'>";
+
+        for (var i = 0; i < content["names"].length; i++) {
+          const names = content["names"];
+
+          if (typeof names[i] == "object") {
+            subHtml += `<div class='pair'><div class='role' contentEditable="true">${names[i].role}</div>`;
+
+            if (typeof names[i].name == "object") {
+              subHtml += "<div class='nameGroup'>";
+              for (var j = 0; j < names[i].name.length; j++) {
+                subHtml += `<div class='name' contentEditable="true">${names[i].name[j]}</div>`;
+              }
+              subHtml += "</div>";
+            } else {
+              subHtml += `<div class='name' contentEditable="true">${names[i].name}</div>`;
+            }
+
+            subHtml += "</div>";
+
+          } else {
+            subHtml += `<div class='name' contentEditable="true">${names[i]}</div>`;
+          }
+
+        }
+
+      subHtml += "</div>";
+      break;
+    case "title":
+    case "subTitle":
+      subHtml += `<div class="${content.type}" contentEditable="true">${content.text}</div>`;
+      break;
+    case "text":
+      subHtml += `<div class='text' contentEditable="true">${content.text}</div>`;
+      break;
+    case "image":
+      height = content.imageHeight || "24";
+      subHtml += `<img class='image' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}vh'>`;
+      break;
+    case "spacing":
+      subHtml += `<div class='spacing' style='height:${content.space}em'></div>`;
+      break;
+    default:
+  }
+  return subHtml;
 }
 
 function buildBlock(block) {
