@@ -12,27 +12,27 @@ html {
 .columns .subTitle {
  padding-top:1em;
 }
-.cols1 {
+.columns[data-columns="1"] {
  display:grid;
  grid-template-columns:repeat(1,1fr)
 }
-.cols2 {
+.columns[data-columns="2"] {
  display:grid;
  grid-template-columns:repeat(2,1fr)
 }
-.cols3 {
+.columns[data-columns="3"] {
  display:grid;
  grid-template-columns:repeat(3,1fr)
 }
-.cols4 {
+.columns[data-columns="4"] {
  display:grid;
  grid-template-columns:repeat(4,1fr)
 }
-.cols5 {
+.columns[data-columns="5"] {
  display:grid;
  grid-template-columns:repeat(5,1fr)
 }
-.cols6 {
+.columns[data-columns="6"] {
  display:grid;
  grid-template-columns:repeat(6,1fr)
 }
@@ -54,10 +54,24 @@ body {
 }
 #creditsCont {
  text-align:center;
- width:60vw;
- margin:auto;
- padding-top:100vh
+ height: 100%;
 }
+
+.credits-scroll,
+.credits-fade {
+  display: none;
+  width: 60vw;
+  padding: 0 calc(50% - 30vw);
+  height: 100%;
+  max-width: 100%;
+}
+
+.credits-scroll.active,
+.credits-fade.active {
+  display: block;
+  overflow-y: auto;
+}
+
 #creditsLogos {
  opacity:0;
  width:100%;
@@ -124,6 +138,12 @@ body {
  margin-top:3px;
  margin-bottom:3px
 }
+.name,
+.role {
+  border-radius: 5px;
+  transition: 0.2s;
+  outline: 2px ridge transparent;
+}
 .title {
  font-size:1.2em;
  font-weight:700;
@@ -144,20 +164,21 @@ body {
 }
 .pair {
  display:flex;
- margin-top:10px;
- margin-bottom:10px
+ margin: 10px;
 }
 .pair>* {
- flex:1
+ flex:1;
 }
 .pair>.name,
 .pair>.nameGroup {
  text-align:left;
- margin-left:.4em
+ margin-left:.2em;
+ padding-left: .2em;
 }
 .pair>.role {
  text-align:right;
- margin-right:.4em
+ margin-right:.2em;
+ padding-right: .2em;
 }
 .text {
  margin-top:1em;

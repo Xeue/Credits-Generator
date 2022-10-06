@@ -24,24 +24,16 @@ function renderFades(endFades) {
   }
 }
 
-//element.style.cssText.split("; ").forEach(style=>{
-  //let stylesArr = style.split(":");
-  //let prop = stylesArr[0].replace(/[ ;]/g, "");
-  //let value = stylesArr[1].replace(/[ ;]/g, "");
-  //stylesObj[prop] = value;
-//})
-
 function buildCredits(content) {
   let active = ' active';
-  content.forEach(section => {
-    let name = section.type;
-    typeof section.name === 'undefined' ? name : section.name
+  content.forEach(article => {
+    let name = typeof article.name !== 'undefined' ? article.name : article.type;
     const $tab = $(`<button class="tabButton${active}">${name}</button>`)
     const $footer = $("#creditsFooter");
     $footer.append($tab);
     const $cont = $("#creditsCont");
-    const html = renderBlocks(section.blocks);
-    const $content = $(`<article class="credits-${section.type}${active}">${html}</article>`);
+    const html = renderBlocks(article.blocks);
+    const $content = $(`<article class="credits-${article.type}${active}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
     active = '';
     $cont.append($content);
   });
@@ -61,15 +53,26 @@ function renderBlocks(blocks) {
 
 function renderContent(content) {
   let subHtml = "";
+  let style = '';
+  if (typeof content.settings !== "undefined") {
+    style = 'style="';
+    for (const property in content.settings) {
+      if (Object.hasOwnProperty.call(content.settings, property)) {
+        const value = content.settings[property];
+        style += `${property}: ${value};`;
+      }
+    }
+    style += '"';
+  }
   switch (content.type) {
     case "columns":
       let columns = content.columns || "Full";
-      subHtml += "<div class='content columns cols"+columns+"'>";
+      subHtml += `<div ${style} class='content columns cols${columns}' data-type='${content.type}' data-columns='${columns}'>`;
       subHtml += renderBlocks(content.blocks);
       subHtml += "</div>";
       break;
     case "names":
-      subHtml += "<div class='names content'>";
+      subHtml += `<div ${style} class='names content' data-type='${content.type}'>`;
 
         for (var i = 0; i < content["names"].length; i++) {
           const names = content["names"];
@@ -99,159 +102,21 @@ function renderContent(content) {
       break;
     case "title":
     case "subTitle":
-      subHtml += `<div class="${content.type} content">${content.text}</div>`;
+      subHtml += `<div ${style} class="${content.type} content" data-type='${content.type}'>${content.text}</div>`;
       break;
     case "text":
-      subHtml += `<div class='text content'>${content.text}</div>`;
+      subHtml += `<div ${style} class='text content' data-type='${content.type}'>${content.text}</div>`;
       break;
     case "image":
-      height = content.imageHeight || "24";
-      subHtml += `<img class='image content' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}vh'>`;
+      height = content.imageHeight || "10";
+      subHtml += `<img ${style} class='image content' data-type='${content.type}' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'>`;
       break;
     case "spacing":
-      subHtml += `<div class='spacing content' style='height:${content.space}em'></div>`;
+      subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.space}em'></div>`;
       break;
     default:
   }
   return subHtml;
-}
-
-function buildBlock(block) {
-  let subHtml = "<section class='block'>";
-  for (const property in block) {
-    subHtml += buildProperty(property, block);
-  }
-  subHtml += "</section>";
-  return subHtml;
-}
-function buildProperty(property, block) {
-  let subHtml = "";
-  switch (property) {
-    case "columns":
-      columns = block["maxColumns"] || "Full";
-      subHtml += "<div class='columns cols"+columns+"'>";
-      for (var i = 0; i < block[property].length; i++) {
-        subHtml += buildBlock(block[property][i]);
-      }
-      subHtml += "</div>";
-      break;
-    case "names":
-      subHtml += "<div class='names'>";
-
-        for (var i = 0; i < block["names"].length; i++) {
-          let names = block["names"];
-
-          if (typeof names[i] == "object") {
-            subHtml += "<div class='pair'><div class='role'>"+names[i].role+"</div>";
-
-            if (typeof names[i].name == "object") {
-              subHtml += "<div class='nameGroup'>";
-              for (var j = 0; j < names[i].name.length; j++) {
-                subHtml += "<div class='name'>"+names[i].name[j]+"</div>";
-              }
-              subHtml += "</div>";
-            } else {
-              subHtml += "<div class='name'>"+names[i].name+"</div>";
-            }
-
-            subHtml += "</div>";
-
-          } else {
-            subHtml += "<div class='name'>"+names[i]+"</div>";
-          }
-
-        }
-
-      subHtml += "</div>";
-      break;
-    case "title":
-    case "subTitle":
-      subHtml += "<div class='"+property+"'>"+block[property]+"</div>";
-      break;
-    case "text":
-      if (typeof block[property] == "object") {
-        subHtml += "<div class='textGroup'>";
-        for (var i = 0; i < block[property].length; i++) {
-          subHtml += "<div class='text'>"+block[property][i]+"</div>";
-        }
-        subHtml += "</div>";
-      } else {
-        subHtml += "<div class='text'>"+block[property]+"</div>";
-      }
-      break;
-    case "image":
-      height = block.imageHeight || "24";
-      if (typeof block[property] == "object") {
-        subHtml += "<div class='imageGroup'>";
-        for (var i = 0; i < block[property].length; i++) {
-          subHtml += `<img class='image' src='saves/${currentProject}/images/${block[property][i]}' style='max-height: ${height}vh'>`;
-        }
-        subHtml += "</div>";
-      } else {
-        subHtml += `<img class='image' src='saves/${currentProject}/images/${block[property]}' style='max-height: ${height}vh'>`;
-      }
-      break;
-    case "spacing":
-      subHtml += "<div class='spacing' style='height:"+block[property]+"em'></div>";
-      break;
-    case "maxColumns":
-    case "imageHeight":
-    case "duration":
-      break;
-    default:
-      console.log("Invalid Paramters");
-      console.log(`${property}: ${block[property]}`);
-  }
-  return subHtml;
-}
-
-function pagePath() {
-  if (!document || typeof document !== 'object') { return ''; }
-  if (!document.currentScript) { return ''; }
-  if (!document.currentScript.src || typeof document.currentScript.src !== 'string') { return ''; }
-  var src = document.currentScript.src;
-  return src.substring(0, src.lastIndexOf('/') + 1);
-};
-
-function loadScript(source) {
-  return new Promise((resolve, reject) => {
-    var script = document.createElement("script");
-    script.onload = resolve;
-    script.onerror = reject;
-    script.src = pagePath() + source;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  });
-}
-
-function runNextFade() {
-  currentFade++;
-  if (currentFade < logoCount) {
-    $("#fade"+currentFade).trigger("click");
-    timeouts.push(setTimeout(function () {
-      runNextFade();
-    }, endFades[currentFade-1].duration*1000));
-  } else if (currentFade == logoCount) {
-    $("#fade"+currentFade).trigger("click");
-    timeouts.push(setTimeout(function () {
-      $("#fade"+currentFade).addClass("hidden");
-    }, endFades[currentFade-1].duration*1000));
-  }
-}
-
-function runCredits() {
-  $('#creditsScroller').css('transition',runTime+'s linear');
-  let scrollLength = -$("#creditsCont").height() - 100;
-  $('#creditsScroller').css('top', scrollLength);
-  if (typeof endFades !== 'undefined') {
-    logoCount = endFades.length;
-    timeouts.push(setTimeout(function () {
-      $("#fadeCont1").addClass("extraHidden");
-      timeouts.push(setTimeout(function () {
-        $("#fadeCont1").removeClass("extraHidden");
-      }, 100));
-      runNextFade();
-    }, (++runTime)*1000));
-  }
 }
 
 function seekToFrame(frame) {

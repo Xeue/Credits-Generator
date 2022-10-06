@@ -130,38 +130,123 @@ function makeObject(element) {
 }
 
 function getCreditsJSON() {
-  updateCreditsObject();
-  updateFadesObject();
-
-  let returnStr = "var credits = "+JSON.stringify(credits, null, "\t")+"\n";
-
-  if (endFades.length != 0) {
-    returnStr += "var endFades = "+JSON.stringify(endFades, null, "\t")+"\n";
-  }
-
-  if (settings.length != 0) {
-    returnStr += "var settings = "+JSON.stringify(settings, null, "\t");
-  }
-
-  return returnStr;
+  let content = [];
+  $('#creditsCont').children().each(function(index) {
+    $content = $(this);
+    let type = $content.hasClass('scroll') ? "scroll" : "fade";
+    content.push({
+      "type": type,
+      "name": $content.data('name'),
+      "duration": $content.data('duration'),
+      "blocks": makeBlocksObject($content.children())
+    })
+  })
+  return JSON.stringify({
+    "globalSettings": settings,
+    "images": images,
+    "fonts": fonts,
+    "content": content,
+  }, null, 4)
 }
 
-function updateCreditsObject() {
-  credits = [];
-  $("#creditsCont").children().each(function(){
-    let credit = makeObject(this);
-    credits.push(credit);
+function makeBlocksObject($blocks) {
+  let blocks = [];
+  $blocks.each(function(index) {
+    let $block = $(this);
+    let type = $block.hasClass('block_rows') ? "rows" : "columns";
+    let block = {
+      "type": type,
+      "content": makeContentsArray($block.children())
+    }
+    blocks.push(block);
   });
+  return blocks;
 }
 
-function updateFadesObject() {
-  endFades = [];
-  $("#creditsLogos").children().children().each(function(){
-    let fade = makeObject(this);
-    endFades.push(fade);
-  });
-  $("#renderFades").html(endFades.map((val)=>val.duration).reduce((a, b) => a + b, 0));
-  sendRunMessage("fadesDuration");
+function makeContentsArray($contents) {
+  let contents = [];
+  $contents.each(function(index) {
+    contents.push(makeContentObject($(this)));
+  })
+  return contents;
+}
+
+function makeContentObject($content) {
+  let content = {};
+  content.type = $content.data('type');
+  if (typeof $content.attr('style') !== 'undefined') {
+    content.settings = getStylesObject($content[0], content.type);;
+  }
+  switch (content.type) {
+    case 'title':
+    case 'subTitle':
+      content.text = $content.html();
+      break;
+    case 'spacing':
+      content.spacing = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
+      break;
+    case 'names':
+      let names = [];
+      $content.children().each(function(index) {
+        let $name = $(this);
+        let name = {};
+        if ($name.hasClass("pair")) {
+          $name.children().each(function() {
+            if ($(this).hasClass("role")) {
+              name.role = $(this).text();
+            } else if ($(this).hasClass("name")) {
+              name.name = $(this).text();
+            } else if ($(this).hasClass("nameGroup")) {
+              let group = [];
+              $(this).children().each(function() {
+                group.push($(this).text());
+              });
+              name.name = group;
+            }
+          });
+        } else if ($name.hasClass("name")) {
+          name = $name.text();
+        }
+        names.push(name);
+      })
+      content.names = names;
+      break;
+    case 'image':
+      let imgClass = $content.attr('style');
+      if (imgClass.indexOf("em") !== -1) {
+        content.imageHeight = imgClass.substring(12, imgClass.indexOf("em"));
+      }
+      let image = $content.attr("src");
+      if (image == "../../../img/Placeholder.jpg") {
+        content.image = "../../../img/Placeholder.jpg";
+      } else {
+        let search = `saves/${currentProject}/images/`;
+        content.image = image.substring(search.length);
+      }
+      break;
+    case 'columns':
+      content.columns = $content.data('columns');
+      content.blocks = makeBlocksObject($content.children());
+      break;
+    default:
+      break;
+  }
+  return content;
+}
+
+function getStylesObject(element, type) {    
+  let stylesObj = {};
+  let cssArray = element.style.cssText.split("; ");
+  if (cssArray[0] == "") return {}
+  cssArray.forEach(style=>{
+    let stylesArr = style.split(":");
+    let prop = stylesArr[0].replace(/[ ;]/g, "");
+    let value = stylesArr[1].replace(/[ ;]/g, "");
+    if (!(type == "spacing" && prop == 'height') && !(type == "image" && prop == 'max-height')) {
+      stylesObj[prop] = value;
+    }
+  })
+  return stylesObj;
 }
 
 function getDummyJSON() {

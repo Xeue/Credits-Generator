@@ -21,12 +21,11 @@ function editorUnHover($block) {
   }
 }
 
-function editorMakeProperty($json, prop, state, index) {
+function editorMakeProperty($json, prop, state) {
   if (prop == "imageHeight" || prop == "maxColumns") {
     return;
   }
   let $property = $("<section class='editorProperty' data-prop='"+prop+"'></section>");
-  $property.css("order", index);
   let $header = $("<header></header>");
   let $title = $("<div class='editorHeading' id='editor_"+prop+"'></div>");
   let $check = $("<input type='checkbox' id='editorEnable_"+prop+"' class='editorCheckBox'>");
@@ -81,7 +80,7 @@ function editorMakeProperty($json, prop, state, index) {
       if (state == "active") {
         $inputImg.val($json.imageHeight);
       } else {
-        $inputImg.val(24);
+        $inputImg.val(10);
       }
       $editImg.append($plusImg);
       $editImg.append($inputImg);
@@ -89,58 +88,24 @@ function editorMakeProperty($json, prop, state, index) {
       $label = $("<div class='propertyLabel'>Set max image height:</div>")
       $edit.append($label);
       $edit.append($editImg);
-
       let imgs = $json[prop];
-      if (typeof imgs == 'object') {
-        for (var i = 0; i < imgs.length; i++) {
-          let $img = $("<img class='editorImgGrouped img_"+i+"' id='editorImg_"+prop+"'>");
-          if (state == "active") {
-            let src = `saves/${currentProject}/images/${imgs[i]}`;
-            $img.attr("src", src);
-          }
-
-          $imgSelect = $("<select class='editorProp img_"+i+"' data-imgnum='"+i+"' id='editorInput_"+prop+"'></select>");
-          let project = $("#loadFileBut").val();
-          let projImages = images[project];
-          for (var projImg in projImages) {
-            if (projImages.hasOwnProperty(projImg)) {
-              let $imgOpt;
-              if (projImages[projImg] == imgs[i]) {
-                $imgOpt = $(`<option selected value='${projImages[projImg]}'>${projImages[projImg]}</option>`);
-              } else {
-                $imgOpt = $(`<option value='${projImages[projImg]}'>${projImages[projImg]}</option>`);
-              }
-              $imgSelect.append($imgOpt);
-            }
-          }
-          $edit.append($imgSelect);
-          $edit.append($img);
-        }
-      } else {
-        let $img = $("<img class='editorImg' id='editorImg_"+prop+"'>");
-        if (state == "active") {
-          let src = `saves/${currentProject}/images/${imgs}`;
-          $img.attr("src", src);
-        }
-        let $imgSelect = $("<select class='editorProp img_1' data-imgnum='1' id='editorInput_"+prop+"'></select>");
-        let project = $("#loadFileBut").val();
-        let projImages = images[project];
-        for (var projImage in projImages) {
-          if (projImages.hasOwnProperty(projImage)) {
-            let $imgOpt;
-            if (projImages[projImage] == $json[prop]) {
-              $imgOpt = $(`<option selected value='${projImages[projImage]}'>${projImages[projImage]}</option>`);
-            } else {
-              $imgOpt = $(`<option value='${projImages[projImage]}'>${projImages[projImage]}</option>`);
-            }
-            $imgSelect.append($imgOpt);
-          }
-        }
-        $edit.append($imgSelect);
-        $edit.append($img);
+      let $img = $("<img class='editorImg' id='editorImg_"+prop+"'>");
+      if (state == "active") {
+        let src = `saves/${currentProject}/images/${imgs}`;
+        $img.attr("src", src);
       }
-      let $newImg = $("<button class='editorNewImage'></button>");
-      $edit.append($newImg);
+      let $imgSelect = $("<select class='editorProp img_1' data-imgnum='1' id='editorInput_"+prop+"'></select>");
+      images.forEach(image => {
+        let $imgOpt;
+        if (image == $json[prop]) {
+          $imgOpt = $(`<option selected value='${image}'>${image}</option>`);
+        } else {
+          $imgOpt = $(`<option value='${image}'>${image}</option>`);
+        }
+        $imgSelect.append($imgOpt);
+      });
+      $edit.append($imgSelect);
+      $edit.append($img);
       break;
     case "text":
       let text = $json[prop];
@@ -163,7 +128,7 @@ function editorMakeProperty($json, prop, state, index) {
       let $inputCol = $("<input class='editorProp' id='editorInput_maxColumns'>");
       let $minusCol = $("<button class='editorMinus' id='editorMinus_maxColumns'>-</button>");
       if (state == "active") {
-        $inputCol.val($json["maxColumns"]);
+        $inputCol.val($json.columns);
       } else {
         $inputCol.val(3);
       }
@@ -222,28 +187,139 @@ function editorMakeProperty($json, prop, state, index) {
   return $property;
 }
 
-function editorOpen($block) {
+function editorOpen($target) {
   $(".inEditor").removeClass("inEditor");
-  $block.addClass("inEditor");
+  $target.addClass("inEditor");
   let $editor = $("#editorCont");
+  let $block = $target.closest('.block');
+  $block.addClass("inEditor");
   $editor.html("");
-  let $json = makeObject($block);
-  let properties = ["spacing","duration","title","subTitle","image","imageHeight","text","columns","maxColumns","names"];
-  let index = 1;
 
-  for (var property in $json) {
-    if ($json.hasOwnProperty(property)) {
-      $editor.append(editorMakeProperty($json, property, "active", index));
-      index++;
+  dataOptions = [
+    {
+      "prop": "background-color",
+      "name": "Background Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"],
+      "helper": "colourPicker"
+    },{
+      "prop": "background-image",
+      "name": "Background Image - url(path/to/image)",
+      "values": images.map((val)=>`url("saves/${currentProject}/images/${val}")`),
+      "helper": "values"
+    },{
+      "prop": "color",
+      "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
+      "values": ["Black","White","Red","Green","Blue"],
+      "helper": "colourPicker"
+    },{
+      "prop": "font-family",
+      "name": "Font",
+      "values": fonts.map((val)=>val.split('.')[0]),
+      "helper": "values"
+    },{
+      "prop": "font-size",
+      "name": "Font Size - units of px, pt, % & em",
+      "values": ["8pt","10pt","12pt","16pt","20pt","24pt","28pt","32pt","36pt","40pt","44pt","48pt"],
+      "helper": "values"
+    },{
+      "prop": "font-weight",
+      "name": "Font Weight - bold, bolder, lighter & normal",
+      "values": ["lighter","normal","bold","bolder"],
+      "helper": "values"
+    },{
+      "prop": "font-style",
+      "name": "Font Style - italic & normal",
+      "values": ["italic","normal"],
+      "helper": "values"
     }
+  ]
+  let $dataList = $("<datalist id='CSSList'></datalist>");
+  for (var i = 0; i < dataOptions.length; i++) {
+    let $dataOption = $("<option value='"+dataOptions[i].prop+"'>"+dataOptions[i].name+"</option>");
+    $dataList.append($dataOption);
+    let $optionsList = $("<datalist id='"+dataOptions[i].prop+"'></datalist>");
+    for (var j = 0; j < dataOptions[i].values.length; j++) {
+      let $dataListOption = $("<option value='"+dataOptions[i].values[j]+"'>"+dataOptions[i].values[j]+"</option>");
+      $optionsList.append($dataListOption);
+    }
+    $editor.append($optionsList);
+  }
+  $editor.append($dataList);
+
+  const blockSettingsOptions = ["title","subTitle","image","text","name","role"];
+  const globalSettingsOptions = ["background","title","subTitle","image","text","name","role"];
+
+  let isBlock = $target.hasClass('block') ? true : false;
+
+  let type = $target.data('type');
+  if (!isBlock) {
+    $editor.data('type', 'content')
+    switch (type) {
+      case 'image':
+      case 'columns':
+      case 'spacing':
+        $editor.append(editorMakeProperty(makeContentObject($target), type, "active"));
+        break;
+      default:
+        break;
+    }
+    let contentSettings = {};
+    contentSettings[type] = getStylesObject($target[0], type);
+    if (Object.keys(contentSettings[type]).length > 0) {
+      $editor.append(settingsMakeProperty(contentSettings, type, "active"));
+    } else {
+      $editor.append(settingsMakeProperty(contentSettings, type, "inactive"));
+    }
+  } else {
+    $editor.data('type', 'block')
   }
 
-  for (var i = 0; i < properties.length; i++) {
-    if (!$json.hasOwnProperty(properties[i])){
-      $editor.append(editorMakeProperty($json, properties[i], "notActive", index));
-      index++;
-    }
+  if ($block.parent().hasClass('columns')) {
+    $editor.append(`<header class="active">
+      <h3>Parent Columns</h3>
+      <input type="checkbox" id="settingEnable_columns" class="settingGroupCheck" checked>
+    </header>`);
+    let $columnsSettings = $('<section class="editorGroup"></section>');
+    $columnsSettings.append(editorMakeProperty(makeContentObject($block.parent()), 'columns', "active"));
+    $editor.append($columnsSettings);
   }
+
+  if (isBlock) {
+    $editor.append(`<header class="active">
+      <h3>Block Settings</h3>
+      <input type="checkbox" id="settingEnable_block" class="settingGroupCheck" checked>
+    </header>`);
+  } else {
+    $editor.append(`<header>
+      <h3>Block Settings</h3>
+      <input type="checkbox" id="settingEnable_block" class="settingGroupCheck">
+    </header>`);
+  }
+  
+  let $blockSettings = $('<section class="editorGroup"></section>');
+  let blockSettings = getStylesObject($block[0]);
+  blockSettingsOptions.forEach(setting => {
+    if (typeof blockSettings[setting] === 'undefined') {
+      $blockSettings.append(settingsMakeProperty(blockSettings, setting, "inactive"))
+    } else {
+      $blockSettings.append(settingsMakeProperty(blockSettings, setting, "active"))
+    }
+  });
+  $editor.append($blockSettings);
+
+  $editor.append(`<header>
+    <h3>Global Settings</h3>
+    <input type="checkbox" id="settingEnable_global" class="settingGroupCheck">
+  </header>`);
+  let $globalSettings = $('<section class="editorGroup"></section>');
+  globalSettingsOptions.forEach(setting => {
+    if (typeof settings[setting] === 'undefined') {
+      $globalSettings.append(settingsMakeProperty(settings, setting, "inactive"))
+    } else {
+      $globalSettings.append(settingsMakeProperty(settings, setting, "active"))
+    }
+  });
+  $editor.append($globalSettings);
 
   $editor.addClass("open");
 }
@@ -435,47 +511,6 @@ function removeProp(prop) {
   editorOpen($block);
 }
 
-function orderEditor(curIndex, newIndex) {
-
-  let $editor = $("#editorCont");
-  let $props = $editor.children();
-  let $block = $(".inEditor");
-  let typeOld = $($props[curIndex]).data("prop");
-  let typeNew;
-
-  if (curIndex > newIndex && newIndex != 0) {
-    $($props[newIndex-1]).after($props[curIndex]);
-    typeNew = $($props[newIndex-1]).data("prop");
-  } else if (newIndex != 0) {
-    $($props[newIndex]).after($props[curIndex]);
-    typeNew = $($props[newIndex]).data("prop");
-  } else {
-    $($props[newIndex]).before($props[curIndex]);
-    typeNew = $($props[newIndex]).data("prop");
-  }
-
-  let $old = $block.children("."+typeOld);
-  if ($old.length == 0 && typeOld == "image") {
-    $old = $block.children(".imageGroup");
-  }
-  let $new = $block.children("."+typeNew);
-
-  if (curIndex > newIndex && newIndex != 0) {
-    $($new).after($old);
-  } else if (newIndex != 0) {
-    $($new).after($old);
-  } else {
-    $($new).before($old);
-  }
-
-  $props = $editor.children();
-  for (var prop in $props) {
-    if ($props.hasOwnProperty(prop)) {
-      $($props[prop]).css("order", parseInt(prop)+1);
-    }
-  }
-}
-
 function updateSettings(refresh = true) {
   $("#settingsCSS").remove();
   let $settings = $("<style id='settingsCSS' type='text/css'></style>");
@@ -504,11 +539,11 @@ function updateSettings(refresh = true) {
     $("html").removeClass("light");
   }
 
-  if ($("html").hasClass("settings") && refresh) {
+  /*if ($("html").hasClass("settings") && refresh) {
     settingsDoOpen();
   } else if ($("html").hasClass("editing")) {
     editorClose();
-  }
+  }*/
 }
 
 function isLight(color) {
@@ -630,13 +665,13 @@ function settingsDoOpen() {
   $editor.addClass("open");
 }
 
-function settingsMakeProperty(setting, state) {
+function settingsMakeProperty(source, setting, state) {
   let $property = $("<section class='settingProperty' data-setting='"+setting+"'></section>");
   let $header = $("<header></header>");
   let $title = $("<div class='settingHeading' id='setting_"+setting+"'></div>");
   let $check = $("<input type='checkbox' id='settingEnable_"+setting+"' class='settingCheckBox'>");
   let propertyName = setting.replace( /([A-Z])/g, " $1" );
-  let title = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
+  let title = propertyName.charAt(0).toUpperCase() + propertyName.slice(1) + ' Styles';
   $title.html(title);
   $header.append($title);
   $header.append($check);
@@ -648,10 +683,8 @@ function settingsMakeProperty(setting, state) {
   }
 
   let $edit = $("<div class='settingPropCont' id='settingProp_"+setting+"'></div>");
-  let $input = $("<input class='settingProp' id='settingInput_"+setting+"'>");
 
-
-  let rules = settings[setting];
+  let rules = source[setting];
 
   let $rulesGroup = $("<div class='settingRuleGroup'></div>");
 
@@ -689,72 +722,38 @@ function settingsMakeProperty(setting, state) {
   return $property;
 }
 
+function editorNumChange($target, num) {
+  let $content = $('.inEditor.content');
+  let isBlock = false;
+  if ($content.length == 0) {
+    $content = $('.inEditor.block');
+    isBlock = true;
+  }
+  if ($target.closest('.editorGroup').length != 0) {
+    $content = $content.closest('.columns');
+  }
+  console.log($content);
+  if ($content.hasClass('spacing')) {
+    $content.css('height', num+'em');
+  } else if ($content.hasClass('columns')) {
+    $content.attr('data-columns', num);
+  } else if ($content.hasClass('image')) {
+    $content.css('max-height', num+'em');
+  }
+}
+
 $(document).click(function(e) {
   let $target = $(e.target);
   if ($target.hasClass("editorPlus")) {
     let num = $target.next().val();
     num++;
     $target.next().val(num);
-    updateBlock($target.next(), num);
+    editorNumChange($target, num);
   } else if ($target.hasClass("editorMinus")) {
     let num = $target.prev().val();
     num--;
     $target.prev().val(num);
-    updateBlock($target.prev(), num);
-  } else if ($target.hasClass("editorNewPairName")) {
-    addRoleName($target);
-  } else if ($target.hasClass("editorNewRole")) {
-    addRole();
-  } else if ($target.hasClass("editorNewName")) {
-    addName();
-  } else if ($target.hasClass("editorNewText")) {
-    let $targetBlock = $(".inEditor");
-    let $txtGrp = $targetBlock.find(".textGroup");
-    if ($txtGrp.length == 0) {
-      $txtGrp = $("<div class='textGroup'></div>");
-      let $txt = $targetBlock.find(".text");
-      $txt.replaceWith($txtGrp);
-      $txtGrp.append($txt);
-    }
-    let $newTxt = $("<div class='text'>Placeholder</div>");
-    $txtGrp.append($newTxt);
-    let $newTxtInp = $("<textarea class='editorProp' id='editorInput_text'>Placeholder</textarea>");
-    $target.before($newTxtInp);
-  } else if ($target.hasClass("editorNewImage")) {
-    let $targetBlock = $(".inEditor");
-
-    let imageNum = $($target.prevAll(".editorProp")[0]).data("imgnum");
-
-    $inpt = $(`<select class='editorProp img_${++imageNum}' id='editorInput_image' data-imgnum='${imageNum}'></select>`);
-    let project = $("#loadFileBut").val();
-    let projImages = images[project];
-    for (var projImg in projImages) {
-      if (projImages.hasOwnProperty(projImg)) {
-        let $imgOpt = $(`<option value='${projImages[projImg]}'>${projImages[projImg]}</option>`);
-        $inpt.append($imgOpt);
-      }
-    }
-
-    let $imgOpt = $(`<option value='../../../img/Placeholder.jpg' selected disabled hidden>Select Image</option>`);
-    $inpt.append($imgOpt);
-
-    let $imgPrev = $("<img class='editorImg' id='editorImg_image' src='../../../img/Placeholder.jpg'>");
-    $target.before($inpt);
-    $target.before($imgPrev);
-    $target.parent().children("img").addClass("editorImgGrouped");
-    let $imgNew = $("<img class='image' src='../../../img/Placeholder.jpg'>");
-    let imageHeight = $("#editorInput_imageHeight").val();
-    $imgNew.css("max-height", imageHeight+"vh");
-
-    if ($targetBlock.children(".imageGroup").length == 0) {
-      let $imgGroup = $("<div class='imageGroup'></div>");
-      let $targetImg = $targetBlock.children(".image");
-      $targetImg.replaceWith($imgGroup);
-      $imgGroup.append($targetImg);
-      $imgGroup.append($imgNew);
-    } else {
-      $targetBlock.children(".imageGroup").append($imgNew);
-    }
+    editorNumChange($target, num);
   }
 });
 
@@ -811,48 +810,8 @@ $(document).change(function(e) {
     }
   } else if ($target.hasClass("editorProp")) {
     let value = $target.val();
-    updateBlock($target, value);
-  }
-});
-
-$(document).mousedown(function(e) {
-  let $target = $(e.target);
-  let $prop = $target.parent();
-  if ($prop.hasClass("editorProperty") && $target.is("header")) {
-    ordering = true;
-    if ($("#dragBox").length != 0) {
-      $("#dragBox").remove();
-    }
-    let pos = $prop.position();
-    let order = $prop.css("order");
-    $prop.before($("<div id='dragBox' class='editorProperty active' style='height:"+$prop.height()+"px; order: "+order+"'></div>"));
-    $prop.addClass("dragging");
-    timeout = setInterval(function() {
-      $prop.css("top", mouseY-30+$("aside").scrollTop());
-    }, 10);
-  }
-});
-
-$(document).mouseup(function(e) {
-  let $target = $(e.target);
-  if ($target.parent().hasClass("editorProperty") && $target.is("header")) {
-    clearInterval(timeout);
-  }
-  if (ordering) {
-    setTimeout(function() {
-      let width = $(document).width()-100;
-      let $oldPos = $target.parent();
-      let $newPos = $(document.elementFromPoint(width, mouseY)).closest(".editorProperty");
-
-      let oldIndex = $oldPos.parent().children().index($oldPos);
-      let newIndex = $newPos.parent().children().index($newPos);
-
-      orderEditor(oldIndex,newIndex);
-    }, 10);
-    ordering = false;
-  }
-  $(".dragging").removeClass("dragging");
-  if ($("#dragBox").length != 0) {
-    $("#dragBox").remove();
+    let $content = $('.inEditor.content');
+    $content.attr('src', `saves/${currentProject}/images/${value}`);
+    $target.next().attr('src', `saves/${currentProject}/images/${value}`);
   }
 });

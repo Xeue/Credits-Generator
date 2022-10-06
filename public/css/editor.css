@@ -135,11 +135,6 @@ h2 {
 }
 
 #creditsCont {
-  padding-top: 2em;
-  padding-bottom: 200px;
-  align-items: center;
-  display: flex;
-  flex-direction: column
 }
 
 header,
@@ -174,9 +169,9 @@ header>div {
 }
 
 #creditsScroller {
-  overflow-y: auto;
+  overflow-y: hidden;
   margin-top: -5px;
-  margin-bottom: -5px
+  margin-bottom: -5px;
 }
 
 .editing #creditsScroller,
@@ -436,7 +431,9 @@ dialog>*>section {
 }
 
 dialog footer {
-  display: flex
+  display: grid;
+  grid-auto-flow: column;
+  grid-column-gap: 7px;
 }
 
 dialog header,
@@ -455,6 +452,13 @@ dialog footer button {
 dialog button {
   background: var(--accentLight);
   border-top: 1px solid var(--accentLightBorder);
+}
+
+.name:focus-visible,
+.role:focus-visible,
+.content:focus,
+.content:focus-visible {
+  outline: 4px ridge rgb(171, 31, 31);
 }
 
 .downloadRow {
@@ -744,7 +748,7 @@ dialog footer button:first-of-type {
 
 #newFade {
   order: 1;
-  /*! display: none; */
+  display: none;
 }
 
 .editing #newFade {
@@ -825,13 +829,13 @@ dialog footer button:first-of-type {
   transition: .1s;
   border-radius: 8px;
   padding: 10px;
-  width: 100%;
 }
 
 .content {
   border-radius: 5px;
   margin: 5px;
   transition: .2s;
+  outline: 2px ridge transparent;
 }
 
 .columns > .block {
@@ -923,6 +927,32 @@ dialog footer button:first-of-type {
   background: 0 0
 }
 
+#editorCont > header {
+  margin: 5px 10px 2px 8px;
+  width: auto;
+  padding-bottom: 0;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+.editorGroup {
+  border: 2px dotted var(--accentLightBorder);
+  margin: 13px;
+  border-radius: 15px;
+  display: none;
+  margin-bottom: 5px;
+}
+.active + .editorGroup {
+  display: block;
+}
+
+.editorGroup > .editorProperty,
+.editorGroup > .settingProperty{
+  margin: 5px;
+}
+
 .propertyLabel {
   padding: 4px 5px;
   font-size: 12pt;
@@ -943,6 +973,11 @@ dialog footer button:first-of-type {
 .settingProperty:hover,
 .editorProperty:hover {
   border-top: 1px solid var(--accentDarkBorder);
+}
+
+.editorHeading,
+.settingHeading {
+  font-size: 0.8em;
 }
 
 .settingPropCont,
@@ -1073,15 +1108,12 @@ menu {
   border-radius: 10px;
   padding: 10px;
   transition: top 0s .2s, left 0s .2s, opacity .2s;
-  padding-left: 5px;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 0;
+  display: grid;
   margin: 0;
+  grid-row-gap: 10px;
 }
 
 menu>button {
-  margin-bottom: 10px;
   background-color: var(--accentLight);
   border-top: 1px var(--accentLightBorder) solid;
 }

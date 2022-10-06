@@ -755,9 +755,6 @@ $(document).ready(function() {
       if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
         if (document.exitFullscreen) {
           document.exitFullscreen();
-          //$("header").removeClass("hidden");
-          //$("footer").removeClass("hidden");
-          //$("#creditsScroller").removeClass("noScroll");
           $("#creditsScroller").css("transition", "");
           $("#creditsScroller").css("top", "");
           for (var i=0; i<timeouts.length; i++) {
@@ -766,14 +763,8 @@ $(document).ready(function() {
         }
       } else {
         document.documentElement.requestFullscreen();
-        //$("header").toggleClass("hidden");
-        //$("footer").toggleClass("hidden");
-        //$("#creditsScroller").toggleClass("noScroll");
         $("#creditsScroller").css("transition", "");
         $("#creditsScroller").css("top", "");
-        //$("html").removeClass("editing");
-        //$("html").removeClass("settings");
-        //$("#editorCont").removeClass("open");
       }
     })
 
@@ -806,16 +797,23 @@ $(document).ready(function() {
     $(document).click(function(e) {
       let $target = $(e.target);
 
-      if ($target.hasClass('content')) {
-        $('.content').attr('contenteditable', 'false');
+      if ($target.hasClass('content') || $target.hasClass('name') || $target.hasClass('role')) {
+        $('.editSelected').removeAttr('contenteditable');
+        $('.editSelected').removeAttr('tabindex');
+        $('.editSelected').removeClass('editSelected');
+        let type = ($target.is('img') || $target.hasClass('spacing')) ? 'tabindex' : 'contenteditable';
+        let setting = ($target.is('img') || $target.hasClass('spacing')) ? '0' : 'true';
         if ($('html').hasClass('editing')) {
-          $target.attr('contenteditable', 'true');
+          $target.addClass('editSelected')
+          $target.attr(type, setting);
           $target.focus();
           $target.on('blur', () => {
-            $target.attr('contenteditable', 'false');
+            $target.removeAttr(type);
+            $target.removeClass('editSelected');
           });
         } else {
-          $target.attr('contenteditable', 'false')
+          $target.removeAttr(type);
+          $target.removeClass('editSelected');
         }
       }
 
@@ -958,15 +956,13 @@ $(document).ready(function() {
           updateSaves(data.responseJSON.saves);
           doOpenGallery();
         });
+      } else if ($target.hasClass('settingGroupCheck')) {
+        $target.parent().toggleClass('active');
       } else if ($("html").hasClass("editing") && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
-        let $block = $target.closest(".block");
-        if ($block.length > 0) {
-          editorOpen($block);
-        } else if ($target.closest("#editorCont").length == 0) {
-          //editorClose();
+        let $content = $target.closest(".content, .block");
+        if ($content.length > 0) {
+          editorOpen($content);
         }
-      } else {
-        //editorClose();
       }
       closeMenu();
     });
