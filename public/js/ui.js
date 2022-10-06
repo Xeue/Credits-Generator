@@ -563,7 +563,7 @@ $(document).ready(function() {
     $("#loadVersion").change(function(){
       currentVersion = $("#loadVersion").val();
       $("#loadVersionBut").val(currentVersion);
-      load(currentProject);
+      load(currentProject, currentVersion);
     });
 
     $("#loadFileBut").change(function(){

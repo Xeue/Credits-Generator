@@ -183,7 +183,7 @@ function makeContentObject($content) {
       content.text = $content.html();
       break;
     case 'spacing':
-      content.spacing = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
+      content.space = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
       break;
     case 'names':
       let names = [];
@@ -253,17 +253,19 @@ function getDummyJSON() {
   return "var credits = ["+JSON.stringify(dummyBlock, null, "\t")+"]\n var settings = {'background':{'font-weight':'normal','font-style':'italic', 'background-color':'#000000'},'subTitle':{'margin-top':'5em','margin-bottom':'2em'},'text':{'margin-top':'1em','font-size':'0.8em'},'role':{'font-weight':'bold','font-style':'italic'},'title':{'font-size':'1.2em','font-weight':'bold','margin-top':'2em','margin-bottom':'2em'}}";
 }
 
-function load(project) {
+function load(project, version) {
   currentProject = project;
   $("#loadFile").val(currentProject);
   let versionString = String($("#loadFile").find(":selected").data("versions"));
   let versions = [];
   versions = versionString.split(",");
 
-  currentVersion = versions.length;
+  if (typeof version === 'undefined') {
+    currentVersion = versions.length;
+  }
 
   $("#loadVersion").html("");
-  for (var i = 0; i < currentVersion; i++) {
+  for (var i = 0; i < versions.length; i++) {
     $("#loadVersion").prepend($("<option value='"+versions[i]+"'>"+versions[i]+"</option>"));
   }
 
@@ -271,7 +273,7 @@ function load(project) {
   $("#loadVersion").val(currentVersion);
   $load = $("#loadVersionBut");
   $load.html("");
-  for (var j = 0; j < currentVersion; j++) {
+  for (var j = 0; j < versions.length; j++) {
     $load.append($("<option value='"+versions[j]+"'>"+versions[j]+"</option>"));
   }
   $load.append($("<option value='new'>New Version</option>"));
@@ -281,7 +283,6 @@ function load(project) {
   $footer.html('<button id="newFade">+</button>');
   $.get(`save?project=${currentProject}&version=${currentVersion}`)
   .done(function(data) {
-    console.log(data);
     images = data.images;
     content = data.content;
     settings = data.globalSettings;

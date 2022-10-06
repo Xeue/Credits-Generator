@@ -26,12 +26,13 @@ function renderFades(endFades) {
 
 function buildCredits(content) {
   let active = ' active';
+  const $cont = $("#creditsCont");
+  $cont.html('');
+  const $footer = $("#creditsFooter");
   content.forEach(article => {
     let name = typeof article.name !== 'undefined' ? article.name : article.type;
     const $tab = $(`<button class="tabButton${active}">${name}</button>`)
-    const $footer = $("#creditsFooter");
     $footer.append($tab);
-    const $cont = $("#creditsCont");
     const html = renderBlocks(article.blocks);
     const $content = $(`<article class="credits-${article.type}${active}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
     active = '';
@@ -54,7 +55,7 @@ function renderBlocks(blocks) {
 function renderContent(content) {
   let subHtml = "";
   let style = '';
-  if (typeof content.settings !== "undefined") {
+  if (typeof content.settings !== "undefined" && Object.values(content.settings).length > 0) {
     style = 'style="';
     for (const property in content.settings) {
       if (Object.hasOwnProperty.call(content.settings, property)) {

@@ -457,7 +457,8 @@ dialog button {
 .name:focus-visible,
 .role:focus-visible,
 .content:focus,
-.content:focus-visible {
+.content:focus-visible,
+.inEditor.content {
   outline: 4px ridge rgb(171, 31, 31);
 }
 
