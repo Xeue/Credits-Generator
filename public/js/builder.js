@@ -133,7 +133,7 @@ function getCreditsJSON() {
   let content = [];
   $('#creditsCont').children().each(function(index) {
     $content = $(this);
-    let type = $content.hasClass('scroll') ? "scroll" : "fade";
+    let type = $content.hasClass('credits-scroll') ? "scroll" : "fade";
     content.push({
       "type": type,
       "name": $content.data('name'),
@@ -183,7 +183,7 @@ function makeContentObject($content) {
       content.text = $content.html();
       break;
     case 'spacing':
-      content.space = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
+      content.spacing = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
       break;
     case 'names':
       let names = [];
@@ -283,7 +283,7 @@ function load(project, version) {
   $footer.html('<button id="newFade">+</button>');
   $.get(`save?project=${currentProject}&version=${currentVersion}`)
   .done(function(data) {
-    images = data.images;
+    projectImages = data.images;
     content = data.content;
     settings = data.globalSettings;
     fonts = globalFonts.concat(data.fonts);

@@ -590,6 +590,7 @@ $(document).ready(function() {
 
       $("html").addClass("editing");
       $("#editorCont").html('<div style="padding: 20px;text-align: center;">Select a block to start editing</div>');
+      $("#editorCont").addClass("open");
     });
 
     $("#uploadButton").click(function() {
@@ -931,7 +932,7 @@ $(document).ready(function() {
           });
         }
       } else if ($target.is("#settings")) {
-        settingsToggle();
+        settingsOpen();
       } else if ($target.is("#run")) {
         initRunInBrowser();
       } else if ($target.hasClass("settingNewRule")) {
@@ -971,38 +972,71 @@ $(document).ready(function() {
       let $target = $(e.target);
       if ($target.hasClass("settingCheckBox")) {
         let $cont = $target.closest(".settingProperty");
-        if ($cont.hasClass("active")) {
-          $cont.toggleClass("active");
+        let makeInactive = $cont.hasClass("active") ? true : false;
+        if (makeInactive) {
           $cont.find(".settingRuleGroup").html("");
-          delete settings[$cont.data("setting")];
-          updateSettings();
         } else {
-          $cont.toggleClass("active");
           $cont.find(".settingNewRule").click();
-          settings[$cont.data("setting")] = {};
         }
+        switch ($cont.parent().data('level')) {
+          case 'global':
+            if (makeInactive) {
+              delete settings[$cont.data("setting")];
+              updateSettings();
+            }
+            break;
+          case 'block':
+            if (makeInactive) {
+              $('.block.inEditor').attr('style', '');
+            }
+            break;
+          default:
+            if (makeInactive) {
+              $('.content.inEditor').attr('style', '');
+            }
+            break;
+        }
+        $cont.toggleClass("active");
       } else if ($target.hasClass("settingKeyInput")) {
         let $cont = $target.closest(".settingProperty");
-        let setting = $cont.data("setting");
-        let cls = settings[setting];
-        let prev = $target.data("prev");
-        let value = $target.val();
-        $target.data("prev", value);
-        delete cls[prev];
-        cls[value] = $target.next().val();
-        $target.next().attr("list", value);
-        updateSettings(true);
+        if ($cont.parent().data('level') === 'global') {
+          let setting = $cont.data("setting");
+          let prev = $target.data("prev");
+          let value = $target.val();
+          if (settings[setting] !== undefined) {
+            delete settings[setting][prev];
+          } else {
+            settings[setting] = {};
+          }
+          $target.data("prev", value);
+          settings[setting][value] = $target.next().val();
+          $target.next().attr("list", value);
+          updateSettings(true);
+        } else {
+          let value = $target.val();
+          $target.next().attr("list", value);
+        }
       } else if ($target.hasClass("settingValueInput")) {
         let $cont = $target.closest(".settingProperty");
         let setting = $cont.data("setting");
-
-        let cls = settings[setting];
-
         let value = $target.val();
         let key = $target.prev().val();
 
-        cls[key] = value;
-        updateSettings(false);
+        switch ($target.closest('.editorGroup').data('level')) {
+          case 'block':
+            $('.inEditor.block').css(key, value);
+            break;
+          case 'global':
+            if (settings[setting] === undefined) {
+              settings[setting] = {};
+            }
+            settings[setting][key] = value;
+            updateSettings(false);
+            break;
+          default:
+            $('.inEditor.content').css(key, value);
+            break;
+        }
       }
     });
 
@@ -1021,15 +1055,15 @@ if (document.addEventListener) {
     });
 }
 
-jQuery.each( [ "put", "delete" ], function( i, method ) {
+$.each( [ "put", "delete" ], function( i, method ) {
   jQuery[ method ] = function( url, data, callback, type ) {
-    if ( jQuery.isFunction( data ) ) {
+    if ( $.isFunction( data ) ) {
       type = type || callback;
       callback = data;
       data = undefined;
     }
 
-    return jQuery.ajax({
+    return $.ajax({
       url: url,
       type: method,
       dataType: type,

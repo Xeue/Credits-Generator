@@ -34,7 +34,7 @@ function buildCredits(content) {
     const $tab = $(`<button class="tabButton${active}">${name}</button>`)
     $footer.append($tab);
     const html = renderBlocks(article.blocks);
-    const $content = $(`<article class="credits-${article.type}${active}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
+    const $content = $(`<article class="creditsSection${active}" data-type="${article.type}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
     active = '';
     $cont.append($content);
   });
@@ -43,7 +43,7 @@ function buildCredits(content) {
 function renderBlocks(blocks) {
   let html = "";
   blocks.forEach(block => {
-    html += `<section class="block block_${block.type}">`;
+    html += `<section class="block" data-direction="${block.type}">`;
     block.content.forEach(content => {
       html += renderContent(content);
     })
@@ -113,7 +113,7 @@ function renderContent(content) {
       subHtml += `<img ${style} class='image content' data-type='${content.type}' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'>`;
       break;
     case "spacing":
-      subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.space}em'></div>`;
+      subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.spacing}em'></div>`;
       break;
     default:
   }

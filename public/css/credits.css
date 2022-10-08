@@ -57,8 +57,7 @@ body {
  height: 100%;
 }
 
-.credits-scroll,
-.credits-fade {
+.creditsSection {
   display: none;
   width: 60vw;
   padding: 0 calc(50% - 30vw);
@@ -66,8 +65,7 @@ body {
   max-width: 100%;
 }
 
-.credits-scroll.active,
-.credits-fade.active {
+.creditsSection.active {
   display: block;
   overflow-y: auto;
 }
@@ -153,6 +151,9 @@ body {
 .block {
  display:flex;
  flex-direction:column
+}
+.block[data-direction="columns"] {
+  flex-direction: row;
 }
 .subTitle {
  padding-bottom:1em;

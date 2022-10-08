@@ -103,7 +103,7 @@ app.delete('/fonts', (req, res) => {
     doDelete(req, res, "fonts");
 });
 
-app.post('/media', (req, res) => {
+app.post('/images', (req, res) => {
     doUpload(req, res, "images");
 })
 app.get('/images', (req, res) => {
@@ -200,12 +200,12 @@ function doHome(req, res) {
         let saves = {};
         if (typeof savesObj.public.saves !== 'undefined') {
             saves = savesObj.public.saves;
-            for (const project in saves) {
+            /*for (const project in saves) {
                 if (Object.hasOwnProperty.call(saves, project)) {
                     saves[project].images = Object.assign({}, saves[project].images);
                     saves[project].fonts = Object.assign({}, saves[project].fonts);
                 }
-            }
+            }*/
         }
 
         let render = false;
@@ -347,33 +347,8 @@ function doUpload(req, res, uploadType) {
             }
 
             if (newProject) {
-                const template = `var credits = [
-                    {
-                        "spacing": "8",
-                        "imageHeight": "24",
-                        "image": "../../../img/Placeholder.jpg",
-                        "title": "Placeholder",
-                        "subTitle": "Placeholder",
-                        "text": "Placeholder",
-                        "maxColumns": "2",
-                        "columns": [
-                            {
-                                "title": "Column 1"
-                            },
-                            {
-                                "title": "Column 2"
-                            }
-                        ],
-                        "names": [
-                            {
-                                "role": "Role",
-                                "name": "Name"
-                            },
-                            "Name 2"
-                        ]
-                    }
-                ]`
-                fs.writeFile(`${projectDir}/1.js`, template, (err)=>{});
+                const template = `{}`
+                fs.writeFile(`${projectDir}/1.json`, template, (err)=>{});
                 returnObj.new = true;
                 returnObj.project = project;
             } else {
@@ -390,9 +365,9 @@ function doUpload(req, res, uploadType) {
                 uploadedItems.mv(`${imgDir}/${uploadedItems.name}`);
             }
 
-            getUpdatedProjects().then((saves)=>{
+            getUpdatedProjects(project).then((save)=>{
                 returnObj.type = "success";
-                returnObj.saves = saves;
+                returnObj.save = save;
                 res.send(returnObj);
             });
         }
@@ -401,7 +376,6 @@ function doUpload(req, res, uploadType) {
         res.status(500).send(err);
     }
 }
-
 function doDelete(req, res, deleteType) {
     const file = req.query.file;
     const project = req.query.project;
@@ -410,21 +384,21 @@ function doDelete(req, res, deleteType) {
     .then(getUpdatedProjects)
     .then((saves)=>{
         returnObj.type = "success";
-        returnObj.saves = saves;
+        returnObj.save = saves[project];
         res.send(returnObj);
     }).catch((err)=>{
         getUpdatedProjects().then((saves)=>{
             logObj("File error", err, "W");
             res.status(500);
             returnObj.type = "fail";
-            returnObj.saves = saves;
+            returnObj.save = saves[project];
             returnObj.error = err;
             res.send(returnObj);
         })
     });
 }
 
-function getUpdatedProjects() {
+function getUpdatedProjects(project) {
     const promise = new Promise((resolve, reject) => {
         globby(["public/saves"]).then((files)=>{
             let output = {};
@@ -444,13 +418,8 @@ function getUpdatedProjects() {
 
             let saves = output.public.saves;
 
-            for (const project in saves) {
-                if (Object.hasOwnProperty.call(saves, project)) {
-                    saves[project].images = Object.assign({}, saves[project].images);
-                    saves[project].fonts = Object.assign({}, saves[project].fonts);
-                }
-            }
-            resolve(saves);
+            let resolveObj = typeof project === 'undefined' ? saves : saves[project];
+            resolve(resolveObj);
         });
     });
     return promise;

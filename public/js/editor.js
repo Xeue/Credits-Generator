@@ -187,14 +187,64 @@ function editorMakeProperty($json, prop, state) {
   return $property;
 }
 
-function editorOpen($target) {
+function settingsOpen() {
+  if ($('html').hasClass('settings')) {
+    editorClose();
+    return
+  }
+  $('html').addClass('settings');
   $(".inEditor").removeClass("inEditor");
-  $target.addClass("inEditor");
   let $editor = $("#editorCont");
-  let $block = $target.closest('.block');
-  $block.addClass("inEditor");
   $editor.html("");
 
+  editorDataList($editor)
+
+  $editor.data('type', 'global');
+
+  editorScroll($editor, false);
+  editorGlobal($editor, false);
+
+  jscolor.install();
+  $editor.addClass("open");
+}
+
+function editorOpen($target) {
+  $('html').removeClass('settings');
+  $(".inEditor").removeClass("inEditor");
+  let $editor = $("#editorCont");
+  $editor.html("");
+
+  editorDataList($editor);
+
+  $target.addClass("inEditor");
+  let $block = $target.closest('.block');
+  $block.addClass("inEditor");
+  let isBlock = $target.hasClass('block') ? true : false;
+
+  if (!isBlock) {
+    editorContent($editor, $target);
+  } else {
+    $editor.data('type', 'block')
+  }
+  editorColumns($editor, $block);
+  editorBlock($editor, $block, $target);
+  editorScroll($editor, true);
+  editorGlobal($editor, true);
+
+  jscolor.install();
+  console.log("HERE");
+  $editor.addClass("open");
+}
+function editorClose() {
+  let $editor = $("#editorCont");
+  $editor.removeClass("open");
+  $(".inEditor").removeClass("inEditor");
+  $("html").removeClass("settings");
+  $("html").removeClass("editing");
+}
+
+
+function editorDataList($editor) {
   dataOptions = [
     {
       "prop": "background-color",
@@ -245,14 +295,9 @@ function editorOpen($target) {
     $editor.append($optionsList);
   }
   $editor.append($dataList);
-
-  const blockSettingsOptions = ["title","subTitle","image","text","name","role"];
-  const globalSettingsOptions = ["background","title","subTitle","image","text","name","role"];
-
-  let isBlock = $target.hasClass('block') ? true : false;
-
+}
+function editorContent($editor, $target) {
   let type = $target.data('type');
-  if (!isBlock) {
     $editor.data('type', 'content')
     switch (type) {
       case 'image':
@@ -270,48 +315,118 @@ function editorOpen($target) {
     } else {
       $editor.append(settingsMakeProperty(contentSettings, type, "inactive"));
     }
-  } else {
-    $editor.data('type', 'block')
-  }
-
+}
+function editorColumns($editor, $block) {
   if ($block.parent().hasClass('columns')) {
     $editor.append(`<header class="active">
       <h3>Parent Columns</h3>
       <input type="checkbox" id="settingEnable_columns" class="settingGroupCheck" checked>
     </header>`);
-    let $columnsSettings = $('<section class="editorGroup"></section>');
+    let $columnsSettings = $('<section class="editorGroup" data-level="column"></section>');
     $columnsSettings.append(editorMakeProperty(makeContentObject($block.parent()), 'columns', "active"));
     $editor.append($columnsSettings);
   }
-
-  if (isBlock) {
-    $editor.append(`<header class="active">
-      <h3>Block Settings</h3>
-      <input type="checkbox" id="settingEnable_block" class="settingGroupCheck" checked>
+}
+function editorBlock($editor, $block, $target) {
+  let checked = $target.hasClass('block') ? 'checked' : '';
+  let blockLevel = $target.hasClass('block') ? 'class="active"' : '';
+  $editor.append(`<header ${blockLevel}>
+    <h3>Block Settings</h3>
+    <input type="checkbox" id="settingEnable_block" class="settingGroupCheck" ${checked}>
+  </header>`);
+  
+  let $blockSettings = $('<section class="editorGroup" data-level="block"></section>');
+  let blockSettings = {'default': getStylesObject($block[0])};
+  let active = Object.values(blockSettings.default).length > 0 ? 'active' : 'inactive';
+  let direction = $block.attr('data-direction');
+  let options = direction == 'rows'
+    ? `<option value="rows" selected>Rows</option><option value="columns">Columns</option>`
+    : `<option value="rows">Rows</option><option value="columns" selected>Columns</option>`;
+  $blockSettings.append(`<section class="settingProperty active" data-setting="direction">
+    <header>
+      <div class="settingHeading" id="setting_direction">Direction</div>
+    </header>
+    <div class="settingPropCont" id="settingProp_default">
+      <div class="settingRuleGroup">
+        <div class="settingRulePair">
+          <span class="propertyLabel">Direction</span>
+          <select class="editorProp" data-direction="${direction}" id="editorInput_direction">
+            ${options}
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>`)
+  $blockSettings.append(settingsMakeProperty(blockSettings, 'default', active));
+  $editor.append($blockSettings);
+}
+function editorScroll($editor, toggleable) {
+  $active = $('.creditsSection.active');
+  let creditsType = $active.attr('data-type');
+  let duration = $active.attr('data-duration');
+  let creditsName = $active.attr('data-name');
+  if (toggleable) {
+    $editor.append(`<header>
+      <h3 id="editorSectionName">${creditsType} Settings</h3>
+      <input type="checkbox" id="settingEnable_scroll" class="settingGroupCheck">
     </header>`);
   } else {
-    $editor.append(`<header>
-      <h3>Block Settings</h3>
-      <input type="checkbox" id="settingEnable_block" class="settingGroupCheck">
+    $editor.append(`<header class="active">
+      <h3 id="editorSectionName">${creditsType} Settings</h3>
     </header>`);
   }
-  
-  let $blockSettings = $('<section class="editorGroup"></section>');
-  let blockSettings = getStylesObject($block[0]);
-  blockSettingsOptions.forEach(setting => {
-    if (typeof blockSettings[setting] === 'undefined') {
-      $blockSettings.append(settingsMakeProperty(blockSettings, setting, "inactive"))
-    } else {
-      $blockSettings.append(settingsMakeProperty(blockSettings, setting, "active"))
-    }
-  });
-  $editor.append($blockSettings);
-
-  $editor.append(`<header>
-    <h3>Global Settings</h3>
-    <input type="checkbox" id="settingEnable_global" class="settingGroupCheck">
-  </header>`);
-  let $globalSettings = $('<section class="editorGroup"></section>');
+  let $scrollSettings = $('<section class="editorGroup" data-level="scroll"></section>');
+  $scrollSettings.append(`<section class="editorProperty active" data-prop="duration">
+    <header>
+      <div class="editorHeading" id="editor_duration">Duration</div>
+    </header>
+    <div class="editorPropCont" id="editorProp_duration">
+      <button class="editorPlus" id="editorPlus_duration">+</button>
+      <input class="editorProp" id="editorInput_duration" value="${duration}">
+      <button class="editorMinus" id="editorMinus_duration">-</button>
+    </div>
+  </section>`);
+  let options = creditsType == 'scroll'
+  ? `<option value="scroll" selected>Scroll</option><option value="fade">Fade</option>`
+  : `<option value="scroll">Scroll</option><option value="fade" selected>Fade</option>`;
+  $scrollSettings.append(`<section class="settingProperty active" data-setting="type">
+    <header>
+      <div class="settingHeading" id="setting_type">Scroll/Fade</div>
+    </header>
+    <div class="settingPropCont" id="settingProp_type">
+      <div class="settingRuleGroup">
+        <div class="settingRulePair">
+          <span class="propertyLabel">Type</span>
+          <select class="editorProp" data-type="${creditsType}" id="editorInput_type">
+            ${options}
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>`)
+  $scrollSettings.append(`<section class="settingProperty active" data-setting="sectionName">
+    <header>
+      <div class="settingHeading" id="setting_sectionName">${creditsType} Name</div>
+    </header>
+    <div class="editorPropCont" id="editorProp_sectionName">
+      <input class="editorProp" id="editorInput_sectionName" value="${creditsName}">
+    </div>
+  </section>`)
+  $editor.append($scrollSettings);
+}
+function editorGlobal($editor, toggleable) {
+  const globalSettingsOptions = ["background","title","subTitle","image","text","name","role"];
+  if (toggleable) {
+    $editor.append(`<header>
+      <h3>Global Settings</h3>
+      <input type="checkbox" id="settingEnable_global" class="settingGroupCheck">
+    </header>`);
+  } else {
+    $editor.append(`<header class="active">
+      <h3>Global Settings</h3>
+    </header>`);
+  }
+  let $globalSettings = $('<section class="editorGroup" data-level="global"></section>');
   globalSettingsOptions.forEach(setting => {
     if (typeof settings[setting] === 'undefined') {
       $globalSettings.append(settingsMakeProperty(settings, setting, "inactive"))
@@ -320,163 +435,6 @@ function editorOpen($target) {
     }
   });
   $editor.append($globalSettings);
-
-  $editor.addClass("open");
-}
-function editorClose() {
-  let $editor = $("#editorCont");
-  $editor.removeClass("open");
-  $(".inEditor").removeClass("inEditor");
-  $("html").removeClass("settings");
-}
-
-function updateNames($element, value, type) {
-  let index;
-  let subIndex;
-  let $names = $(".inEditor .names").children();
-  if (type == "role" || type == "name") {
-    index = $element.closest("#editorNamesGroup").children().index($element.closest(".editorNamesPair"));
-    if ($element.siblings().length > 1) {
-      subIndex = $element.parent().children().index($element);
-      let $nameGroup = $($names[index]).children(".nameGroup").children();
-      $($nameGroup[subIndex]).html(value);
-    } else {
-      $($names[index]).find("."+type).html(value);
-    }
-  } else {
-    index = $element.parent().children().index($element);
-    $($names[index]).html(value);
-  }
-}
-
-function addRoleName($target, name = "Placeholder") {
-
-  let index;
-  let subIndex;
-  let $names = $(".inEditor .names").children();
-
-  index = $target.closest("#editorNamesGroup").children().index($target.closest(".editorNamesPair"));
-
-  let $namesGroup = $($names[index]).find(".nameGroup");
-
-  if ($namesGroup.length == 0) {
-    $namesGroup = $("<div class='nameGroup'></div>");
-    let $txt = $($names[index]).find(".name");
-    $txt.replaceWith($namesGroup);
-    $namesGroup.append($txt);
-  }
-
-  let $newTxt = $("<div class='name'>"+name+"</div>");
-  $namesGroup.append($newTxt);
-
-  let $newTxtInp;
-  if (name == "Placeholder") {
-    $newTxtInp = $("<input class='editorNameInput editorProp' placeholder='Placeholder'>");
-  } else {
-    $newTxtInp = $("<input class='editorNameInput editorProp' value='"+name+"'>");
-  }
-
-  $target.before($newTxtInp);
-}
-function addName(name = "Placeholder") {
-  let $targetBlock = $(".inEditor");
-  let $txtGrp = $targetBlock.find(".names");
-  let $name = $("<div class='name'>"+name+"</div>");
-  $txtGrp.append($name);
-  let $editName;
-  if (name == "Placeholder") {
-    $editName = $("<input class='editorNamesInput editorProp' placeholder='Placeholder'>");
-  } else {
-    $editName = $("<input class='editorNamesInput editorProp' value='"+name+"'>");
-  }
-  $(".editorNewName").closest("#editorProp_names").find("#editorNamesGroup").append($editName);
-}
-function addRole(role = "Placeholder") {
-  let $targetBlock = $(".inEditor");
-  let $txtGrp = $targetBlock.find(".names");
-  let $pair = $("<div class='pair'></div>");
-  let $role = $("<div class='role'>"+role+"</div>");
-  let $name = $("<div class='name'>Placeholder</div>");
-  $pair.append($role);
-  $pair.append($name);
-  $txtGrp.append($pair);
-
-  let $editPair = $("<div class='editorNamesPair'></div>");
-  let $editRole;
-  if (role == "Placeholder") {
-    $editRole = $("<input class='editorRoleInput editorProp' placeholder='Placeholder'>");
-  } else {
-    $editRole = $("<input class='editorRoleInput editorProp' value='"+role+"'>");
-  }
-  let $editCont = $("<div class='editorNameGroup'></div>");
-  let $editName = $("<input class='editorNameInput editorProp' placeholder='Placeholder'>");
-  let $editNew = $("<button class='editorNewPairName'></button>");
-
-  $editPair.append($editRole);
-  $editPair.append($editCont);
-  $editCont.append($editName);
-  $editCont.append($editNew);
-
-  $(".editorNewRole").closest("#editorProp_names").find("#editorNamesGroup").append($editPair);
-}
-
-function updateBlock($element, value) {
-  let $targetBlock = $(".inEditor");
-  let id = $element.attr("id");
-  let type = id.substr(12);
-  if (type == "maxColumns") {
-    findClass = "columns";
-  } else if (type == "imageHeight") {
-    findClass = "image";
-  } else {
-    findClass = type;
-  }
-  let $target = $targetBlock.find("."+findClass);
-  switch (type) {
-    case "spacing":
-      $target.css("height",value+"em");
-      break;
-    case "imageHeight":
-      $target.css("max-height",value+"vh");
-      break;
-    case "maxColumns":
-      $target.attr("class", "columns cols"+value);
-      break;
-    case "duration":
-      $targetBlock.parent().data("duration",value);
-      break;
-    case "title":
-    case "subTitle":
-      $target.html(value);
-      break;
-    case "image":
-      let $next = $element.next();
-      path = `saves/${currentProject}/images/${value}`;
-      if ($next.hasClass("editorImgGrouped")) {
-        let index = $element.parent().children("select").index($element);
-        $($target[index]).attr("src", path);
-      } else {
-        $target.attr("src", path);
-      }
-      $next.attr("src", path);
-      break;
-    case "text":
-      if ($element.parent().children("textarea").length > 1) {
-        let index = $element.parent().children("textarea").index($element);
-        $($target[index]).html(value);
-      } else {
-        $target.html(value);
-      }
-      break;
-    default:
-      l($target);
-      l($element);
-      l(value);
-      l(type);
-  }
-  if ($targetBlock.closest(".endFadeGroup").length != 0) {
-    updateFadesObject();
-  }
 }
 
 function addProp(prop) {
@@ -571,26 +529,6 @@ function isLight(color) {
     } else {
         return false;
     }
-}
-
-function settingsOpen() {
-  $("html").removeClass("editing");
-
-  if ($("html").hasClass("settings")) {
-    return;
-  }
-  settingsDoOpen();
-}
-
-function settingsToggle() {
-  $("html").removeClass("editing");
-
-  if ($("html").hasClass("settings")) {
-    $("#editorCont").removeClass("open");
-    $("html").removeClass("settings");
-    return;
-  }
-  settingsDoOpen();
 }
 
 function settingsDoOpen() {
@@ -699,11 +637,11 @@ function settingsMakeProperty(source, setting, state) {
 
       let list = "";
       if (key == "color" || key == "background-color") {
-        list = `data-jscolor="{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333',
+        list = ` data-jscolor="{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333',
         palette:'rgba(0,0,0,0) #fff #808080 #000 #996e36 #f55525 #ffe438 #88dd20 #22e0cd #269aff #bb1cd4',
         paletteCols:11, hideOnPaletteClick:true}"`;
       } else if (dataOptions.map((val)=>val.prop).includes(key)) {
-        list = `list="${key}"`;
+        list = ` list="${key}"`;
       }
       let $value = $(`<input class='settingValueInput settingProp'${list}>`);
       $value.val(value);
@@ -723,6 +661,10 @@ function settingsMakeProperty(source, setting, state) {
 }
 
 function editorNumChange($target, num) {
+  if ($target.closest('.editorProperty').data('prop') == 'duration') {
+    $('.creditsSection.active').attr('data-duration', num);
+    return
+  }
   let $content = $('.inEditor.content');
   let isBlock = false;
   if ($content.length == 0) {
@@ -768,46 +710,20 @@ $(document).change(function(e) {
     } else {
       removeProp(prop);
     }
-  } else if ($target.is("#editorInput_title") || $target.is("#editorInput_subTitle") || $target.is("#editorInput_text")) {
-    let value = $target.val();
-    updateBlock($target, value);
-  } else if ($target.hasClass("editorRoleInput")) {
-    let value = $target.val();
-    if (value.includes(",")) {
-      let names = value.split(",");
-      updateNames($target, names[0], "role");
-      $target.val(names[0]);
-      for (var i = 1; i < names.length; i++) {
-        addRole(names[i]);
-      }
-    } else {
-      updateNames($target, value, "role");
+  } else if ($target.is('#editorInput_direction')) {
+    $('.inEditor.block').attr('data-direction', $target.val());
+  } else if ($target.is('#editorInput_type')) {
+    let $article = $('.creditsSection.active');
+    if ($article.attr('data-name') == $article.attr('data-type')) {
+      $article.attr('data-name', $target.val());
+      $('.tabButton.active').html($target.val());
     }
-  } else if ($target.hasClass("editorNameInput")) {
-    let value = $target.val();
-    $button = $target.next("button");
-    if (value.includes(",")) {
-      let names = value.split(",");
-      updateNames($target, names[0], "name");
-      $target.val(names[0]);
-      for (var i = 1; i < names.length; i++) {
-        addRoleName($button, names[i]);
-      }
-    } else {
-      updateNames($target, value, "name");
-    }
-  } else if ($target.hasClass("editorNamesInput")) {
-    let value = $target.val();
-    if (value.includes(",")) {
-      let names = value.split(",");
-      updateNames($target, names[0], "nameSolo");
-      $target.val(names[0]);
-      for (var i = 1; i < names.length; i++) {
-        addName(names[i]);
-      }
-    } else {
-      updateNames($target, value, "nameSolo");
-    }
+    $('#setting_sectionName').html($target.val()+' Name');
+    $('#editorSectionName').html($target.val()+' Settings');
+    $article.attr('data-type', $target.val());
+  } else if ($target.is('#editorInput_sectionName')) {
+    $('.creditsSection.active').attr('data-name', $target.val());
+    $('.tabButton.active').html($target.val());
   } else if ($target.hasClass("editorProp")) {
     let value = $target.val();
     let $content = $('.inEditor.content');

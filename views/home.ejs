@@ -48,10 +48,11 @@
     <script src="lib/cookie.js"></script>
     <script>
         let saves = <%- JSON.stringify(saves) %>;
-        let images = <%- JSON.stringify(images) %>;
+        let images = <%- JSON.stringify(images[defaultProject]) %>;
         let projectFonts = <%- JSON.stringify(fonts) %>;
         let globalFonts = <%- JSON.stringify(globalFonts) %>;
         let fonts = <%- JSON.stringify(globalFonts) %>;
+        let projectImages;
         let content;
         let currentProject = null;
         let currentVersion = null;
@@ -82,32 +83,28 @@
     <iframe id="downloadIframe" style="display:none;"></iframe>
     <main id="scene" class="background creditsBody">
       <header class="<%=hide%>">
+        <div>Project:</div>
         <select id="loadFile" data-projects="<%- Object.keys(saves).join(",") %>">
             <% for (const save in saves) {%>
                 <option id='proj_<%-save%>>' value='<%-save%>' data-versions="<%- Array(saves[save].count - 1 + 1).fill().map((_, idx) => 1 + idx).join(',') %>"><%-save%></option>
             <% } %>
         </select>
+        <div>Version:</div>
         <select id="loadVersion">
 
         </select>
-        <button id="newButton">
-          New
-        </button><button id="saveButton">
-          Save
-        </button><button id="uploadButton">
-          Import Project
-        </button><button id="downloadMultiButton">
-          Download
-        </button><button id="galleryButton">
-          Gallery
-        </button><button id="renderButton">
-          Render
-        </button>
-        <button id="help" class="right">Help</button>
-        <button id="full" class="right">Fullscreen</button>
+        <button id="newButton">New</button>
+        <button id="saveButton">Save</button>
+        <button id="uploadButton">Import Project</button>
+        <button id="downloadMultiButton">Download</button>
+        <button id="galleryButton">Gallery</button>
+        <button id="renderButton">Render</button>
         <button id="run" class="right">Run</button>
+        <button id="full" class="right">Fullscreen</button>
+        <div class="gridSpacer"></div>
         <button id="editButton" class="right">Edit</button>
         <button id="settings" class="right">Settings</button>
+        <button id="help" class="right">Help</button>
       </header>
 
       <div id="creditsScroller" class="<%=noScroll%>">
