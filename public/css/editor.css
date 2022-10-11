@@ -1329,6 +1329,7 @@ menu>button {
 }
 
 .draggingChild * {
+  -webkit-user-select: none;
   user-select: none;
 }
 
