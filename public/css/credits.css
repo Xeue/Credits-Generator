@@ -57,12 +57,24 @@ body {
  height: 100%;
 }
 
+.running {
+  cursor: none;
+}
+
 .creditsSection {
   display: none;
   width: 60vw;
-  padding: 0 calc(50% - 30vw);
-  height: 100%;
+  padding: 10px calc(50% - 30vw);
+  height: calc(100% - 90px);
   max-width: 100%;
+  padding-bottom: 80px;
+  top: 0;
+}
+
+.creditsSection.active[data-type="fade"] {
+  max-height: 100%;
+  display: grid;
+  align-items: center;
 }
 
 .creditsSection.active {
@@ -180,6 +192,7 @@ body {
  text-align:right;
  margin-right:.2em;
  padding-right: .2em;
+ height: fit-content;
 }
 .text {
  margin-top:1em;
@@ -187,14 +200,36 @@ body {
  white-space:break-spaces
 }
 .image {
- max-width:75%;
  margin:auto !important;
  height:fit-content;
  padding: 5px;
+ max-width: calc(100% - 10px);
+ pointer-events: none;
+}
+figure.content {
+  flex: 1;
+  display: grid;
+  place-items: center;
 }
 .stay {
  opacity:1!important
 }
+
+.running .creditsSection {
+  opacity: 0;
+}
+
+.running .active[data-type="scroll"] {
+  opacity: 1;
+  overflow: visible;
+  height: auto;
+  position: absolute;
+}
+
+.running .blockContainer[data-type="scroll"] {
+  padding-top: 100vh;
+}
+
 .fade {
  animation-name:fade;
  animation-timing-function:ease

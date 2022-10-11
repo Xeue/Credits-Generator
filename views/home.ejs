@@ -22,6 +22,8 @@
     if (typeof frames === "undefined") {
       framesCalc = 250;
     }
+
+    let loadImages = typeof images[defaultProject] == 'undefined' ? [] : images[defaultProject];
 %>
 
 <html lang="en">
@@ -45,10 +47,12 @@
       <script src="lib/webcg-framework.umd.js"></script>
     <% }; %>
     <script src="lib/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="lib/cookie.js"></script>
     <script>
         let saves = <%- JSON.stringify(saves) %>;
-        let images = <%- JSON.stringify(images[defaultProject]) %>;
+        let images = <%- JSON.stringify(loadImages) %>;
         let projectFonts = <%- JSON.stringify(fonts) %>;
         let globalFonts = <%- JSON.stringify(globalFonts) %>;
         let fonts = <%- JSON.stringify(globalFonts) %>;
@@ -98,7 +102,7 @@
         <button id="uploadButton">Import Project</button>
         <button id="downloadMultiButton">Download</button>
         <button id="galleryButton">Gallery</button>
-        <button id="renderButton">Render</button>
+        <button id="renderButton" disabled>Render</button>
         <button id="run" class="right">Run</button>
         <button id="full" class="right">Fullscreen</button>
         <div class="gridSpacer"></div>
@@ -114,7 +118,7 @@
 
       <footer id="creditsFooter" class="<%=hide%>">
         <button id="creditsButton" class="tabButton active">Main</button>
-        <button id='newFade'>+</button>
+        <button id='newArticle'>+</button>
       </footer>
     </main>
     
@@ -311,8 +315,14 @@
       </div>
     </dialog>
 
-    <menu>
-      <button id="menuMoveUp">Move Up</button><button id="menuMoveDown">Move Down</button><button id="menuDelete">Delete</button>
+    <menu class="menuContent">
+      <button id="newContent">New Content</button>
+      <button id="newBlock">New Group</button>
+      <button id="menuDeleteColumn">Delete Columns</button>
+      <button id="menuDeleteContent">Delete Content</button>
+      <button id="menuDeleteBlock">Delete Group</button>
+      <button id="menuDeleteFade">Delete Fade</button>
+      <button id="menuDeleteSetting">Delete Style</button>
     </menu>
     <% } %>
   </body>

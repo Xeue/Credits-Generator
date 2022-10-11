@@ -64,27 +64,19 @@
     </head>
     <body>
         <div class="cont">
-            <div class="but">Duration:</div>
-            <input value="60" id="time" type="text"/>
-            <div style="width: 10px;"></div>
             <button class="" onclick="triggerStart()" type="button">Run</button>
             <div style="width: 10px;"></div>
-            <button class="" onclick="reset()" type="button">Reset</button>
-            <div style="width: 10px;"></div>
-            <button class="" onclick="toggleUI()" type="button">Hide UI</button>
+            <button class="" onclick="toggleUI()" type="button">Toggle UI</button>
         </div>
         <div class="fadesLength">
-            <span>The end fades will take up: </span>
+            <span>The credits will run for: </span>
             <span id="fadesTime"></span>
-            <span> seconds of the above duration</span>
+            <span> seconds</span>
         </div>
         <script type="text/javascript">
             let fadesDuration = 0;
             function triggerStart() {
                 if (window.opener) {
-                    let time = document.getElementById("time").value - fadesDuration;
-                    window.opener.postMessage('{"command":"setTime","time":'+time+'}', "*");
-                    window.opener.postMessage('{"command":"hideUI"}', "*");
                     window.opener.postMessage('{"command":"run"}', "*");
                 }
             }
@@ -93,29 +85,12 @@
                    window.opener.postMessage('{"command":"toggleUI"}', "*");
                 }
             }
-            function reset() {
-                if (window.opener) {
-                    window.opener.postMessage('{"command":"reset"}', "*");
-                }
-            }
-            function toggleFull() {
-                if (window.opener) {
-                    window.opener.postMessage('{"command":"full"}', "*");
-                }
-            }
-            function setTime() {
-                if (window.opener) {
-                    let time = document.getElementById("time").value;
-                    window.opener.postMessage('{"command":"setTime","time":'+time+'}', "*");
-                }
-            }
             window.addEventListener("message", (e)=>{
                 const command = e.data.command;
-                const data = e.data.data;
+                const data = ++e.data.data;
                 switch (command) {
                     case "fadesDuration":
-                        fadesDuration = data.reduce((a, b) => a + b, 0);
-                        document.getElementById("fadesTime").innerHTML = fadesDuration;
+                        document.getElementById("fadesTime").innerHTML = data;
                         break;
                 
                     default:

@@ -29,25 +29,21 @@ function savePopup(context) {
 function openMenu(e) {
     $(".menuSelected").removeClass("menuSelected");
     let $ele = $(document.elementFromPoint(e.pageX, e.pageY));
-    if ($ele.hasClass("editorImg")) {
-        $ele = $ele.prev(".editorProp");
-    }
     let $menu = $("menu");
-    let prop = $ele.closest(".editorProperty").data("prop");
     let left = e.pageX;
     let width = $(document).width();
     let height = $(document).height();
     let menuWidth = $menu.outerWidth();
     let menuHeight = $menu.outerHeight();
-    let $block = $ele.closest(".block");
     if ((width - left) < menuWidth) {
-        left = width - menuWidth;
+      left = width - menuWidth;
     }
-    $menu.removeClass("menuNoDown");
-    $menu.removeClass("menuNoUp");
-    $menu.removeClass("menuFade");
-    $menu.removeClass("menuBlock");
-    if ($ele.hasClass("editorProp") && (prop == "image" || prop == "text" || prop == "names") && !$ele.is("#editorInput_imageHeight")) {
+    
+
+    let $block = $ele.closest(".block");
+    $menu.removeAttr('class');
+
+    if ($ele.hasClass("settingProp")) {
         let top = $ele.offset().top + $ele.outerHeight() + 10;
         if ((top + menuHeight - height) > 0) {
             top = $ele.offset().top - menuHeight - 10;
@@ -60,69 +56,57 @@ function openMenu(e) {
         left -= (menuWidth/2);
         $menu.css("top", top+"px");
         $menu.css("left", left+"px");
+        $menu.addClass("menuSetting");
         $menu.addClass("menuActive");
-        $menu.removeClass("menuMove");
-        if ($ele.parent().siblings(".editorNamesPair").length != 0) {
-            $menu.removeClass("menuDelete");
-        } else if ($ele.siblings(".editorProp").length == 0) {
-            $menu.addClass("menuDelete");
-        } else {
-            $menu.removeClass("menuDelete");
-        }
-        if ($ele.siblings("img").length > 0 && prop == "image") {
-            prop = "imageGroup";
-        }
-        selectForMenu($ele, prop);
-    } else if ($ele.hasClass("settingProp")) {
-        let top = $ele.offset().top + $ele.outerHeight() + 10;
-        if ((top + menuHeight - height) > 0) {
-            top = $ele.offset().top - menuHeight - 10;
-            $menu.addClass("above");
-            $menu.removeClass("bellow");
-        } else {
-            $menu.addClass("bellow");
-            $menu.removeClass("above");
-        }
-        left -= (menuWidth/2);
-        $menu.css("top", top+"px");
-        $menu.css("left", left+"px");
-        $menu.addClass("menuActive");
-        $menu.removeClass("menuMove");
-        $menu.addClass("menuDelete");
-        let setting = $ele.closest(".settingProperty").data("setting");
         $ele.addClass("menuSelected");
-    } else if ($ele.hasClass("tabButton") && !$ele.is("#creditsButton") && !$ele.is("#newFade") && $("html").hasClass("editing")) {
+    } else if ($ele.hasClass("tabButton") && $('.tabButton').length > 1 && !$ele.is("#newArticle") && $("html").hasClass("editing")) {
         $menu.addClass("above");
-        $menu.addClass("menuFade");
         $menu.removeClass("bellow");
         left -= menuWidth/2;
         $menu.css("left", left+"px");
         $menu.addClass("menuActive");
+        $menu.addClass("menuTabs");
         $ele.addClass("menuSelected");
-        let fadeNum = $ele.attr("id").substring(4);
-        $("#fadeCont"+fadeNum).addClass("menuSelected");
-        $menu.addClass("menuDelete");
-        $menu.removeClass("menuMove");
         menuHeight = $menu.outerHeight();
         let top = $ele.offset().top - menuHeight - 10;
         $menu.css("top", top+"px");
     } else if ($block.length != 0 && $("html").hasClass("editing")) {
         $menu.removeClass("bellow");
         $menu.removeClass("above");
-        $menu.addClass("menuBlock");
         $menu.css("top", e.pageY-60+"px");
         $menu.css("left", left+"px");
         $menu.addClass("menuActive");
-        $block.addClass("menuSelected");
-        if ($block.prev().length == 0) {
-            $menu.addClass("menuNoUp");
-        } else if ($block.next().length == 0) {
-            $menu.addClass("menuNoDown");
-        }
-        if ($block.siblings().length > 0) {
-            $menu.removeClass("menuMove");
+
+        $content = $ele.closest('.content');
+
+        $block.addClass('domSearch');
+        $content.addClass('domSearch');
+        let $closest = $ele.closest('.domSearch');
+        $block.removeClass('domSearch');
+        $content.removeClass('domSearch');
+
+        editorOpen($closest);
+
+        if ($ele.hasClass('columns')) {
+          $menu.addClass("menuBlock");
+          $menu.addClass("menuColumn");
+          $content.addClass("menuSelected");
+        } else if (!$closest.is($content)) {
+          $block.addClass("menuSelected");
+          $menu.addClass("menuBlock");
+          $menu.addClass("menuContent");
         } else {
-            closeMenu();
+          $content.addClass("menuSelected");
+          $block.addClass("menuSelected");
+          $menu.addClass("menuBlock");
+          $menu.addClass("menuContent");
+        }
+
+        if ($block.siblings().length == 0) {
+          $menu.addClass("menuBlockNew");
+        }
+        if ($content.siblings().length == 0 && $content.hasClass('newContent')) {
+          $menu.addClass("menuContentNew");
         }
     } else {
         closeMenu();
@@ -142,7 +126,6 @@ function selectForMenu($ele, prop) {
 
     switch (prop) {
         case "names":
-            let role;
             if ($ele.hasClass("editorRoleInput")) {
                 type = "role";
                 $ele.parent().addClass("menuSelected");
@@ -207,22 +190,23 @@ function selectForMenu($ele, prop) {
 }
 
 function toggleUI() {
-  $("header").toggleClass("hidden");
-  $("footer").toggleClass("hidden");
-  $("#creditsScroller").removeClass("noScroll");
+  if ($('#creditsCont').hasClass('running')) {
+    $("header").removeClass("hidden");
+    $("footer").removeClass("hidden");
+    $('#creditsCont').removeClass('running');
+    let $active = $('.active.creditsSection');
+    if ($active.length == 0) {
+      $('.creditsSection')[0].classList.add('active');
+    }
+  } else {
+    $("header").addClass("hidden");
+    $("footer").addClass("hidden");
+    $('#creditsCont').addClass('running');
+    editorClose();
+  }
   $("html").removeClass("editing");
   $("html").removeClass("settings");
   $("#editorCont").removeClass("open");
-}
-
-function reset() {
-  $("#creditsScroller").css("transition", "");
-  $("#creditsScroller").css("top", "");
-  $("#creditsScroller").addClass("noScroll");
-  for (var i=0; i<timeouts.length; i++) {
-    clearTimeout(timeouts[i]);
-  }
-  $("#creditsButton").click();
 }
 
 function initRunInBrowser() {
@@ -233,7 +217,7 @@ function runCommand(event) {
   obj = JSON.parse(event.data);
   switch (obj.command) {
     case "loaded":
-      sendRunMessage("fadesDuration");
+      sendDuration()
       break;
     case "run":
       runCredits();
@@ -241,43 +225,18 @@ function runCommand(event) {
     case "toggleUI":
       toggleUI()
       break;
-    case "hideUI":
-      $("header").addClass("hidden");
-      $("footer").addClass("hidden");
-      $("#creditsScroller").addClass("noScroll");
-      $("html").removeClass("editing");
-      $("html").removeClass("settings");
-      $("#editorCont").removeClass("open");
-      break;
-    case "setTime":
-      runTime = parseInt(obj.time);
-      break;
-    case "reset":
-      reset();
-      break;
     default:
 
   }
 }
 
-function sendRunMessage(type) {
+function sendDuration() {
   if (!runWindow) return
-  switch (type) {
-    case "fadesDuration":
-      let data;
-      if (!endFades) {
-        data = [0];
-      } else {
-        data = endFades.map((val)=>val.duration)
-      }
-      runWindow.postMessage({
-        "command":"fadesDuration",
-        "data": data
-      });
-      break;
-    default:
-      break;
-  }
+  let data = Object.values(document.getElementsByClassName('creditsSection')).map((section)=>parseInt(section.getAttribute('data-duration'))).reduce((a,b)=>a+b, 0);
+  runWindow.postMessage({
+    "command":"fadesDuration",
+    "data": data
+  });
 }
 
 function doSave() {
@@ -308,7 +267,23 @@ function doSave() {
         return;
       }
     } else if (type == "New") {
-      file = new Blob([getDummyJSON()], {type: 'text/plain'});
+      let $newOpt = $(`<option value="${project}" data-versions="1">${project}</option>`);
+      $('#loadFile').prepend($newOpt);
+      $('#loadFile').val(project);
+      $('#loadFileBut').prepend($newOpt);
+      $('#loadFileBut').val(project);
+
+      $('#loadVersion').html(`<option value="1">1</option>`);
+      $('#loadVersionBut').html(`<option value="new">New Version</option>`);
+      $('#creditsCont').html(newArticle());
+      $('.tabButton').remove();
+      $('#creditsFooter').append(`<button class="tabButton active">scroll</button>`)
+      $("#newSave").toggleClass("hidden");
+
+      settings = {};
+      fonts = globalFonts;
+      images = [];
+      return;
     } else {
       file = new Blob([getCreditsJSON()], {type: 'text/plain'});
     }
@@ -491,8 +466,7 @@ function doOpenGallery() {
     }
   });
 
-  for (const imageObj in images[currentProject]) {
-    const image = images[currentProject][imageObj];
+  images.forEach(image => {
     let imgArr = image.split('.');
     const imageType = imgArr.pop();
     const imageFile = imgArr.join('.');
@@ -516,15 +490,16 @@ function doOpenGallery() {
       </div>`);
       $("#galleryImages").append($image);
     }
-  }
+  });
 }
 
 function updateSaves(saves) {
+  console.log(saves);
   for (const key in saves) {
     projectFonts[key] = saves[key].fonts;
     images[key] = saves[key].images;
   }
-  fonts = globalFonts.concat(Object.values(projectFonts[currentProject]));
+  fonts = [...new Set ([...globalFonts, Object.values(projectFonts[currentProject])])];
 
   let $list = $("#font-family");
   $list.html();
@@ -545,6 +520,51 @@ function updateSaves(saves) {
   });
 }
 
+function newContent() {
+  return `<div class="newContent content" data-type="new">
+    <div class="newImage">
+      <img src="img/image.svg">
+      <div>Image</div>
+    </div>
+    <div class="newTitle">
+      <img src="img/title.svg">
+      <div>Title</div>
+    </div>
+    <div class="newSubtitle">
+      <img src="img/subtitle.svg">
+      <div>Subtitle</div>
+    </div>
+    <div class="newText">
+      <img src="img/text.svg">
+      <div>Text</div>
+    </div>
+    <div class="newName">
+      <img src="img/name.svg">
+      <div>Names</div>
+    </div>
+    <div class="newRole">
+      <img src="img/role.svg">
+      <div>Names & Roles</div>
+    </div>
+    <div class="newColumns">
+      <img src="img/columns.svg">
+      <div>Columns</div>
+    </div>
+    <div class="newSpace">
+      <img src="img/spacer.svg">
+      <div>Spacer</div>
+    </div>
+  </div>`;
+}
+function newArticle() {
+  $('.creditsSection').removeClass('active');
+  return `<article class="creditsSection blockContainer active" data-type="scroll" data-name="scroll" data-duration="60">
+    <section class="block" data-direction="rows">
+      ${newContent()}
+    </section>
+  </article>`;
+}
+
 var mouseY = 0;
 var mouseX = 0;
 $(document).mousemove(function(e) {
@@ -552,7 +572,8 @@ $(document).mousemove(function(e) {
   mouseX = e.pageX;
 });
 
-$(document).ready(function() {
+// Onloads
+$(function() {
     window.addEventListener("message", runCommand, false);
     firstTimeCheck();
 
@@ -583,14 +604,11 @@ $(document).ready(function() {
       $("html").removeClass("settings");
 
       if ($("html").hasClass("editing")) {
-        $("#editorCont").removeClass("open");
-        $("html").removeClass("editing");
+        editorClose();
         return;
       }
 
-      $("html").addClass("editing");
-      $("#editorCont").html('<div style="padding: 20px;text-align: center;">Select a block to start editing</div>');
-      $("#editorCont").addClass("open");
+      editorReset();
     });
 
     $("#uploadButton").click(function() {
@@ -802,8 +820,12 @@ $(document).ready(function() {
         $('.editSelected').removeAttr('contenteditable');
         $('.editSelected').removeAttr('tabindex');
         $('.editSelected').removeClass('editSelected');
-        let type = ($target.is('img') || $target.hasClass('spacing')) ? 'tabindex' : 'contenteditable';
-        let setting = ($target.is('img') || $target.hasClass('spacing')) ? '0' : 'true';
+        let type = 'contenteditable';
+        let setting = 'true';
+        if ($target.is('figure') || $target.hasClass('spacing') || $target.hasClass('columns') || $target.hasClass('newContent') || $target.hasClass('names')) {
+          type = 'tabindex';
+          setting = '0';
+        }
         if ($('html').hasClass('editing')) {
           $target.addClass('editSelected')
           $target.attr(type, setting);
@@ -820,36 +842,18 @@ $(document).ready(function() {
 
       if ($target.hasClass("tabButton")) {
         $(".tabButton").removeClass("active");
+        $('.creditsSection').removeClass('active');
         $target.addClass("active");
-        if ($target.is("#creditsButton")) {
-          $("#creditsLogos").addClass("hidden");
-          $("#creditsScroller").removeClass("hidden");
-          $(".endFadeGroup").addClass("hidden");
-          if ($("html").hasClass("editing")) {
-            editorOpen($($("#creditsCont").find(".block")[0]));
-          }
-        } else {
-          let tabID = $target.attr("id").substring(4);
-          $("#creditsScroller").addClass("hidden");
-          $("#creditsLogos").removeClass("hidden");
-          $(".endFadeGroup").addClass("hidden");
-          $("#fadeCont"+tabID).removeClass("hidden");
-          if ($("html").hasClass("editing")) {
-            editorOpen($($("#fadeCont"+tabID).find(".block")[0]));
-          }
+        let index = $('.tabButton').index($target)
+        $($('.creditsSection')[index]).addClass('active');
+
+        if ($("html").hasClass("editing")) {
+          settingsOpen(true);
         }
-      } else if ($target.is("#newFade")) {
+      } else if ($target.is("#newArticle")) {
         $(".tabButton").removeClass("active");
-        let $footer = $("#creditsFooter");
-        let num = $footer.data("tabs")+1;
-        $footer.data("tabs", num);
-        let $button = $("<button id='fade"+num+"' class='tabButton active'>Fade "+num+"</button>");
-        $footer.append($button);
-        $("#creditsScroller").addClass("hidden");
-        $("#creditsLogos").removeClass("hidden");
-        $(".endFadeGroup").addClass("hidden");
-        let $tab = $("<div class='endFadeGroup' id='fadeCont"+num+"'><section class='block'><div class='title'>Placeholder Title</div></section></div>");
-        $("#creditsLogos").append($tab);
+        $("#creditsFooter").append(`<button class="tabButton active">scroll</button>`);
+        $("#creditsCont").append(newArticle());
       } else if ($target.parent().hasClass("addNewButBefore") || $target.parent().hasClass("addNewButAfter")) {
         let $newBlock = $("<section class='block'></section>");
         if ($target.parent().hasClass("addNewButBefore")) {
@@ -863,9 +867,19 @@ $(document).ready(function() {
           editorUnHover($newBlock);
         });
         editorOpen($newBlock);
-      } else if ($target.is("#menuDelete")) {
+      } else if ($target.is("#menuDeleteSetting")) {
         $sel = $(".menuSelected");
-        if ($sel.hasClass("settingProp")) {
+        
+        if ($sel.hasClass('settingValueInput')) {
+          $sel = $sel.prev();
+        }
+        
+        let $group = $sel.closest('.editorGroup');
+        if ($group.length == 0) {
+          $('.content.inEditor').css($sel.val(), '');
+        } else if ($group.data('level') == 'block') {
+          $('.block.inEditor').css($sel.val(), '');
+        } else {
           let setting = $sel.closest(".settingProperty").data("setting");
           if ($sel.hasClass("settingKeyInput")) {
             delete settings[setting][$sel.val()];
@@ -873,63 +887,36 @@ $(document).ready(function() {
             delete settings[setting][$sel.prev().val()];
           }
           updateSettings();
-          settingsOpen();
         }
-        if ($sel.hasClass("inEditor")) {
-          $("#editorCont").html('<div style="padding: 20px;text-align: center;">Select a block to start editing</div>');
-        }
+        $sel.parent().remove();
+      } else if ($target.is("#menuDeleteContent") || $target.is("#menuDeleteColumn")) {
+        let $sel = $('.content.menuSelected');
+        let $parent = $sel.parent();
         $sel.remove();
-      } else if ($target.is("#menuMoveUp")) {
-        let $selected = $(".menuSelected");
-        if ($selected.hasClass("block")) {
-          $selected.after($selected.prev());
-        } else if ($($selected[2]).hasClass("editorImgGrouped")) {
-          $selected = $selected.slice(1);
-          let $element = $($selected[0]);
-          let $targetBlock = $(".inEditor");
-          let $target = $targetBlock.find(".image");
-          let $next = $element.next();
-          if ($element.prev().hasClass("editorImgGrouped")) {
-            if ($next.hasClass("editorImgGrouped")) {
-              let index = $element.parent().children("select").index($element);
-              $($target[index-1]).before($target[index]);
-            } else {
-              $target.prev().before($target);
-            }
-            $element.prev().prev().before($selected);
-          }
-        } else if ($selected.closest(".editorPropCont").length == 1) {
-          $selected.each(function(){
-            $(this).after($(this).prev());
-          });
+        if ($parent.children().length == 0) {
+          $parent.append(newContent());
         }
-      } else if ($target.is("#menuMoveDown")) {
-        let $selected = $(".menuSelected");
-        if ($selected.hasClass("block")) {
-          $selected.next().insertBefore($selected);
-        } else if ($($selected[2]).hasClass("editorImgGrouped")) {
-          $selected = $selected.slice(1);
-          let $element = $($selected[0]);
-          let $targetBlock = $(".inEditor");
-          let $target = $targetBlock.children(".imageGroup").find(".image");
-          let $next = $element.next();
-
-          if ($element.next().length > 0) {
-            if ($next.hasClass("editorImgGrouped")) {
-              let index = $element.parent().children("select").index($element);
-              $($target[index+1]).after($target[index]);
-            } else {
-              $target.next().after($target);
-            }
-            $element.next().next().next().after($selected);
-          }
-
-        } else if ($selected.closest(".editorPropCont").length == 1) {
-          $selected.each(function(){
-            if (!$(this).next().is("button")) {
-              $(this).next().insertBefore($(this));
-            }
-          });
+      } else if ($target.is("#menuDeleteBlock")) {
+        $('.block.menuSelected').remove();
+      } else if ($target.is("#menuDeleteFade")) {
+        $sel = $(".menuSelected");
+        let index = $('.tabButton').index($sel)
+        $($('.creditsSection')[index]).remove();
+        $sel.remove();
+      } else if ($target.is("#newContent")) {
+        let $content = $('.menuSelected.content');
+        if ($content.length == 0) {
+          $content = $('.menuSelected.block');
+          $content.append(newContent())
+        } else {
+          $content.after(newContent());
+        }
+      } else if ($target.is("#newBlock")) {
+        let $block = $('.menuSelected.block');
+        if ($block.length !== 0) {
+          $block.after(`<section class="block" data-direction="rows">${newContent()}</section>`);
+        } else {
+          $('.menuSelected.columns').append(`<section class="block" data-direction="rows">${newContent()}</section>`);
         }
       } else if ($target.is("#settings")) {
         settingsOpen();
@@ -959,6 +946,30 @@ $(document).ready(function() {
         });
       } else if ($target.hasClass('settingGroupCheck')) {
         $target.parent().toggleClass('active');
+      } else if ($target.hasClass('newImage')) {
+        $target.parent().replaceWith(`<figure class="content imageCont" data-type='image'><img class='image' src='saves/${currentProject}/images/../../../img/Placeholder.jpg' style='max-height: 10em'></figure>`);
+      } else if ($target.hasClass('newTitle')) {
+        $target.parent().replaceWith(`<div class="title content" data-type="title">Title</div>`);
+      } else if ($target.hasClass('newSubtitle')) {
+        $target.parent().replaceWith(`<div class="subTitle content" data-type="subTitle">Sub Title</div>`);
+      } else if ($target.hasClass('newText')) {
+        $target.parent().replaceWith(`<div class="text content" data-type="text">Text</div>`);
+      } else if ($target.hasClass('newName')) {
+        $target.parent().replaceWith(`<div class="names content" data-type="names"><div class="name">Name</div></div>`);
+      } else if ($target.hasClass('newRole')) {
+        $target.parent().replaceWith(`<div class="names content" data-type="names">
+          <div class="pair">
+            <div class="role">Role</div>
+            <div class="name">Name</div>
+          </div>
+        </div>`);
+      } else if ($target.hasClass('newColumns')) {
+        $target.parent().replaceWith(`<div class="content columns blockContainer" data-type="columns" data-columns="2">
+          <section class="block" data-direction="rows">${newContent()}</section>
+          <section class="block" data-direction="rows">${newContent()}</section>
+        </div>`);
+      } else if ($target.hasClass('newSpace')) {
+        $target.parent().replaceWith(`<div class="spacing content" data-type="spacing" style="height:8em"></div>`);
       } else if ($("html").hasClass("editing") && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
         let $content = $target.closest(".content, .block");
         if ($content.length > 0) {
@@ -999,10 +1010,20 @@ $(document).ready(function() {
         $cont.toggleClass("active");
       } else if ($target.hasClass("settingKeyInput")) {
         let $cont = $target.closest(".settingProperty");
+        let value = $target.val();
+        if (value == "color" || value == "background-color") {
+          $target.next().removeAttr("list");
+          $target.next().attr("data-jscolor", "{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333', palette:'rgba(0,0,0,0) #fff #808080 #000 #996e36 #f55525 #ffe438 #88dd20 #22e0cd #269aff #bb1cd4', paletteCols:11, hideOnPaletteClick:true}");
+        } else if ($target.next().hasClass('jscolor')) {
+          $target.next().remove();
+          $target.parent().append(`<input class="settingValueInput settingProp" data-prev="Placeholder" placeholder="Placeholder" list="${value}">`);
+        } else {
+          $target.next().attr('list', value);
+        }
+        jscolor.install();
         if ($cont.parent().data('level') === 'global') {
           let setting = $cont.data("setting");
           let prev = $target.data("prev");
-          let value = $target.val();
           if (settings[setting] !== undefined) {
             delete settings[setting][prev];
           } else {
@@ -1010,11 +1031,7 @@ $(document).ready(function() {
           }
           $target.data("prev", value);
           settings[setting][value] = $target.next().val();
-          $target.next().attr("list", value);
           updateSettings(true);
-        } else {
-          let value = $target.val();
-          $target.next().attr("list", value);
         }
       } else if ($target.hasClass("settingValueInput")) {
         let $cont = $target.closest(".settingProperty");
@@ -1079,5 +1096,160 @@ $(document).keyup(function(e) {
       toggleUI();
       reset();
     }
- }
+  }
+});
+
+$(document).on('paste', function(e) {
+  let $target = $(e.target);
+  if ($target.attr("contenteditable")) {
+    setTimeout(function() {
+      let text = $target.text();
+      if (!$target.hasClass('name')) {
+        $target.html(text);
+      } else {
+        let $group = $target.children('.nameGroup');
+        if ($group.length == 0) {
+          $group = $target.children('.names');
+          $target.parent().append($group.children());
+        } else {
+          $target.before($group);
+        }
+        $target.remove();
+      }
+    }, 0);
+  }
+})
+
+function selectForSwap($target) {
+  $target.addClass('draggingSelected');
+  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text')) {
+    let $cont = $(`<div class="dragCont"></div>`);
+    $cont.append($target.html());
+    $target.html('');
+    $target.append($cont);
+  }
+}
+
+function deselectForSwap($target) {
+  $target.removeClass('draggingSelected');
+  let $cont = $target.children('.dragCont');
+  if ($cont.length !== 0) {
+    $target.append($cont.html());
+    $cont.remove();
+  }
+}
+
+function stopDragging($article, $siblings, $block) {
+  $('.dragging').removeClass('dragging');
+  $('.draggingSelected').removeClass('draggingSelected');
+  $('.dragCont').removeClass('dragCont');
+  $article.off('mouseup');
+  $article.off('mouseover');
+  $siblings.off('mouseover');
+  $siblings.off('mouseout');
+  $block.removeClass('draggingChild');
+}
+
+let moveTimer;
+
+$(document).mousedown(function(e) {
+  if (!$('html').hasClass('editing')) return;
+  
+  $(document).mouseup(function(e) {
+    clearTimeout(moveTimer);
+  })
+
+  moveTimer = setTimeout(() => {
+    $(document).off('mouseup');
+    let $target = $(e.target);
+    let $content = $target.closest('.content');
+    let $block = $target.closest('.block');
+    let $article = $target.closest('.blockContainer');
+    if ($target.hasClass('blockContainer')) {
+      $article = $target.parent().closest('.blockContainer');
+    }
+    let stopMatch = 'block';
+    if ($target.hasClass('block')) {
+      $content = $target;
+      stopMatch = 'blockContainer';
+      $block = $target.closest('.blockContainer');
+    }
+    if ($content.length !== 0) {
+      $content.addClass('dragging');
+      if (stopMatch == 'block') {
+        editorOpen($block);
+      }
+      $block.addClass('draggingChild');
+  
+      let $siblings = $content.siblings();
+  
+      $siblings.mouseover(function(e) {
+        let $target = $(e.target);
+        selectForSwap($target);
+      })
+      $siblings.mouseout(function(e) {
+        let $target = $(e.target);
+        deselectForSwap($target);
+      })
+  
+      $article.mouseover(function(e) {
+        let $hovered = $(e.target);
+        if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
+          stopDragging($article, $siblings, $block);
+        } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
+          stopDragging($article, $siblings, $block);
+        }
+      })
+  
+      $article.mouseup(function(e) {
+        let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
+        let $dragging = $('.dragging');
+        if ($dragging.siblings().filter($swap).length !== 0) {
+          if ($dragging.prevAll().filter($swap).length === 0) {
+            $swap.after($dragging);
+          } else {
+            $swap.before($dragging);
+          }
+        }
+        stopDragging($article, $siblings, $block);
+      })
+    }
+  }, 100)
+});
+
+$(document).keydown(function(e) {
+  let $target = $(e.target);
+  if ($target.attr("contenteditable")) {
+    if ($target.hasClass('text')) {
+      return
+    }
+    if (e.which != 13) {
+      return true;
+    } else if ($target.hasClass('name')) {
+      if (!$target.parent().hasClass('nameGroup')) {
+        let $group = $(`<div class="nameGroup"></div>`);
+        $target.parent().append($group);
+        $group.append($target);
+      }
+      $target.after($(`<div class="name editSelected" contenteditable="true"></div>`));
+      $target.removeClass('editSelected');
+      $target.removeAttr('contenteditable');
+      $target.next().focus();
+      $target.next().on('blur', () => {
+        $target.next().removeAttr('contenteditable');
+        $target.next().removeClass('editSelected');
+      });
+    } else if ($target.hasClass('role')) {
+      $target.closest('.names').append(`<div class="pair"><div class="role editSelected" contenteditable="true">Role</div><div class="name">Name</div></div>`);
+      $target.removeClass('editSelected');
+      $target.removeAttr('contenteditable');
+      let $new = $target.parent().next().children('.role');
+      $new.focus();
+      $new.on('blur', () => {
+        $new.removeAttr('contenteditable');
+        $new.removeClass('editSelected');
+      });
+    }
+    return false;
+  }
 });

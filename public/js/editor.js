@@ -187,8 +187,8 @@ function editorMakeProperty($json, prop, state) {
   return $property;
 }
 
-function settingsOpen() {
-  if ($('html').hasClass('settings')) {
+function settingsOpen(keepOpen = false) {
+  if ($('html').hasClass('settings') && !keepOpen) {
     editorClose();
     return
   }
@@ -232,7 +232,6 @@ function editorOpen($target) {
   editorGlobal($editor, true);
 
   jscolor.install();
-  console.log("HERE");
   $editor.addClass("open");
 }
 function editorClose() {
@@ -243,6 +242,11 @@ function editorClose() {
   $("html").removeClass("editing");
 }
 
+function editorReset() {
+  $("html").addClass("editing");
+  $("#editorCont").html('<div style="padding: 20px;text-align: center;">To edit text you can click on it and type, all other settings and styling can be done here</div>');
+  $("#editorCont").addClass("open");
+}
 
 function editorDataList($editor) {
   dataOptions = [
@@ -496,12 +500,6 @@ function updateSettings(refresh = true) {
   } else {
     $("html").removeClass("light");
   }
-
-  /*if ($("html").hasClass("settings") && refresh) {
-    settingsDoOpen();
-  } else if ($("html").hasClass("editing")) {
-    editorClose();
-  }*/
 }
 
 function isLight(color) {
@@ -663,6 +661,7 @@ function settingsMakeProperty(source, setting, state) {
 function editorNumChange($target, num) {
   if ($target.closest('.editorProperty').data('prop') == 'duration') {
     $('.creditsSection.active').attr('data-duration', num);
+    sendDuration();
     return
   }
   let $content = $('.inEditor.content');
@@ -674,13 +673,12 @@ function editorNumChange($target, num) {
   if ($target.closest('.editorGroup').length != 0) {
     $content = $content.closest('.columns');
   }
-  console.log($content);
   if ($content.hasClass('spacing')) {
     $content.css('height', num+'em');
   } else if ($content.hasClass('columns')) {
     $content.attr('data-columns', num);
-  } else if ($content.hasClass('image')) {
-    $content.css('max-height', num+'em');
+  } else if ($content.hasClass('imageCont')) {
+    $content.children('img').css('max-height', num+'em');
   }
 }
 
@@ -724,9 +722,13 @@ $(document).change(function(e) {
   } else if ($target.is('#editorInput_sectionName')) {
     $('.creditsSection.active').attr('data-name', $target.val());
     $('.tabButton.active').html($target.val());
+  } else if ($target.is('#editorInput_imageHeight')) {
+    editorNumChange($target, $target.val());
+  } else if ($target.is('#editorInput_duration')) {
+    editorNumChange($target, $target.val());
   } else if ($target.hasClass("editorProp")) {
     let value = $target.val();
-    let $content = $('.inEditor.content');
+    let $content = $('.inEditor.content').children('img');
     $content.attr('src', `saves/${currentProject}/images/${value}`);
     $target.next().attr('src', `saves/${currentProject}/images/${value}`);
   }

@@ -37,107 +37,14 @@ function addBlockMouseOvers() {
   });
 }
 
-function makeObject(element) {
-  let object = {};
-  let duration = $(element).parent().data("duration");
-  if (typeof duration !== 'undefined') {
-    object.duration = duration;
-  }
-  $(element).children().each(function() {
-    if ($(this).hasClass("title")) {
-      object.title = $(this).text();
-    } else if ($(this).hasClass("subTitle")) {
-      object.subTitle = $(this).text();
-    } else if ($(this).hasClass("image")) {
-      let imgClass = $(this).attr('style');
-      if (imgClass.indexOf("vh") !== -1) {
-        object.imageHeight = imgClass.substring(12, imgClass.indexOf("vh"));
-      }
-      let image = $(this).attr("src");
-      if (image == "../../../img/Placeholder.jpg") {
-        object.image = "../../../img/Placeholder.jpg";
-      } else {
-        let search = `saves/${currentProject}/images/`;
-        object.image = image.substring(search.length);
-      }
-    } else if ($(this).hasClass("imageGroup")) {
-      let imageGroup = [];
-      $(this).children().each(function() {
-        let imgClass = $(this).attr('style');
-        if (imgClass.indexOf("vh") !== -1) {
-          object.imageHeight = imgClass.substring(12, imgClass.indexOf("vh"));
-        }
-        let image = $(this).attr("src");
-        if (image == "../../../img/Placeholder.jpg") {
-          imageGroup.push("../../../img/Placeholder.jpg");
-        } else {
-          let search = `saves/${currentProject}/images/`;
-          imageGroup.push(image.substring(search.length));
-        }
-      });
-      object.image = imageGroup;
-    } else if ($(this).hasClass("text")) {
-      object.text = $(this).text();
-    } else if ($(this).hasClass("textGroup")) {
-      let text = [];
-      $(this).children().each(function() {
-        text.push($(this).text());
-      });
-      object.text = text;
-    } else if ($(this).hasClass("spacing")) {
-      let height = $(this).attr("style");
-      object.spacing = height.substring(7,height.indexOf("em"));
-    } else if ($(this).hasClass("names")) {
-      let names = [];
-      namesArray = $(this).children();
-      for (var i = 0; i < namesArray.length; i++) {
-        var name = {};
-        let $name = $(namesArray[i]);
-        if ($name.hasClass("pair")) {
-          $name.children().each(function() {
-            if ($(this).hasClass("role")) {
-              name.role = $(this).text();
-            } else if ($(this).hasClass("name")) {
-              name.name = $(this).text();
-            } else if ($(this).hasClass("nameGroup")) {
-              let group = [];
-              $(this).children().each(function() {
-                group.push($(this).text());
-              });
-              name.name = group;
-            }
-          });
-        } else if ($name.hasClass("name")) {
-          name = $name.text();
-        }
-        names.push(name);
-      }
-      object.names = names;
-    } else if ($(this).hasClass("columns")) {
-      let colsClass = $(this).attr('class');
-      if (colsClass.indexOf("cols") !== -1) {
-        object.maxColumns = colsClass.substr(colsClass.indexOf("cols")+4);
-      }
-      let columns = [];
-      $(this).children().each(function() {
-        columns.push(makeObject(this));
-      });
-      object.columns = columns;
-    }
-
-  });
-  return object;
-}
-
 function getCreditsJSON() {
   let content = [];
   $('#creditsCont').children().each(function(index) {
     $content = $(this);
-    let type = $content.hasClass('credits-scroll') ? "scroll" : "fade";
     content.push({
-      "type": type,
-      "name": $content.data('name'),
-      "duration": $content.data('duration'),
+      "type": $content.attr('data-type'),
+      "name": $content.attr('data-name'),
+      "duration": $content.attr('data-duration'),
       "blocks": makeBlocksObject($content.children())
     })
   })
@@ -153,9 +60,8 @@ function makeBlocksObject($blocks) {
   let blocks = [];
   $blocks.each(function(index) {
     let $block = $(this);
-    let type = $block.hasClass('block_rows') ? "rows" : "columns";
     let block = {
-      "type": type,
+      "type": $block.attr('data-direction'),
       "content": makeContentsArray($block.children())
     }
     blocks.push(block);
@@ -180,7 +86,8 @@ function makeContentObject($content) {
   switch (content.type) {
     case 'title':
     case 'subTitle':
-      content.text = $content.html();
+    case 'text':
+      content.text = $content.html().replace(/<\/div><div>/g,'\n').replace(/<br>/g,'').replace(/<div>/g,'').replace(/<\/div>/g,'');
       break;
     case 'spacing':
       content.spacing = $content.attr('style').replace(/(.*?)height:(.*?)em(.*?)/g, '$2').replace(/[;: ]/g,'')
@@ -212,11 +119,11 @@ function makeContentObject($content) {
       content.names = names;
       break;
     case 'image':
-      let imgClass = $content.attr('style');
+      let imgClass = $content.children('img').attr('style');
       if (imgClass.indexOf("em") !== -1) {
         content.imageHeight = imgClass.substring(12, imgClass.indexOf("em"));
       }
-      let image = $content.attr("src");
+      let image = $content.children('img').attr("src");
       if (image == "../../../img/Placeholder.jpg") {
         content.image = "../../../img/Placeholder.jpg";
       } else {
@@ -225,7 +132,7 @@ function makeContentObject($content) {
       }
       break;
     case 'columns':
-      content.columns = $content.data('columns');
+      content.columns = $content.attr('data-columns');
       content.blocks = makeBlocksObject($content.children());
       break;
     default:
@@ -280,13 +187,13 @@ function load(project, version) {
 
   let $footer = $("#creditsFooter");
   $footer.data("tabs", 0);
-  $footer.html('<button id="newFade">+</button>');
+  $footer.html('<button id="newArticle">+</button>');
   $.get(`save?project=${currentProject}&version=${currentVersion}`)
   .done(function(data) {
-    projectImages = data.images;
+    images = data.images;
     content = data.content;
     settings = data.globalSettings;
-    fonts = globalFonts.concat(data.fonts);
+    fonts = typeof globalFonts !== 'undefined' ? [...new Set ([...globalFonts, ...data.fonts])]: data.fonts;
     updateSettings();
     buildCredits(content);
     window.dispatchEvent(loadedEvent);

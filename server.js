@@ -242,7 +242,11 @@ function getSave(req, res) {
     const project = req.query.project
     const version = req.query.version
     try {
-        res.sendFile(`${__dirname}/public/saves/${project}/${version}.json`);
+        fs.readFile(`${__dirname}/public/saves/${project}/${version}.json`, async (err, buffer)=>{
+            let data = JSON.parse(buffer.toString());
+            data.images = await imageList(project);
+            res.json(data);
+        });
     } catch (error) {
         logObj("debugging", error);
         res.status(500);
@@ -285,7 +289,7 @@ function doSave(req, res) {
                 let files = fs.readdirSync(projectDir);
                 let count = 0;
                 files.forEach(file => {
-                    const current = parseInt(file.substring(0, file.indexOf(".js")));
+                    const current = parseInt(file.substring(0, file.indexOf(".json")));
                     if (current > count) {
                         count = current;
                     }
@@ -294,7 +298,7 @@ function doSave(req, res) {
                 version = count;
             }
 
-            uploaded.mv(`${projectDir}/${version}.js`);
+            uploaded.mv(`${projectDir}/${version}.json`);
 
             res.send({
                 status: true,
@@ -403,6 +407,7 @@ function getUpdatedProjects(project) {
         globby(["public/saves"]).then((files)=>{
             let output = {};
             files.forEach(function(path) {
+                path = path.replace(`public/saves/`, '');
                 path.split('/').reduce( function(prev, current) {
                     if (typeof current == "string" && current.indexOf(".js") !== -1) {
                         return
@@ -416,10 +421,29 @@ function getUpdatedProjects(project) {
                 }, output);
             });
 
-            let saves = output.public.saves;
-
-            let resolveObj = typeof project === 'undefined' ? saves : saves[project];
+            let resolveObj = typeof project === 'undefined' ? output : output[project];
             resolve(resolveObj);
+        });
+    });
+    return promise;
+}
+
+function imageList(project) {
+    const promise = new Promise((resolve, reject) => {
+        globby([`public/saves/${project}/images`]).then((files)=>{
+            let output = {};
+            files.forEach(function(path) {
+                path = path.replace(`public/saves/${project}/images/`, '');
+                path.split('/').reduce( function(prev, current) {
+                    return prev[current] || (prev[current] = {});
+                }, output);
+            });
+            if (typeof output == "undefined") {
+                resolve([]);
+            } else {
+                output = Object.keys(output);
+                resolve(output);
+            }
         });
     });
     return promise;

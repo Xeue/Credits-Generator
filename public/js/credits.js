@@ -6,24 +6,6 @@ var currentFade = 0;
 var logoCount = 0;
 var timeouts = [];
 
-function renderFades(endFades) {
-  let $cont = $('#creditsLogos');
-  let $footer = $("#creditsFooter");
-
-  $footer.data("tabs", endFades.length);
-  for (let index = 0; index < endFades.length; index++) {
-    const fade = endFades[index];
-    let $subCont = $("<div class='endFadeGroup hidden'></div>");
-    $subCont.attr("id",`fadeCont${index+1}`);
-    $subCont.html(buildBlock(fade));
-    $subCont.data("duration", fade.duration);
-    $cont.append($subCont);
-
-    let $button = $(`<button id='fade${index+1}' class='tabButton'>Fade ${index+1}</button>`);
-    $footer.append($button);
-  }
-}
-
 function buildCredits(content) {
   let active = ' active';
   const $cont = $("#creditsCont");
@@ -34,7 +16,7 @@ function buildCredits(content) {
     const $tab = $(`<button class="tabButton${active}">${name}</button>`)
     $footer.append($tab);
     const html = renderBlocks(article.blocks);
-    const $content = $(`<article class="creditsSection${active}" data-type="${article.type}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
+    const $content = $(`<article class="creditsSection blockContainer${active}" data-type="${article.type}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
     active = '';
     $cont.append($content);
   });
@@ -68,7 +50,7 @@ function renderContent(content) {
   switch (content.type) {
     case "columns":
       let columns = content.columns || "Full";
-      subHtml += `<div ${style} class='content columns cols${columns}' data-type='${content.type}' data-columns='${columns}'>`;
+      subHtml += `<div ${style} class='content columns blockContainer cols${columns}' data-type='${content.type}' data-columns='${columns}'>`;
       subHtml += renderBlocks(content.blocks);
       subHtml += "</div>";
       break;
@@ -110,7 +92,7 @@ function renderContent(content) {
       break;
     case "image":
       height = content.imageHeight || "10";
-      subHtml += `<img ${style} class='image content' data-type='${content.type}' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'>`;
+      subHtml += `<figure ${style} class="content imageCont" data-type='${content.type}'><img class='image' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'></figure>`;
       break;
     case "spacing":
       subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.spacing}em'></div>`;
@@ -118,6 +100,39 @@ function renderContent(content) {
     default:
   }
   return subHtml;
+}
+
+async function runCredits() {
+  $('.creditsSection').removeClass('active');
+  $("header").addClass("hidden");
+  $("footer").addClass("hidden");
+  $('#creditsCont').addClass('running');
+  editorClose();
+  await sleep(1);
+  let sections = document.getElementsByClassName('creditsSection');
+  for (let index = 0; index < sections.length; index++) {
+    const section = sections[index];
+    const duration = section.getAttribute('data-duration');
+    const type = section.getAttribute('data-type');
+    section.classList.add('active');
+    if (type == 'scroll') {
+      section.style.transition = `${duration}s linear`;
+      section.style.top = `-${section.offsetHeight}px`;
+    } else {
+      section.classList.add('fade');
+      $(section).css('animation-duration', duration+'s');
+    }
+    await sleep(duration);
+    section.classList.remove('active');
+    section.classList.remove('fade');
+    section.style.transition = `0s linear`;
+    section.style.top = `0`;
+  }
+  return true;
+}
+
+async function sleep(seconds) {
+  await new Promise(resolve => setTimeout(resolve, seconds*1000));
 }
 
 function seekToFrame(frame) {
