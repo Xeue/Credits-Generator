@@ -122,14 +122,8 @@ export function log(message, level, lineNumInp) {
     message = message.replace(/false/g, r + "false" + w);
     message = message.replace(/null/g, y + "null" + w);
     message = message.replace(/undefined/g, y + "undefined" + w);
-    message = message.replace(/[\r\n]/g, "");
-
-    const regexp = / \((.*?):(.[0-9]*):(.[0-9]*)\)"/g;
-    const matches = message.matchAll(regexp);
-    for (const match of matches) {
-        message = message.replace(match[0], `" [${y}${match[1]}${reset}] ${p}(${match[2]}:${match[3]})${reset}`);
-    }
-
+    message = message.replace(/[\r]/g, "");
+    let messageArray = message.split(/[\r\n]/g);
     let customColor = p;
     let customCatagory;
     let custom = false;
@@ -141,76 +135,97 @@ export function log(message, level, lineNumInp) {
         level = level[0];
         custom = true;
     }
-    let draw = false;
-    let colour;
-    let catagory;
 
-    switch (level) {
-        case "A":
-        case "I":
-            if (loggingLevel == "A") { //White
+    for (let index = 0; index < messageArray.length; index++) {
+        let message = messageArray[index];
+        
+        const regexp = / \((.*?):(.[0-9]*):(.[0-9]*)\)"/g;
+        const matches = message.matchAll(regexp);
+        for (const match of matches) {
+            message = message.replace(match[0], `" [${y}${match[1]}${reset}] ${p}(${match[2]}:${match[3]})${reset}`);
+        }
+    
+        let draw = false;
+        let colour;
+        let catagory;
+    
+        switch (level) {
+            case "A":
+            case "I":
+                if (loggingLevel == "A") { //White
+                    draw = true;
+                    colour = w;
+                    catagory = " INFO";
+                }
+                break;
+            case "D":
+                if (loggingLevel == "A" || loggingLevel == "D") { //Cyan
+                    draw = true;
+                    colour = c;
+                    catagory = "DEBUG";
+                }
+                break;
+            case "S":
+            case "N":
+                if (loggingLevel == "A" || loggingLevel == "D") { //Blue
+                    draw = true;
+                    colour = b;
+                    catagory = "NETWK";
+                }
+                break;
+            case "W":
+                if (loggingLevel != "E") { //Yellow
+                    draw = true;
+                    colour = y;
+                    catagory = " WARN";
+                }
+                break;
+            case "E": //Red
+                colour = r;
+                catagory = "ERROR";
                 draw = true;
-                colour = w;
-                catagory = " INFO";
-            }
-            break;
-        case "D":
-            if (loggingLevel == "A" || loggingLevel == "D") { //Cyan
+                break;
+            case "H": //Green
+                colour = g;
+                catagory = " HELP";
                 draw = true;
-                colour = c;
-                catagory = "DEBUG";
-            }
-            break;
-        case "S":
-        case "N":
-            if (loggingLevel == "A" || loggingLevel == "D") { //Blue
+                debugLineNum == false
+                break;
+            case "C":
+            default: //Green
                 draw = true;
-                colour = b;
-                catagory = "NETWK";
-            }
-            break;
-        case "W":
-            if (loggingLevel != "E") { //Yellow
-                draw = true;
-                colour = y;
-                catagory = " WARN";
-            }
-            break;
-        case "E": //Red
-            colour = r;
-            catagory = "ERROR";
-            draw = true;
-            break;
-        case "H": //Green
-            colour = g;
-            catagory = " HELP";
-            draw = true;
-            debugLineNum == false
-            break;
-        case "C":
-        default: //Green
-            draw = true;
-            colour = g;
-            catagory = " CORE";
-    }
-
-    let lineNumString = ` ${p}${lineNum}${reset}`;
-    if (Array.isArray(level)) {
-        if (level.length > 3) {
-            if (!level[3]) {
-                debugLineNum = false;
+                colour = g;
+                catagory = " CORE";
+        }
+    
+        let lineNumString = ` ${p}${lineNum}${reset}`;
+        if (Array.isArray(level)) {
+            if (level.length > 3) {
+                if (!level[3]) {
+                    debugLineNum = false;
+                }
             }
         }
-    }
-    if (debugLineNum == false || debugLineNum == "false") {
-        lineNumString = ``;
-    }
-    if (custom) {
-        colour = customColor;
-        catagory = customCatagory;
-    }
-    if (draw) {
-        logSend(`[${timeString}]${colour} ${catagory}: ${w}${message}${lineNumString}`);
+        if (debugLineNum == false || debugLineNum == "false") {
+            lineNumString = ``;
+        }
+        if (custom) {
+            colour = customColor;
+            catagory = customCatagory;
+        }
+        let seperator = ':';
+        if (index !== 0) {
+            lineNumString = ``;
+            let newCatagory = '';
+            for (let index = 0; index < catagory.length; index++) {
+                newCatagory += ' ';
+            }
+            catagory = newCatagory;
+            seperator = '|';
+        }
+        if (draw) {
+            logSend(`[${timeString}]${colour} ${catagory}${seperator} ${w}${message}${lineNumString}`);
+        }
     }
 }
 
@@ -221,6 +236,9 @@ export function logObj (message, obj, level) {
     let lineNum = '('+stack[2].substring(stack[2].indexOf(folder)+folder.length+1);
 
     let combined;
+    if (typeof message === 'undefined') {
+        message = 'Logged object';
+    }
     if (obj instanceof Error) {
         combined = `${message}: ${obj.toString()}`;
     } else {
