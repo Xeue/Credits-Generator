@@ -137,7 +137,7 @@ function editorMakeProperty($json, prop, state) {
   return $property;
 }
 
-function settingsOpen(keepOpen = false) {
+function settingsOpen(keepOpen = false, $target) {
   if ($('html').hasClass('settings') && !keepOpen) {
     editorClose();
     return
@@ -151,7 +151,7 @@ function settingsOpen(keepOpen = false) {
 
   $editor.data('type', 'global');
 
-  editorScroll($editor, false);
+  editorScroll($editor, false, $target);
   editorGlobal($editor, false);
 
   jscolor.install();
@@ -314,11 +314,13 @@ function editorBlock($editor, $block, $target) {
   $blockSettings.append(settingsMakeProperty(blockSettings, 'default', active));
   $editor.append($blockSettings);
 }
-function editorScroll($editor, toggleable) {
-  $active = $('.creditsSection.active');
-  let creditsType = $active.attr('data-type');
-  let duration = $active.attr('data-duration');
-  let creditsName = $active.attr('data-name');
+function editorScroll($editor, toggleable, $target) {
+  if (typeof $target === 'undefined') {
+    $target = $('.creditsSection.active');
+  }
+  let creditsType = $target.attr('data-type');
+  let duration = $target.attr('data-duration');
+  let creditsName = $target.attr('data-name');
   if (toggleable) {
     $editor.append(`<header>
       <h3 id="editorSectionName">${creditsType} Settings</h3>

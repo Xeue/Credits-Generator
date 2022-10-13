@@ -1,22 +1,11 @@
-let asci = [
-"     _____                 _  _  _           _____                                 _               ",
-"    / ____|               | |(_)| |         / ____|                               | |              ",
-"   | |      _ __  ___   __| | _ | |_  ___  | |  __   ___  _ __    ___  _ __  __ _ | |_  ___   _ __ ",
-"   | |     | '__|/ _ \\ / _` || || __|/ __| | | |_ | / _ \\| '_ \\  / _ \\| '__|/ _` || __|/ _ \\ | '__|",
-"   | |____ | |  |  __/| (_| || || |_ \\__ \\ | |__| ||  __/| | | ||  __/| |  | (_| || |_| (_) || |   ",
-"    \\_____||_|   \\___| \\__,_||_| \\__||___/  \\_____| \\___||_| |_| \\___||_|   \\__,_| \\__|\\___/ |_|   ",
-"                                                                                                   ",
-"                                                                                                   "
-];
-
-const serverVersion = "3.0.0";
+const serverVersion = "3.1.0";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import fs from 'fs';
-import {log, logObj, logs} from './logs.js';
+import {log, logObj, logs} from 'xeue-logs';
 import render from './render.js';
 import path from 'path';
 import {fileURLToPath} from 'url';
@@ -34,6 +23,7 @@ try {
     process.exit(1);
 }
 config.loggingLevel = config.loggingLevel ? config.loggingLevel : "W";
+config.debugLineNum = config.debugLineNum ? config.debugLineNum : false;
 config.port = config.port ? config.port : 3000;
 config.devMode = config.devMode ? config.devMode : false;
 config.installName = config.installName ? config.installName : "Unknown Site";
@@ -43,15 +33,17 @@ const logsConfig = {
     "logsFileName": "CreditsLogging",
     "configLocation": __dirname,
     "loggingLevel": config.loggingLevel,
-    "debugLineNum": true
+    "debugLineNum": config.debugLineNum
 }
+
 logs.setConf(logsConfig);
 
 const app = express()
 if (!fs.existsSync(__dirname+'/public/saves')){
     fs.mkdirSync(__dirname+'/public/saves', { recursive: true });
 }
-logs.printHeader(asci);
+logs.printHeader('Credits Generator');
+log('Running version: v'+serverVersion, ['H', 'SERVER', logs.g]);
 printConfig();
 
 
@@ -68,7 +60,7 @@ app.use(fileUpload({
 }));
 
 app.listen(config.port, "0.0.0.0", () => {
-    log(`Credits Generator can be accessed at http://localhost:${config.port}`, "C");
+    log(`Credits Generator can be accessed at http://localhost:${config.port}`, ['C', 'SERVER', logs.g]);
 })
 
 app.get('/',  (req, res) =>  {
@@ -150,7 +142,7 @@ app.get('/render', (req, res) => {
         default:
             break;
     }
-    render(`http://localhost:${config.port}`, project, version, fps, frames, width, height, true)
+    render(`http://localhost:${config.port}`, project, version, fps, frames, width, height, true, logsConfig)
     .then(()=>{
         setTimeout(()=>{
             sendZip(res, [`public/saves/${project}/renders/${version}/`], `${project}_credits`);
@@ -495,14 +487,14 @@ function printConfig() {
     for (const key in config) {
         if (Object.hasOwnProperty.call(config, key)) {
             const value = config[key];
-            log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`,"H");
+            log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`, ['H', 'CONFIG', logs.c]);
         }
     }
 
     for (const key in logsConfig) {
         if (Object.hasOwnProperty.call(logsConfig, key)) {
             const value = logsConfig[key];
-            log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`,"H");
+            log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`, ['H', 'CONFIG', logs.c]);
         }
     }
 }

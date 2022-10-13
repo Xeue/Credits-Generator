@@ -406,72 +406,107 @@ function newArticle() {
   </article>`;
 }
 
-function doDragging(e) {
-  $(document).mouseup(function(e) {
-    clearTimeout(moveTimer);
+function doContentDragging($target) {
+  let $content = $target.closest('.content');
+  let $block = $target.closest('.block');
+  let $article = $target.closest('.blockContainer');
+  if ($target.hasClass('blockContainer')) {
+    $article = $target.parent().closest('.blockContainer');
+  }
+  let stopMatch = 'block';
+  if ($target.hasClass('block')) {
+    $content = $target;
+    stopMatch = 'blockContainer';
+    $block = $target.closest('.blockContainer');
+  }
+  if ($content.length !== 0) {
+    $content.addClass('dragging');
+    if (stopMatch == 'block') {
+      editorOpen($block);
+    }
+    $block.addClass('draggingChild');
+
+    let $siblings = $content.siblings();
+
+    $siblings.mouseover(function(e) {
+      let $target = $(e.target);
+      selectForSwap($target);
+    })
+    $siblings.mouseout(function(e) {
+      let $target = $(e.target);
+      deselectForSwap($target);
+    })
+
+    $article.mouseover(function(e) {
+      let $hovered = $(e.target);
+      if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
+        stopDragging($article, $siblings, $block);
+      } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
+        stopDragging($article, $siblings, $block);
+      }
+    })
+
+    $article.mouseup(function(e) {
+      let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
+      let $dragging = $('.dragging');
+      if ($dragging.siblings().filter($swap).length !== 0) {
+        if ($dragging.prevAll().filter($swap).length === 0) {
+          $swap.after($dragging);
+        } else {
+          $swap.before($dragging);
+        }
+      }
+      stopDragging($article, $siblings, $block);
+    })
+  }
+}
+function doSectionDragging($target) {
+  $footer = $('#creditsFooter');
+  $target.addClass('dragging');
+  $footer.addClass('draggingChild');
+
+  let $siblings = $target.siblings('.tabButton');
+
+  $siblings.mouseover(function(e) {
+    let $target = $(e.target);
+    selectForSwap($target);
+  })
+  $siblings.mouseout(function(e) {
+    let $target = $(e.target);
+    deselectForSwap($target);
   })
 
-  moveTimer = setTimeout(() => {
-    $(document).off('mouseup');
-    let $target = $(e.target);
-    let $content = $target.closest('.content');
-    let $block = $target.closest('.block');
-    let $article = $target.closest('.blockContainer');
-    if ($target.hasClass('blockContainer')) {
-      $article = $target.parent().closest('.blockContainer');
+  $('main').mouseover(function(e) {
+    let $hovered = $(e.target);
+    if (!$hovered.hasClass('tabButton') && !$hovered.is('#creditsFooter')) {
+      stopDragging($footer, $siblings, $footer);
+      $('main').off('mouseover');
     }
-    let stopMatch = 'block';
-    if ($target.hasClass('block')) {
-      $content = $target;
-      stopMatch = 'blockContainer';
-      $block = $target.closest('.blockContainer');
-    }
-    if ($content.length !== 0) {
-      $content.addClass('dragging');
-      if (stopMatch == 'block') {
-        editorOpen($block);
+  })
+
+  $footer.mouseup(function(e) {
+    let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
+    if ($siblings.filter($swap).length !== 0) {
+
+      let index = $('.tabButton').index($target);
+      let swapIndex = $('.tabButton').index($swap);
+      let $articles = $('.creditsSection');
+
+      if ($target.prevAll().filter($swap).length === 0) {
+        $swap.after($target);
+        $($articles[swapIndex]).after($($articles[index]));
+      } else {
+        $swap.before($target);
+        $($articles[swapIndex]).before($($articles[index]));
       }
-      $block.addClass('draggingChild');
-  
-      let $siblings = $content.siblings();
-  
-      $siblings.mouseover(function(e) {
-        let $target = $(e.target);
-        selectForSwap($target);
-      })
-      $siblings.mouseout(function(e) {
-        let $target = $(e.target);
-        deselectForSwap($target);
-      })
-  
-      $article.mouseover(function(e) {
-        let $hovered = $(e.target);
-        if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
-          stopDragging($article, $siblings, $block);
-        } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
-          stopDragging($article, $siblings, $block);
-        }
-      })
-  
-      $article.mouseup(function(e) {
-        let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
-        let $dragging = $('.dragging');
-        if ($dragging.siblings().filter($swap).length !== 0) {
-          if ($dragging.prevAll().filter($swap).length === 0) {
-            $swap.after($dragging);
-          } else {
-            $swap.before($dragging);
-          }
-        }
-        stopDragging($article, $siblings, $block);
-      })
     }
-  }, 100)
+    stopDragging($footer, $siblings, $footer);
+  })
 }
 
 function selectForSwap($target) {
   $target.addClass('draggingSelected');
-  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text')) {
+  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text') || $target.hasClass('tabButton')) {
     let $cont = $(`<div class="dragCont"></div>`);
     $cont.append($target.html());
     $target.html('');
@@ -482,6 +517,7 @@ function selectForSwap($target) {
 function deselectForSwap($target) {
   $target.removeClass('draggingSelected');
   let $cont = $target.children('.dragCont');
+  console.log($cont);
   if ($cont.length !== 0) {
     $target.append($cont.html());
     $cont.remove();
@@ -491,7 +527,9 @@ function deselectForSwap($target) {
 function stopDragging($article, $siblings, $block) {
   $('.dragging').removeClass('dragging');
   $('.draggingSelected').removeClass('draggingSelected');
-  $('.dragCont').removeClass('dragCont');
+  $('.dragCont').each(function() {
+    deselectForSwap($(this).parent());
+  });
   $article.off('mouseup');
   $article.off('mouseover');
   $siblings.off('mouseover');
@@ -944,8 +982,19 @@ $(document).on('paste', function(e) {
 
 $(document).mousedown(function(e) {
   if (!$('html').hasClass('editing')) return;
-  
-  doDragging(e);
+  $(document).mouseup(function(e) {
+    clearTimeout(moveTimer);
+  })
+
+  moveTimer = setTimeout(() => {
+    $(document).off('mouseup');
+    let $target = $(e.target);
+    if ($target.hasClass('tabButton')) {
+      doSectionDragging($target);
+    } else {
+      doContentDragging($target);
+    }
+  }, 100);
 });
 
 $(document).keydown(function(e) {

@@ -217,6 +217,10 @@ $(document).click(function(e) {
         } else {
         $('.menuSelected.columns').append(`<section class="block" data-direction="rows">${newContent()}</section>`);
         }
+    } else if ($target.is('#sectionsSettings')) {
+        let index = $('.tabButton').index($('.tabButton.menuSelected'));
+        console.log(index);
+        settingsOpen(true, $($('.creditsSection')[index]));
     }
 });
 

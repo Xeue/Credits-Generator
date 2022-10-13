@@ -6,17 +6,26 @@ This is a website to create and run credits for film/tv. It can either be run in
 
 * Credits can be created and edited via the GUI
 * Credits are saved as a JSON file which can be edited manually and be reuploaded
-* Once a project has been created you can enter edit mode and add blocks that can contain one of each media format
-* Custom settings can be added to each credits in the form of custom CSS rules, this could be different fonts, coloured backgrounds etc
+* Once a project has been created you can enter edit mode to edit, rearange and style the credits
+* Custom settings can be added to every bit of content in every project in the form of custom CSS rules, this could be different fonts, coloured backgrounds etc
 * Media files must be uploaded for them to work in browser, they must also be downloaded when used with casparCG
+
+### Gallery ###
+
+* Now featuring a gallery where you can see fonts and images
+* Allows uploading and deleting of fonts and images
 
 ### Online running ###
 
 * Full screen the web browser
 * Click the "Run in Browser" button
 * In the new popup window click "Toggle UI" to hide the menu bars in the browser window
-* Set the duration of the scrolling section by filling in the text box and pressing "Set Time"
 * When ready to play the credits click "Run"
+
+### Rendering ###
+
+* Now features and FFMPEG based rendering mechanism, it's very CPU intensive due to the nature of generating media from HTML
+* Requires FFMPEG to be installed to work
 
 ### Using casparCG ###
 

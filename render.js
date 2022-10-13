@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import { spawn } from 'child_process';
 import OS from 'os';
-import {log, logObj, logs} from './logs.js';
+import {log, logObj, logs} from 'xeue-logs';
 import fs from 'fs';
 
 function rendererFactory(
@@ -199,7 +199,8 @@ function ffmpegOutput(fps, folder, fileName, fileType, alpha) {
     }
 }
   
-export default async function render(path, project, version, fps, frames, width, height, alpha) {
+export default async function render(path, project, version, fps, frames, width, height, alpha, logsConfig) {
+    logs.setConf(logsConfig);
     const info = {
         width: width,
         height: height,

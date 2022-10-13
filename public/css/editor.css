@@ -756,6 +756,7 @@ dialog footer button:first-of-type {
   display: grid;
   grid-auto-flow: column;
   grid-column-gap: 7px;
+  z-index: 2;
 }
 
 #creditsButton {
@@ -857,6 +858,11 @@ dialog footer button:first-of-type {
 
 .dragging::after {
   content: "Moving";
+}
+
+#creditsFooter .dragging::after {
+  content: "Moving";
+  font-size: 7pt;
 }
 
 .menuSelected.inEditor.content::after {
@@ -1185,6 +1191,11 @@ dialog,
   font-family: var(--system-ui);
 }
 
+.tabButton {
+  text-transform: capitalize;
+  min-width: 100px;
+}
+
 #editorCont::after {
   content: "";
   padding: 5px;
@@ -1226,6 +1237,7 @@ menu>button {
 
 #menuDeleteColumn,
 #newContent,
+#sectionsSettings,
 #menuDeleteContent,
 #newBlock,
 #menuDeleteBlock,
@@ -1248,7 +1260,8 @@ menu>button {
   display: block;
 }
 
-.menuTabs #menuDeleteFade {
+.menuTabs #menuDeleteFade,
+.menuTabs #sectionsSettings {
   display: block;
 }
 
@@ -1317,6 +1330,13 @@ menu>button {
   font-weight: bold;
   font-size: 3vh;
   margin-top: -7px;
+}
+
+#creditsFooter .draggingChild > :hover:not(.dragging)::before,
+#creditsFooter .draggingSelected::before {
+  font-size: 14pt;
+  white-space: nowrap;
+  margin-top: 0px;
 }
 
 .draggingChild * {
