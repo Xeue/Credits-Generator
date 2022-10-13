@@ -1,4 +1,4 @@
-const serverVersion = "3.1.0";
+const serverVersion = "3.1.1";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
@@ -10,6 +10,7 @@ import render from './render.js';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import AmdZip from "adm-zip";
+import commandExists from 'command-exists';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -165,7 +166,7 @@ function doHome(req, res) {
         globby(['public/fonts'])
     ]
 
-    Promise.all(fileSearches).then((values) => {
+    Promise.all(fileSearches).then(async (values) => {
 
         let saves = {}
         values[0].forEach(function(path) {
@@ -194,11 +195,20 @@ function doHome(req, res) {
             fonts.push(font.substring(13));
         })
 
+        let hasFFMPEG = false;
+        try {
+            await commandExists('FFMPEG');
+            hasFFMPEG = true;
+        } catch (error) {
+            log('FFMPEG not installed on this server', "W");
+        }
+
         res.render('home', {
             saves: saves,
             globalFonts: fonts,
             serverName: config.installName,
-            project: req.query.project
+            project: req.query.project,
+            render: hasFFMPEG
         });
     });
 }

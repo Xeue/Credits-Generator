@@ -9,6 +9,7 @@
     }
     const defaultProject = project ? project : Object.keys(saves)[0];
     let loadImages = typeof images[defaultProject] == 'undefined' ? [] : images[defaultProject];
+    const renderDisabled = render ? '' : 'disabled';
 %>
 
 <html lang="en">
@@ -73,7 +74,7 @@
         <button id="uploadButton">Import Project</button>
         <button id="downloadMultiButton">Download</button>
         <button id="galleryButton">Gallery</button>
-        <button id="renderButton">Render</button>
+        <button id="renderButton" <%=renderDisabled%>>Render</button>
         <button id="run" class="right">Run</button>
         <button id="full" class="right">Fullscreen</button>
         <div class="gridSpacer"></div>
