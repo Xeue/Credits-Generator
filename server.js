@@ -197,7 +197,7 @@ function doHome(req, res) {
 
         let hasFFMPEG = false;
         try {
-            await commandExists('FFMPEG');
+            await commandExists('ffmpeg');
             hasFFMPEG = true;
         } catch (error) {
             log('FFMPEG not installed on this server', "W");
