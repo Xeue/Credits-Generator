@@ -246,10 +246,10 @@ function getCreditsJSON() {
 }
 
 function makeBlocksObject($blocks) {
-  let blocks = [];
-  $blocks.each(function(index) {
-    let $block = $(this);
-    let block = {
+  const blocks = [];
+  $blocks.each(function() {
+    const $block = $(this);
+    const block = {
       "type": $block.attr('data-direction'),
       "content": makeContentsArray($block.children())
     }
@@ -259,9 +259,10 @@ function makeBlocksObject($blocks) {
 }
 
 function makeContentsArray($contents) {
-  let contents = [];
-  $contents.each(function(index) {
-    contents.push(makeContentObject($(this)));
+  const contents = [];
+  $contents.each(function() {
+    const content = makeContentObject($(this));
+    if (typeof content !== 'undefined') contents.push(content);
   })
   return contents;
 }
@@ -283,7 +284,7 @@ function makeContentObject($content) {
       break;
     case 'names':
       let names = [];
-      $content.children().each(function(index) {
+      $content.children().each(function() {
         let $name = $(this);
         let name = {};
         if ($name.hasClass("pair")) {
@@ -325,7 +326,7 @@ function makeContentObject($content) {
       content.blocks = makeBlocksObject($content.children());
       break;
     default:
-      break;
+      return;
   }
   return content;
 }

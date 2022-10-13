@@ -406,64 +406,54 @@ function newArticle() {
   </article>`;
 }
 
-function doContentDragging($target) {
-  let $content = $target.closest('.content');
-  let $block = $target.closest('.block');
-  let $article = $target.closest('.blockContainer');
-  if ($target.hasClass('blockContainer')) {
-    $article = $target.parent().closest('.blockContainer');
-  }
-  let stopMatch = 'block';
-  if ($target.hasClass('block')) {
-    $content = $target;
-    stopMatch = 'blockContainer';
-    $block = $target.closest('.blockContainer');
-  }
-  if ($content.length !== 0) {
-    $content.addClass('dragging');
-    if (stopMatch == 'block') {
-      editorOpen($block);
+function doDragging($selected, type) {
+  $selected.closest('.creditsSection').addClass('dragging_'+type);
+  const $main = $('#mainBody');
+
+  $selected.addClass('dragging');
+  if (type == 'block') editorOpen($selected);
+
+  const $potentials = $('.'+type).not($selected);
+
+  $potentials.mouseover(function(e) {
+    const $potential = $(e.target);
+    if ($potential.hasClass(type)) {
+      selectForSwap($potential);
     }
-    $block.addClass('draggingChild');
+  })
+  $potentials.mouseout(function(e) {
+    const $potential = $(e.target);
+    deselectForSwap($potential);
+  })
 
-    let $siblings = $content.siblings();
+  $main.mouseover(function(e) {
+    const $hovered = $(e.target);
+    if (
+      !$hovered.hasClass('creditsSection')
+      && !$hovered.hasClass(type)
+      && !$hovered.hasClass('blockContainer')
+    ) {
+      stopDragging($main, $potentials);
+    }
+  })
 
-    $siblings.mouseover(function(e) {
-      let $target = $(e.target);
-      selectForSwap($target);
-    })
-    $siblings.mouseout(function(e) {
-      let $target = $(e.target);
-      deselectForSwap($target);
-    })
-
-    $article.mouseover(function(e) {
-      let $hovered = $(e.target);
-      if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
-        stopDragging($article, $siblings, $block);
-      } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
-        stopDragging($article, $siblings, $block);
-      }
-    })
-
-    $article.mouseup(function(e) {
-      let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
-      let $dragging = $('.dragging');
-      if ($dragging.siblings().filter($swap).length !== 0) {
-        if ($dragging.prevAll().filter($swap).length === 0) {
-          $swap.after($dragging);
-        } else {
-          $swap.before($dragging);
-        }
-      }
-      stopDragging($article, $siblings, $block);
-    })
-  }
+  $main.mouseup(function(e) {
+    const $swap = $(document.elementFromPoint(e.pageX, e.pageY));
+    if (!$swap.hasClass(type)) return
+    if ($selected.prevAll().filter($swap).length === 0) {
+      $swap.after($selected);
+    } else {
+      $swap.before($selected);
+    }
+    editorOpen($selected);
+    stopDragging($main, $potentials);
+  })
 }
+
 function doSectionDragging($target) {
   $footer = $('#creditsFooter');
   $target.addClass('dragging');
-  $footer.addClass('draggingChild');
+  $footer.addClass('dragging_block');
 
   let $siblings = $target.siblings('.tabButton');
 
@@ -505,8 +495,9 @@ function doSectionDragging($target) {
 }
 
 function selectForSwap($target) {
+  $('.draggingSelected').removeClass('draggingSelected');
   $target.addClass('draggingSelected');
-  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text') || $target.hasClass('tabButton')) {
+  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text') || $target.hasClass('tabButton') || $target.hasClass('newContent')) {
     let $cont = $(`<div class="dragCont"></div>`);
     $cont.append($target.html());
     $target.html('');
@@ -517,24 +508,24 @@ function selectForSwap($target) {
 function deselectForSwap($target) {
   $target.removeClass('draggingSelected');
   let $cont = $target.children('.dragCont');
-  console.log($cont);
   if ($cont.length !== 0) {
     $target.append($cont.html());
     $cont.remove();
   }
 }
 
-function stopDragging($article, $siblings, $block) {
+function stopDragging($hoverCont, $siblings) {
   $('.dragging').removeClass('dragging');
   $('.draggingSelected').removeClass('draggingSelected');
   $('.dragCont').each(function() {
     deselectForSwap($(this).parent());
   });
-  $article.off('mouseup');
-  $article.off('mouseover');
+  $hoverCont.off('mouseup');
+  $hoverCont.off('mouseover');
   $siblings.off('mouseover');
   $siblings.off('mouseout');
-  $block.removeClass('draggingChild');
+  $(".dragging_block").removeClass('dragging_block');
+  $(".dragging_content").removeClass('dragging_content');
 }
 
 let moveTimer; /* for the mousedown event to trigger dragging */
@@ -567,14 +558,11 @@ $(function() {
     });
 
     $("#editButton").click(function() {
-
       $("html").removeClass("settings");
-
       if ($("html").hasClass("editing")) {
         editorClose();
         return;
       }
-
       editorReset();
     });
 
@@ -998,8 +986,10 @@ $(document).mousedown(function(e) {
     let $target = $(e.target);
     if ($target.hasClass('tabButton')) {
       doSectionDragging($target);
-    } else {
-      doContentDragging($target);
+    } else if ($target.hasClass('content')) {
+      doDragging($target, 'content');
+    } else if ($target.hasClass('block')) {
+      doDragging($target, 'block');
     }
   }, 100);
 });

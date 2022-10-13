@@ -860,6 +860,15 @@ dialog footer button:first-of-type {
   content: "Moving";
 }
 
+.dragging.block::after {
+  content: "Group, Moving";
+  top: 0px;
+  left: 3px;
+  color: var(--white);
+  z-index: 1;
+  cursor: move;
+}
+
 #creditsFooter .dragging::after {
   content: "Moving";
   font-size: 7pt;
@@ -933,6 +942,7 @@ dialog footer button:first-of-type {
   background: var(--emptyBlock) !important;
   padding: 20px;
   justify-content: center;
+  transition: 0s;
 }
 
 .newContent div {
@@ -945,6 +955,21 @@ dialog footer button:first-of-type {
 }
 .newContent div * {
   pointer-events: none;
+}
+
+.newContent .dragCont {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 0.12fr));
+  font-family: var(--system-ui);
+  background: var(--emptyBlock) !important;
+  padding: 20px;
+  justify-content: center;
+  width: ;
+  font-weight: normal !important;
+}
+.newContent.draggingSelected {
+  display: block;
+  padding: 0;
 }
 
 .columns > .block {
@@ -1300,23 +1325,28 @@ menu>button {
   transform: translate(-50%, -100%)
 }
 
-.draggingChild > :hover:not(.dragging),
 .draggingSelected {
-  background: var(--dragColour);
+  background: var(--dragColour) !important;
   position: relative;
 }
 
-.draggingChild > :not(.dragging) > *,
-.dragging * {
+.draggingSelected > * {
+  filter: blur(4px) !important;
+}
+
+.dragging_block .content:not(.blockContainer) {
   pointer-events: none;
 }
 
-.draggingChild > :hover:not(.dragging) > *,
-.draggingSelected > * {
-  filter: blur(4px);
+.dragging_content .block,
+.dragging_content .content > * {
+  pointer-events: none;
 }
 
-.draggingChild > :hover:not(.dragging)::before,
+.dragging_content .content {
+  pointer-events: all;
+}
+
 .draggingSelected::before {
   content: "Move Here";
   position: absolute;
@@ -1330,16 +1360,18 @@ menu>button {
   font-weight: bold;
   font-size: 3vh;
   margin-top: -7px;
+  pointer-events: none;
 }
 
-#creditsFooter .draggingChild > :hover:not(.dragging)::before,
+#creditsFooter .dragging_block > :hover:not(.dragging)::before,
 #creditsFooter .draggingSelected::before {
   font-size: 14pt;
   white-space: nowrap;
   margin-top: 0px;
 }
 
-.draggingChild * {
+.dragging_block *,
+.dragging_content * {
   -webkit-user-select: none;
   user-select: none;
 }
