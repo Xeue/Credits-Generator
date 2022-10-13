@@ -8,21 +8,6 @@
         fonts[key] = saves[key].fonts;
     }
     const defaultProject = project ? project : Object.keys(saves)[0];
-    let hide = "";
-    let noScroll = "";
-    if (render) {
-      hide = "hidden";
-      noScroll = "noScroll";
-    }
-    let fpsCalc = fps;
-    let framesCalc = frames;
-    if (typeof fps === "undefined") {
-      fpsCalc = 25;
-    }
-    if (typeof frames === "undefined") {
-      framesCalc = 250;
-    }
-
     let loadImages = typeof images[defaultProject] == 'undefined' ? [] : images[defaultProject];
 %>
 
@@ -43,12 +28,8 @@
             }
         <% }); %>
     </style>
-    <% if (!render) { %>
-      <script src="lib/webcg-framework.umd.js"></script>
-    <% }; %>
+    <script src="lib/webcg-framework.umd.js"></script>
     <script src="lib/jquery-3.6.0.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="lib/cookie.js"></script>
     <script>
         let saves = <%- JSON.stringify(saves) %>;
@@ -62,23 +43,13 @@
         let currentVersion = null;
         let dataOptions = [];
         let runWindow;
-        var endFades;
         const loadedEvent = new Event('loaded');
-        const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         const defaultProject = "<%=defaultProject%>";
-        window.addEventListener('loaded', (e) => {
-          loaded = true;
-          <% if (render) { %>
-            processRenderInfo(<%=fpsCalc%>, <%=framesCalc%>);
-            window.dispatchEvent(renderReadyEvent);
-          <% } %>
-          console.log("Container loaded");
-        }, false);
     </script>
     <script src="js/builder.js"></script>
     <script src="js/editor.js"></script>
-    <script src="js/credits.js"></script>
+    <script src="js/menu.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/jscolor.js"></script>
   </head>
@@ -86,7 +57,7 @@
   <body id="mainBody" class="background">
     <iframe id="downloadIframe" style="display:none;"></iframe>
     <main id="scene" class="background creditsBody">
-      <header class="<%=hide%>">
+      <header>
         <div>Project:</div>
         <select id="loadFile" data-projects="<%- Object.keys(saves).join(",") %>">
             <% for (const save in saves) {%>
@@ -102,7 +73,7 @@
         <button id="uploadButton">Import Project</button>
         <button id="downloadMultiButton">Download</button>
         <button id="galleryButton">Gallery</button>
-        <button id="renderButton" disabled>Render</button>
+        <button id="renderButton">Render</button>
         <button id="run" class="right">Run</button>
         <button id="full" class="right">Fullscreen</button>
         <div class="gridSpacer"></div>
@@ -111,18 +82,16 @@
         <button id="help" class="right">Help</button>
       </header>
 
-      <div id="creditsScroller" class="<%=noScroll%>">
+      <div id="creditsScroller">
         <div id="creditsCont">
         </div>
       </div>
 
-      <footer id="creditsFooter" class="<%=hide%>">
+      <footer id="creditsFooter">
         <button id="creditsButton" class="tabButton active">Main</button>
         <button id='newArticle'>+</button>
       </footer>
     </main>
-    
-    <% if (!render) { %>
 
     <aside id="editorCont">
     </aside>
@@ -172,14 +141,10 @@
               <option value='60'>60p</option>
             </select>
           </div>
-          <div class="label">Duration (seconds)</div>
-          <div>
-            <input type="text" id="renderDuration"></input>
-            <div class="renderLable">
-              <span>The end fades will take up: </span>
-              <span id="renderFades"></span>
-              <span> seconds of the total duration</span>
-            </div>
+          <div class="renderLable">
+            <span>The credits will take: </span>
+            <span id="renderFades"></span>
+            <span> seconds to run</span>
           </div>
         </section>
         <footer>
@@ -324,7 +289,6 @@
       <button id="menuDeleteFade">Delete Fade</button>
       <button id="menuDeleteSetting">Delete Style</button>
     </menu>
-    <% } %>
   </body>
 
 </html>

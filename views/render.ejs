@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<%
+    let fpsCalc = fps;
+    if (typeof fps === "undefined") {
+      fpsCalc = 25;
+    }
+%>
+
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="img/clapper.png" sizes="32x32">
+    <link rel="icon" href="img/clapper.png" sizes="192x192">
+    <link rel="stylesheet" href="css/credits.css">
+    <style>
+        <% globalFonts.forEach(function(font) { %>
+            @font-face {
+                font-family: "<%- font.substring(0,font.indexOf(".")) %>";
+                src: url("fonts/<%- font %>");
+            }
+        <% }); %>
+    </style>
+    <script src="lib/jquery-3.6.0.js"></script>
+    <script src="lib/cookie.js"></script>
+    <script src="js/builder.js"></script>
+    <script>
+        let globalFonts = '<%- JSON.stringify(globalFonts) %>';
+        let fonts = '<%- JSON.stringify(globalFonts) %>';
+        let images;
+        let content;
+        let currentProject = '<%=project%>';
+        let currentVersion = '<%=version%>';
+        let dataOptions = [];
+        let runWindow;
+        const fps = <%=fpsCalc%>;
+        const renderReadyEvent = new Event('renderReady');
+        let loaded = false;
+        load(currentProject, currentVersion).then(()=>{
+            window.dispatchEvent(renderReadyEvent);
+        });
+    </script>
+    <script src="js/render.js"></script>
+    <style>
+        .overlay {
+            position: fixed;
+            padding: 30px;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            font-size: 2em;
+            font-family: sans-serif;
+            display: none;
+        }
+    </style>
+  </head>
+
+  <body id="mainBody" class="background">
+    <div class="overlay"><%=id%></div>
+    <main id="scene" class="background creditsBody">
+      <div id="creditsScroller">
+        <div id="creditsCont">
+        </div>
+      </div>
+    </main>
+  </body>
+
+</html>
