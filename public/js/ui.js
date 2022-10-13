@@ -863,7 +863,14 @@ $(document).click(function(e) {
     </div>`);
   } else if ($target.hasClass('newSpace')) {
     $target.parent().replaceWith(`<div class="spacing content" data-type="spacing" style="height:8em"></div>`);
-  } else if ($("html").hasClass("editing") && ($target.hasClass("block") || $target.hasClass("content"))) {
+  } else if ($("html").hasClass("editing") && (
+    $target.hasClass("block")
+    || $target.hasClass("content")
+    || $target.hasClass("pair")
+    || $target.hasClass("name")
+    || $target.hasClass("role")
+    || $target.hasClass("nameGroup")
+  )) {
     let $content = $target.closest(".content, .block");
     if ($content.length > 0) {
       editorOpen($content);
@@ -1051,3 +1058,117 @@ $.each( [ "put", "delete" ], function( i, method ) {
     });
   };
 });
+
+
+function makeV3BlocksFromV2(credits) {
+  return credits.map((objc) => {
+    let newContent = [];
+    for (const key in objc) {
+      if (Object.hasOwnProperty.call(objc, key)) {
+        const propValue = objc[key];
+        switch (key) {
+          case "title":
+          case "subTitle":
+            let newProp1 = {};
+            newProp1.type = key;
+            newProp1.text = propValue;
+            newContent.push(newProp1);
+            break;
+          case "text":
+            if (typeof propValue == "string") {
+              let newPropT = {};
+              newPropT.type = key;
+              newPropT.text = propValue;
+              newContent.push(newPropT);
+            } else {
+              propValue.forEach((txt)=>{
+                let newPropT = {};
+                newPropT.type = key;
+                newPropT.text = txt;
+                newContent.push(newPropT);
+              })
+            }
+            break;
+          case "names":
+          case "name":
+            let newProp2 = {};
+            newProp2.type = key;
+            newProp2.names = propValue;
+            newContent.push(newProp2);
+            break;
+          case "spacing":
+            let newProp3 = {};
+            newProp3.type = key;
+            newProp3.spacing = propValue;
+            newContent.push(newProp3);
+            break;
+          case "image":
+            if (typeof propValue == "string") {
+              let newPropI = {};
+              newPropI.type = key;
+              newPropI.image = propValue;
+              if (typeof objc["imageHeight"] !== "undefined") {
+                newPropI.imageHeight = objc["imageHeight"];
+              }
+              newContent.push(newPropI);
+            } else {
+              propValue.forEach((img)=>{
+                let newPropI = {};
+                newPropI.type = key;
+                newPropI.image = img;
+                if (typeof objc["imageHeight"] !== "undefined") {
+                  newPropI.imageHeight = objc["imageHeight"];
+                }
+                newContent.push(newPropI);
+              })
+            }
+            break;
+          case "columns":
+            let columns = {
+              "type": "columns",
+              "blocks": makeBlocks(propValue)
+            }
+            if (typeof objc["maxColumns"] !== "undefined") {
+              columns.columns = objc["maxColumns"];
+            }
+            newContent.push(columns);
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    return {
+      "type":"rows",
+      "content": newContent}
+  })
+}
+
+function saveConvertV2toV3(credits, fades, settings) {
+  let newSave = makeV3BlocksFromV2(credits);
+
+  let output = {};
+  let content = [];
+  content.push({
+    "type": "scroll",
+    "name": "scroll",
+    "duration": "60",
+    "blocks": newSave
+  });
+
+  fades.forEach((fade)=>{
+    content.push({
+      "type": "fade",
+      "name": "fade",
+      "duration": fade.duration,
+      "blocks": makeV3BlocksFromV2([fade])
+    })
+  })
+
+  output.content = content;
+  output.globalSettings = settings;
+  output.fonts = [];
+  output.images = [];
+
+  return output;
+}

@@ -1,4 +1,4 @@
-const serverVersion = "3.1.1";
+const serverVersion = "3.1.4";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
@@ -200,7 +200,12 @@ function doHome(req, res) {
             await commandExists('ffmpeg');
             hasFFMPEG = true;
         } catch (error) {
-            log('FFMPEG not installed on this server', "W");
+            try {
+                await commandExists('FFMPEG');
+                hasFFMPEG = true;
+            } catch (error) {
+                log('FFMPEG not installed on this server', "W");
+            }
         }
 
         res.render('home', {
@@ -273,7 +278,7 @@ function getSave(req, res) {
     fs.readFile(`${__dirname}/public/saves/${project}/${version}.json`, async (err, buffer)=>{
         if (err) {
             log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W');
-            logObj(err, 'W');
+            logObj(`Error message`, err, 'W');
             res.status(500);
             res.send(JSON.stringify({
                 "status": "error",
