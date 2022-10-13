@@ -1,44 +1,17 @@
 /*jshint esversion: 6 */
 
-function editorHover($block) {
-  if (!$("html").hasClass("editing")) {
-    return;
-  }
-  if ($block.children().length == 0) {
-    return;
-  }
-
-  let $after = $("<div class='addNewButAfter'><div class='addNewButPlus'></div></div>");
-  $block.append($after);
-
-  let $before = $("<div class='addNewButBefore'><div class='addNewButPlus'></div></div>");
-  $block.prepend($before);
-}
-function editorUnHover($block) {
-  if ($("html").hasClass("editing")) {
-    $block.children().filter(".addNewButAfter").remove();
-    $block.children().filter(".addNewButBefore").remove();
-  }
-}
-
 function editorMakeProperty($json, prop, state) {
   if (prop == "imageHeight" || prop == "maxColumns") {
     return;
   }
-  let $property = $("<section class='editorProperty' data-prop='"+prop+"'></section>");
+  let $property = $("<section class='editorProperty active' data-prop='"+prop+"'></section>");
   let $header = $("<header></header>");
   let $title = $("<div class='editorHeading' id='editor_"+prop+"'></div>");
-  let $check = $("<input type='checkbox' id='editorEnable_"+prop+"' class='editorCheckBox'>");
   let propertyName = prop.replace( /([A-Z])/g, " $1" );
   let title = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
   $title.html(title);
   $header.append($title);
-  $header.append($check);
   $property.append($header);
-  if (state == "active") {
-    $property.addClass("active");
-    $check.prop("checked", true);
-  }
   let $edit = $("<div class='editorPropCont' id='editorProp_"+prop+"'></div>");
   let $input = $("<input class='editorProp' id='editorInput_"+prop+"'>");
   switch (prop) {
@@ -66,11 +39,6 @@ function editorMakeProperty($json, prop, state) {
       $edit.append($plus);
       $edit.append($input);
       $edit.append($minus);
-      break;
-    case "title":
-    case "subTitle":
-      $input.val($json[prop]);
-      $edit.append($input);
       break;
     case "image":
       let $editImg = $("<div class='editorPropCont' id='editorProp_imageHeight'></div>");
@@ -107,22 +75,6 @@ function editorMakeProperty($json, prop, state) {
       $edit.append($imgSelect);
       $edit.append($img);
       break;
-    case "text":
-      let text = $json[prop];
-      let $newText = $("<button class='editorNewText'></button>");
-      if (typeof text == 'object') {
-        for (var j = 0; j < text.length; j++) {
-          let $textBox = $("<textarea class='editorProp' id='editorInput_"+prop+"'></textarea>");
-          $textBox.html(text[j]);
-          $edit.append($textBox);
-        }
-      } else {
-        let $textBox = $("<textarea class='editorProp' id='editorInput_"+prop+"'></textarea>");
-        $textBox.html($json[prop]);
-        $edit.append($textBox);
-      }
-      $edit.append($newText);
-      break;
     case "columns":
       let $plusCol = $("<button class='editorPlus' id='editorPlus_maxColumns'>+</button>");
       let $inputCol = $("<input class='editorProp' id='editorInput_maxColumns'>");
@@ -136,7 +88,6 @@ function editorMakeProperty($json, prop, state) {
       $edit.append($inputCol);
       $edit.append($minusCol);
       break;
-    case "names":
       let names = $json[prop];
       let $namesGroup = $("<div id='editorNamesGroup'></div>");
       if (typeof names !== "undefined") {
@@ -180,8 +131,7 @@ function editorMakeProperty($json, prop, state) {
       $edit.append($newGroup);
       break;
     default:
-      console.log("Unknown property: "+prop);
-
+      break;
   }
   $property.append($edit);
   return $property;
@@ -441,166 +391,6 @@ function editorGlobal($editor, toggleable) {
   $editor.append($globalSettings);
 }
 
-function addProp(prop) {
-  let $block = $(".inEditor");
-  let html = buildProperty(prop, dummyBlock);
-  $block.append(html);
-  if (prop == "columns") {
-    addBlockMouseOvers();
-  }
-  if (prop == "image") {
-    let $imgOpt = $(`<option value='../../../img/Placeholder.jpg' selected disabled hidden>Select Image</option>`);
-    $("#editorInput_image").append($imgOpt);
-
-    $("#editorImg_image").attr("src", "../../../img/Placeholder.jpg");
-  }
-}
-function removeProp(prop) {
-  let $block = $(".inEditor");
-  $block.find("."+prop).remove();
-
-  switch (prop) {
-    case "text":
-      $block.find(".textGroup").remove();
-      break;
-    case "image":
-      $block.find(".imageGroup").remove();
-      break;
-    case "columns":
-      $block.find(".columns").remove();
-      break;
-  }
-  editorOpen($block);
-}
-
-function updateSettings(refresh = true) {
-  $("#settingsCSS").remove();
-  let $settings = $("<style id='settingsCSS' type='text/css'></style>");
-  let style = $settings[0];
-  $("head").append($settings);
-  for (var setting in settings) {
-    if (settings.hasOwnProperty(setting)) {
-      let rulesTxt = "";
-      let rules = settings[setting];
-      for (var rule in rules) {
-        if (rules.hasOwnProperty(rule)) {
-          rulesTxt += rule+":"+rules[rule]+";";
-        }
-      }
-      if (!(style.sheet || {}).insertRule) {
-        (style.styleSheet || style.sheet).addRule("."+setting, rulesTxt);
-      } else {
-        style.sheet.insertRule("."+setting+"{"+rulesTxt+"}",0);
-      }
-    }
-  }
-
-  if (isLight(window.getComputedStyle($("#mainBody")[0]).backgroundColor)) {
-    $("html").addClass("light");
-  } else {
-    $("html").removeClass("light");
-  }
-}
-
-function isLight(color) {
-    var r, g, b, hsp;
-    if (color.match(/^rgb/)) {
-        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
-        r = color[1];
-        g = color[2];
-        b = color[3];
-    }
-    else {
-        color = +("0x" + color.slice(1).replace(
-        color.length < 5 && /./g, '$&$&'));
-        r = color >> 16;
-        g = color >> 8 & 255;
-        b = color & 255;
-    }
-    hsp = Math.sqrt(
-    0.299 * (r * r) +
-    0.587 * (g * g) +
-    0.114 * (b * b)
-    );
-    if (hsp>127.5) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function settingsDoOpen() {
-  dataOptions = [
-    {
-      "prop": "background-color",
-      "name": "Background Colour - rgba(255,255,255,1), #rrggbbaa",
-      "values": ["Black","White","Red","Green","Blue"],
-      "helper": "colourPicker"
-    },{
-      "prop": "background-image",
-      "name": "Background Image - url(path/to/image)",
-      "values": images.map((val)=>`url("saves/${currentProject}/images/${val}")`),
-      "helper": "values"
-    },{
-      "prop": "color",
-      "name": "Text Colour - rgba(255,255,255,1), #rrggbbaa",
-      "values": ["Black","White","Red","Green","Blue"],
-      "helper": "colourPicker"
-    },{
-      "prop": "font-family",
-      "name": "Font",
-      "values": fonts.map((val)=>val.split('.')[0]),
-      "helper": "values"
-    },{
-      "prop": "font-size",
-      "name": "Font Size - units of px, pt, % & em",
-      "values": ["8pt","10pt","12pt","16pt","20pt","24pt","28pt","32pt","36pt","40pt","44pt","48pt"],
-      "helper": "values"
-    },{
-      "prop": "font-weight",
-      "name": "Font Weight - bold, bolder, lighter & normal",
-      "values": ["lighter","normal","bold","bolder"],
-      "helper": "values"
-    },{
-      "prop": "font-style",
-      "name": "Font Style - italic & normal",
-      "values": ["italic","normal"],
-      "helper": "values"
-    }
-  ]
-  $("html").addClass("settings");
-  $(".inEditor").removeClass("inEditor");
-  let $editor = $("#editorCont");
-  $editor.html("");
-  let $dataList = $("<datalist id='CSSList'></datalist>");
-  for (var i = 0; i < dataOptions.length; i++) {
-    let $dataOption = $("<option value='"+dataOptions[i].prop+"'>"+dataOptions[i].name+"</option>");
-    $dataList.append($dataOption);
-    let $optionsList = $("<datalist id='"+dataOptions[i].prop+"'></datalist>");
-    for (var j = 0; j < dataOptions[i].values.length; j++) {
-      let $dataListOption = $("<option value='"+dataOptions[i].values[j]+"'>"+dataOptions[i].values[j]+"</option>");
-      $optionsList.append($dataListOption);
-    }
-    $editor.append($optionsList);
-  }
-  $editor.append($dataList);
-  let properties = ["background","title","subTitle","image","text","name","role"];
-
-  for (var setting in settings) {
-    if (settings.hasOwnProperty(setting)) {
-      $editor.append(settingsMakeProperty(setting, "active"));
-    }
-  }
-
-  for (var i = 0; i < properties.length; i++) {
-    if (!settings.hasOwnProperty(properties[i])){
-      $editor.append(settingsMakeProperty(properties[i], "notActive"));
-    }
-  }
-  jscolor.install();
-  $editor.addClass("open");
-}
-
 function settingsMakeProperty(source, setting, state) {
   let $property = $("<section class='settingProperty' data-setting='"+setting+"'></section>");
   let $header = $("<header></header>");
@@ -699,16 +489,7 @@ $(document).click(function(e) {
 
 $(document).change(function(e) {
   let $target = $(e.target);
-  if ($target.hasClass("editorCheckBox")) {
-    let $cont = $target.closest(".editorProperty");
-    $cont.toggleClass("active");
-    let prop = $target.attr("id").substring(13);
-    if ($cont.hasClass("active")) {
-      addProp(prop);
-    } else {
-      removeProp(prop);
-    }
-  } else if ($target.is('#editorInput_direction')) {
+  if ($target.is('#editorInput_direction')) {
     $('.inEditor.block').attr('data-direction', $target.val());
   } else if ($target.is('#editorInput_type')) {
     let $article = $('.creditsSection.active');

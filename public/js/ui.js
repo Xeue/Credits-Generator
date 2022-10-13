@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 function firstTimeCheck() {
     let firstTime = Cookies.get("tutorial");
     if (firstTime != "done") {
@@ -24,169 +26,6 @@ function savePopup(context) {
     $("#saveHead").html(context);
     $("#newSave").toggleClass("hidden");
     $("#saveForm").data("type", context);
-}
-
-function openMenu(e) {
-    $(".menuSelected").removeClass("menuSelected");
-    let $ele = $(document.elementFromPoint(e.pageX, e.pageY));
-    let $menu = $("menu");
-    let left = e.pageX;
-    let width = $(document).width();
-    let height = $(document).height();
-    let menuWidth = $menu.outerWidth();
-    let menuHeight = $menu.outerHeight();
-    if ((width - left) < menuWidth) {
-      left = width - menuWidth;
-    }
-    
-
-    let $block = $ele.closest(".block");
-    $menu.removeAttr('class');
-
-    if ($ele.hasClass("settingProp")) {
-        let top = $ele.offset().top + $ele.outerHeight() + 10;
-        if ((top + menuHeight - height) > 0) {
-            top = $ele.offset().top - menuHeight - 10;
-            $menu.addClass("above");
-            $menu.removeClass("bellow");
-        } else {
-            $menu.addClass("bellow");
-            $menu.removeClass("above");
-        }
-        left -= (menuWidth/2);
-        $menu.css("top", top+"px");
-        $menu.css("left", left+"px");
-        $menu.addClass("menuSetting");
-        $menu.addClass("menuActive");
-        $ele.addClass("menuSelected");
-    } else if ($ele.hasClass("tabButton") && $('.tabButton').length > 1 && !$ele.is("#newArticle") && $("html").hasClass("editing")) {
-        $menu.addClass("above");
-        $menu.removeClass("bellow");
-        left -= menuWidth/2;
-        $menu.css("left", left+"px");
-        $menu.addClass("menuActive");
-        $menu.addClass("menuTabs");
-        $ele.addClass("menuSelected");
-        menuHeight = $menu.outerHeight();
-        let top = $ele.offset().top - menuHeight - 10;
-        $menu.css("top", top+"px");
-    } else if ($block.length != 0 && $("html").hasClass("editing")) {
-        $menu.removeClass("bellow");
-        $menu.removeClass("above");
-        $menu.css("top", e.pageY-60+"px");
-        $menu.css("left", left+"px");
-        $menu.addClass("menuActive");
-
-        $content = $ele.closest('.content');
-
-        $block.addClass('domSearch');
-        $content.addClass('domSearch');
-        let $closest = $ele.closest('.domSearch');
-        $block.removeClass('domSearch');
-        $content.removeClass('domSearch');
-
-        editorOpen($closest);
-
-        if ($ele.hasClass('columns')) {
-          $menu.addClass("menuBlock");
-          $menu.addClass("menuColumn");
-          $content.addClass("menuSelected");
-        } else if (!$closest.is($content)) {
-          $block.addClass("menuSelected");
-          $menu.addClass("menuBlock");
-          $menu.addClass("menuContent");
-        } else {
-          $content.addClass("menuSelected");
-          $block.addClass("menuSelected");
-          $menu.addClass("menuBlock");
-          $menu.addClass("menuContent");
-        }
-
-        if ($block.siblings().length == 0) {
-          $menu.addClass("menuBlockNew");
-        }
-        if ($content.siblings().length == 0 && $content.hasClass('newContent')) {
-          $menu.addClass("menuContentNew");
-        }
-    } else {
-        closeMenu();
-    }
-}
-function closeMenu() {
-    let $menu = $("menu");
-    $menu.css("top", 0);
-    $menu.css("left", 0);
-    $menu.removeClass("menuActive");
-    $(".menuSelected").removeClass("menuSelected");
-}
-
-function selectForMenu($ele, prop) {
-    let $targetBlock = $(".inEditor");
-    let $target = $targetBlock.find("."+prop);
-
-    switch (prop) {
-        case "names":
-            if ($ele.hasClass("editorRoleInput")) {
-                type = "role";
-                $ele.parent().addClass("menuSelected");
-            } else if ($ele.parent().hasClass("editorNameGroup")) {
-                type = "name";
-                if ($ele.siblings().length != 1) {
-                    $ele.addClass("menuSelected");
-                } else {
-                    $ele.closest(".editorNamesPair").addClass("menuSelected");
-                }
-            } else {
-                type = "names";
-                $ele.addClass("menuSelected");
-            }
-
-            let index;
-            let subIndex;
-            let $names = $(".inEditor .names").children();
-            if (type == "role" || type == "name") {
-                index = $ele.closest("#editorNamesGroup").children().index($ele.closest(".editorNamesPair"));
-                if ($ele.siblings().length > 1) {
-                    subIndex = $ele.parent().children().index($ele);
-                    let $nameGroup = $($names[index]).children(".nameGroup").children();
-                    $($nameGroup[subIndex]).addClass("menuSelected");
-                } else {
-                    if (type == "role") {
-                        $($names[index]).addClass("menuSelected");
-                    } else if ($ele.siblings().length != 1) {
-                        $($names[index]).find("."+type).addClass("menuSelected");
-                    } else {
-                        $($names[index]).addClass("menuSelected");
-                    }
-                }
-            } else {
-                index = $ele.parent().children().index($ele);
-                $($names[index]).addClass("menuSelected");
-            }
-            break;
-        case "imageGroup":
-        case "image":
-            let $next = $ele.next();
-            $next.addClass("menuSelected");
-            $ele.addClass("menuSelected");
-            if ($next.hasClass("editorImgGrouped")) {
-                let index = $ele.parent().children("select").index($ele);
-                $($targetBlock.children(".imageGroup").children()[index]).addClass("menuSelected");
-            } else {
-                $target.addClass("menuSelected");
-            }
-            break;
-        case "text":
-            $ele.addClass("menuSelected");
-            if ($ele.parent().children("textarea").length > 1) {
-                let index = $ele.parent().children("textarea").index($ele);
-                $($target[index]).addClass("menuSelected");
-            } else {
-                $target.addClass("menuSelected");
-            }
-            break;
-        default:
-    }
 }
 
 function toggleUI() {
@@ -231,8 +70,9 @@ function runCommand(event) {
 }
 
 function sendDuration() {
-  if (!runWindow) return
   let data = Object.values(document.getElementsByClassName('creditsSection')).map((section)=>parseInt(section.getAttribute('data-duration'))).reduce((a,b)=>a+b, 0);
+  $('#renderFades').html(data);
+  if (!runWindow) return
   runWindow.postMessage({
     "command":"fadesDuration",
     "data": data
@@ -306,6 +146,7 @@ function doSave() {
             projects = $("#loadFile").data("projects").split(",");
 
             let version = parseInt(data.version);
+            currentVersion = version;
             let versions = [];
             if (data.version == 1) {
               versions = ["1"];
@@ -565,12 +406,100 @@ function newArticle() {
   </article>`;
 }
 
-var mouseY = 0;
-var mouseX = 0;
-$(document).mousemove(function(e) {
-  mouseY = e.pageY;
-  mouseX = e.pageX;
-});
+function doDragging(e) {
+  $(document).mouseup(function(e) {
+    clearTimeout(moveTimer);
+  })
+
+  moveTimer = setTimeout(() => {
+    $(document).off('mouseup');
+    let $target = $(e.target);
+    let $content = $target.closest('.content');
+    let $block = $target.closest('.block');
+    let $article = $target.closest('.blockContainer');
+    if ($target.hasClass('blockContainer')) {
+      $article = $target.parent().closest('.blockContainer');
+    }
+    let stopMatch = 'block';
+    if ($target.hasClass('block')) {
+      $content = $target;
+      stopMatch = 'blockContainer';
+      $block = $target.closest('.blockContainer');
+    }
+    if ($content.length !== 0) {
+      $content.addClass('dragging');
+      if (stopMatch == 'block') {
+        editorOpen($block);
+      }
+      $block.addClass('draggingChild');
+  
+      let $siblings = $content.siblings();
+  
+      $siblings.mouseover(function(e) {
+        let $target = $(e.target);
+        selectForSwap($target);
+      })
+      $siblings.mouseout(function(e) {
+        let $target = $(e.target);
+        deselectForSwap($target);
+      })
+  
+      $article.mouseover(function(e) {
+        let $hovered = $(e.target);
+        if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
+          stopDragging($article, $siblings, $block);
+        } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
+          stopDragging($article, $siblings, $block);
+        }
+      })
+  
+      $article.mouseup(function(e) {
+        let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
+        let $dragging = $('.dragging');
+        if ($dragging.siblings().filter($swap).length !== 0) {
+          if ($dragging.prevAll().filter($swap).length === 0) {
+            $swap.after($dragging);
+          } else {
+            $swap.before($dragging);
+          }
+        }
+        stopDragging($article, $siblings, $block);
+      })
+    }
+  }, 100)
+}
+
+function selectForSwap($target) {
+  $target.addClass('draggingSelected');
+  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text')) {
+    let $cont = $(`<div class="dragCont"></div>`);
+    $cont.append($target.html());
+    $target.html('');
+    $target.append($cont);
+  }
+}
+
+function deselectForSwap($target) {
+  $target.removeClass('draggingSelected');
+  let $cont = $target.children('.dragCont');
+  if ($cont.length !== 0) {
+    $target.append($cont.html());
+    $cont.remove();
+  }
+}
+
+function stopDragging($article, $siblings, $block) {
+  $('.dragging').removeClass('dragging');
+  $('.draggingSelected').removeClass('draggingSelected');
+  $('.dragCont').removeClass('dragCont');
+  $article.off('mouseup');
+  $article.off('mouseover');
+  $siblings.off('mouseover');
+  $siblings.off('mouseout');
+  $block.removeClass('draggingChild');
+}
+
+let moveTimer; /* for the mousedown event to trigger dragging */
 
 // Onloads
 $(function() {
@@ -651,11 +580,10 @@ $(function() {
       $("#render").toggleClass("hidden");
     });
     $("#renderDo").click(function() {
-      processRenderInfo();
       $.get('/render', {
-        fps: renderDetails.frameRate,
-        resolution: renderDetails.resolution,
-        frames: renderDetails.totalFrames,
+        fps: $('#renderRate').val(),
+        resolution: $('#renderRes').val(),
+        frames: parseInt($('#renderFades').html()) * $('#renderRate').val(),
         project: currentProject,
         version: currentVersion
       }).done(function(data) {
@@ -774,11 +702,6 @@ $(function() {
       if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
         if (document.exitFullscreen) {
           document.exitFullscreen();
-          $("#creditsScroller").css("transition", "");
-          $("#creditsScroller").css("top", "");
-          for (var i=0; i<timeouts.length; i++) {
-            clearTimeout(timeouts[i]);
-          }
         }
       } else {
         document.documentElement.requestFullscreen();
@@ -793,14 +716,7 @@ $(function() {
 
         }
       } else {
-        $("header").removeClass("hidden");
-        $("footer").removeClass("hidden");
-        $("#creditsScroller").removeClass("noScroll");
-        $("#creditsScroller").css("transition", "");
-        $("#creditsScroller").css("top", "");
-        for (var i=0; i<timeouts.length; i++) {
-          clearTimeout(timeouts[i]);
-        }
+
       }
     });
 
@@ -813,281 +729,187 @@ $(function() {
       Cookies.set("tutorial", "done", { secure: true, SameSite: 'Lax' });
     });
 
-    $(document).click(function(e) {
-      let $target = $(e.target);
-
-      if ($target.hasClass('content') || $target.hasClass('name') || $target.hasClass('role')) {
-        $('.editSelected').removeAttr('contenteditable');
-        $('.editSelected').removeAttr('tabindex');
-        $('.editSelected').removeClass('editSelected');
-        let type = 'contenteditable';
-        let setting = 'true';
-        if ($target.is('figure') || $target.hasClass('spacing') || $target.hasClass('columns') || $target.hasClass('newContent') || $target.hasClass('names')) {
-          type = 'tabindex';
-          setting = '0';
-        }
-        if ($('html').hasClass('editing')) {
-          $target.addClass('editSelected')
-          $target.attr(type, setting);
-          $target.focus();
-          $target.on('blur', () => {
-            $target.removeAttr(type);
-            $target.removeClass('editSelected');
-          });
-        } else {
-          $target.removeAttr(type);
-          $target.removeClass('editSelected');
-        }
-      }
-
-      if ($target.hasClass("tabButton")) {
-        $(".tabButton").removeClass("active");
-        $('.creditsSection').removeClass('active');
-        $target.addClass("active");
-        let index = $('.tabButton').index($target)
-        $($('.creditsSection')[index]).addClass('active');
-
-        if ($("html").hasClass("editing")) {
-          settingsOpen(true);
-        }
-      } else if ($target.is("#newArticle")) {
-        $(".tabButton").removeClass("active");
-        $("#creditsFooter").append(`<button class="tabButton active">scroll</button>`);
-        $("#creditsCont").append(newArticle());
-      } else if ($target.parent().hasClass("addNewButBefore") || $target.parent().hasClass("addNewButAfter")) {
-        let $newBlock = $("<section class='block'></section>");
-        if ($target.parent().hasClass("addNewButBefore")) {
-          $target.closest(".block").before($newBlock);
-        } else {
-          $target.closest(".block").after($newBlock);
-        }
-        $newBlock.hover(function() {
-          editorHover($newBlock);
-        }, function() {
-          editorUnHover($newBlock);
-        });
-        editorOpen($newBlock);
-      } else if ($target.is("#menuDeleteSetting")) {
-        $sel = $(".menuSelected");
-        
-        if ($sel.hasClass('settingValueInput')) {
-          $sel = $sel.prev();
-        }
-        
-        let $group = $sel.closest('.editorGroup');
-        if ($group.length == 0) {
-          $('.content.inEditor').css($sel.val(), '');
-        } else if ($group.data('level') == 'block') {
-          $('.block.inEditor').css($sel.val(), '');
-        } else {
-          let setting = $sel.closest(".settingProperty").data("setting");
-          if ($sel.hasClass("settingKeyInput")) {
-            delete settings[setting][$sel.val()];
-          } else {
-            delete settings[setting][$sel.prev().val()];
-          }
-          updateSettings();
-        }
-        $sel.parent().remove();
-      } else if ($target.is("#menuDeleteContent") || $target.is("#menuDeleteColumn")) {
-        let $sel = $('.content.menuSelected');
-        let $parent = $sel.parent();
-        $sel.remove();
-        if ($parent.children().length == 0) {
-          $parent.append(newContent());
-        }
-      } else if ($target.is("#menuDeleteBlock")) {
-        $('.block.menuSelected').remove();
-      } else if ($target.is("#menuDeleteFade")) {
-        $sel = $(".menuSelected");
-        let index = $('.tabButton').index($sel)
-        $($('.creditsSection')[index]).remove();
-        $sel.remove();
-      } else if ($target.is("#newContent")) {
-        let $content = $('.menuSelected.content');
-        if ($content.length == 0) {
-          $content = $('.menuSelected.block');
-          $content.append(newContent())
-        } else {
-          $content.after(newContent());
-        }
-      } else if ($target.is("#newBlock")) {
-        let $block = $('.menuSelected.block');
-        if ($block.length !== 0) {
-          $block.after(`<section class="block" data-direction="rows">${newContent()}</section>`);
-        } else {
-          $('.menuSelected.columns').append(`<section class="block" data-direction="rows">${newContent()}</section>`);
-        }
-      } else if ($target.is("#settings")) {
-        settingsOpen();
-      } else if ($target.is("#run")) {
-        initRunInBrowser();
-      } else if ($target.hasClass("settingNewRule")) {
-        let $group = $target.parent().prev();
-        let $pair = $("<div class='settingRulePair'></div>");
-        let $key = $("<input class='settingKeyInput settingProp' placeholder='Placeholder' data-prev='Placeholder' list='CSSList'>");
-        let $value = $("<input class='settingValueInput settingProp' placeholder='Placeholder' data-prev='Placeholder'>");
-        $pair.append($key);
-        $pair.append($value);
-        $group.append($pair);
-      } else if ($target.hasClass("galleryMore")) {
-        $target.closest(".galleryPreviews").toggleClass("moreFonts");
-      } else if ($target.hasClass("gallerySize")) {
-        $target.closest(".galleryPreviews").toggleClass("biggerImages");
-      } else if ($target.hasClass("galleryDelete")) {
-        $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
-          console.log(data);
-          updateSaves(data.saves);
-          doOpenGallery();
-        }).fail(function(data) {
-          alert("Failed to delete font error: "+JSON.stringify(data.responseJSON.error));
-          updateSaves(data.responseJSON.saves);
-          doOpenGallery();
-        });
-      } else if ($target.hasClass('settingGroupCheck')) {
-        $target.parent().toggleClass('active');
-      } else if ($target.hasClass('newImage')) {
-        $target.parent().replaceWith(`<figure class="content imageCont" data-type='image'><img class='image' src='saves/${currentProject}/images/../../../img/Placeholder.jpg' style='max-height: 10em'></figure>`);
-      } else if ($target.hasClass('newTitle')) {
-        $target.parent().replaceWith(`<div class="title content" data-type="title">Title</div>`);
-      } else if ($target.hasClass('newSubtitle')) {
-        $target.parent().replaceWith(`<div class="subTitle content" data-type="subTitle">Sub Title</div>`);
-      } else if ($target.hasClass('newText')) {
-        $target.parent().replaceWith(`<div class="text content" data-type="text">Text</div>`);
-      } else if ($target.hasClass('newName')) {
-        $target.parent().replaceWith(`<div class="names content" data-type="names"><div class="name">Name</div></div>`);
-      } else if ($target.hasClass('newRole')) {
-        $target.parent().replaceWith(`<div class="names content" data-type="names">
-          <div class="pair">
-            <div class="role">Role</div>
-            <div class="name">Name</div>
-          </div>
-        </div>`);
-      } else if ($target.hasClass('newColumns')) {
-        $target.parent().replaceWith(`<div class="content columns blockContainer" data-type="columns" data-columns="2">
-          <section class="block" data-direction="rows">${newContent()}</section>
-          <section class="block" data-direction="rows">${newContent()}</section>
-        </div>`);
-      } else if ($target.hasClass('newSpace')) {
-        $target.parent().replaceWith(`<div class="spacing content" data-type="spacing" style="height:8em"></div>`);
-      } else if ($("html").hasClass("editing") && !$target.hasClass("addNewButBefore") && !$target.hasClass("addNewButAfter")) {
-        let $content = $target.closest(".content, .block");
-        if ($content.length > 0) {
-          editorOpen($content);
-        }
-      }
-      closeMenu();
-    });
-
-    $(document).change(function(e) {
-      let $target = $(e.target);
-      if ($target.hasClass("settingCheckBox")) {
-        let $cont = $target.closest(".settingProperty");
-        let makeInactive = $cont.hasClass("active") ? true : false;
-        if (makeInactive) {
-          $cont.find(".settingRuleGroup").html("");
-        } else {
-          $cont.find(".settingNewRule").click();
-        }
-        switch ($cont.parent().data('level')) {
-          case 'global':
-            if (makeInactive) {
-              delete settings[$cont.data("setting")];
-              updateSettings();
-            }
-            break;
-          case 'block':
-            if (makeInactive) {
-              $('.block.inEditor').attr('style', '');
-            }
-            break;
-          default:
-            if (makeInactive) {
-              $('.content.inEditor').attr('style', '');
-            }
-            break;
-        }
-        $cont.toggleClass("active");
-      } else if ($target.hasClass("settingKeyInput")) {
-        let $cont = $target.closest(".settingProperty");
-        let value = $target.val();
-        if (value == "color" || value == "background-color") {
-          $target.next().removeAttr("list");
-          $target.next().attr("data-jscolor", "{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333', palette:'rgba(0,0,0,0) #fff #808080 #000 #996e36 #f55525 #ffe438 #88dd20 #22e0cd #269aff #bb1cd4', paletteCols:11, hideOnPaletteClick:true}");
-        } else if ($target.next().hasClass('jscolor')) {
-          $target.next().remove();
-          $target.parent().append(`<input class="settingValueInput settingProp" data-prev="Placeholder" placeholder="Placeholder" list="${value}">`);
-        } else {
-          $target.next().attr('list', value);
-        }
-        jscolor.install();
-        if ($cont.parent().data('level') === 'global') {
-          let setting = $cont.data("setting");
-          let prev = $target.data("prev");
-          if (settings[setting] !== undefined) {
-            delete settings[setting][prev];
-          } else {
-            settings[setting] = {};
-          }
-          $target.data("prev", value);
-          settings[setting][value] = $target.next().val();
-          updateSettings(true);
-        }
-      } else if ($target.hasClass("settingValueInput")) {
-        let $cont = $target.closest(".settingProperty");
-        let setting = $cont.data("setting");
-        let value = $target.val();
-        let key = $target.prev().val();
-
-        switch ($target.closest('.editorGroup').data('level')) {
-          case 'block':
-            $('.inEditor.block').css(key, value);
-            break;
-          case 'global':
-            if (settings[setting] === undefined) {
-              settings[setting] = {};
-            }
-            settings[setting][key] = value;
-            updateSettings(false);
-            break;
-          default:
-            $('.inEditor.content').css(key, value);
-            break;
-        }
-      }
-    });
-
     load(defaultProject);
 });
 
-if (document.addEventListener) {
-    document.addEventListener('contextmenu', function(e) {
-        openMenu(e);
-        e.preventDefault();
-    }, false);
-} else {
-    document.attachEvent('oncontextmenu', function() {
-        openMenu(e);
-        window.event.returnValue = false;
-    });
-}
+$(document).click(function(e) {
+  let $target = $(e.target);
 
-$.each( [ "put", "delete" ], function( i, method ) {
-  jQuery[ method ] = function( url, data, callback, type ) {
-    if ( $.isFunction( data ) ) {
-      type = type || callback;
-      callback = data;
-      data = undefined;
+  if ($target.hasClass('content') || $target.hasClass('name') || $target.hasClass('role')) {
+    $('.editSelected').removeAttr('contenteditable');
+    $('.editSelected').removeAttr('tabindex');
+    $('.editSelected').removeClass('editSelected');
+    let type = 'contenteditable';
+    let setting = 'true';
+    if ($target.is('figure') || $target.hasClass('spacing') || $target.hasClass('columns') || $target.hasClass('newContent') || $target.hasClass('names')) {
+      type = 'tabindex';
+      setting = '0';
     }
+    if ($('html').hasClass('editing')) {
+      $target.addClass('editSelected')
+      $target.attr(type, setting);
+      $target.focus();
+      $target.on('blur', () => {
+        $target.removeAttr(type);
+        $target.removeClass('editSelected');
+      });
+    } else {
+      $target.removeAttr(type);
+      $target.removeClass('editSelected');
+    }
+  }
 
-    return $.ajax({
-      url: url,
-      type: method,
-      dataType: type,
-      data: data,
-      success: callback
+  if ($target.hasClass("tabButton")) {
+    $(".tabButton").removeClass("active");
+    $('.creditsSection').removeClass('active');
+    $target.addClass("active");
+    let index = $('.tabButton').index($target)
+    $($('.creditsSection')[index]).addClass('active');
+
+    if ($("html").hasClass("editing")) {
+      settingsOpen(true);
+    }
+  } else if ($target.is("#newArticle")) {
+    $(".tabButton").removeClass("active");
+    $("#creditsFooter").append(`<button class="tabButton active">scroll</button>`);
+    $("#creditsCont").append(newArticle());
+  } else if ($target.is("#settings")) {
+    settingsOpen();
+  } else if ($target.is("#run")) {
+    initRunInBrowser();
+  } else if ($target.hasClass("settingNewRule")) {
+    let $group = $target.parent().prev();
+    let $pair = $("<div class='settingRulePair'></div>");
+    let $key = $("<input class='settingKeyInput settingProp' placeholder='Placeholder' data-prev='Placeholder' list='CSSList'>");
+    let $value = $("<input class='settingValueInput settingProp' placeholder='Placeholder' data-prev='Placeholder'>");
+    $pair.append($key);
+    $pair.append($value);
+    $group.append($pair);
+  } else if ($target.hasClass("galleryMore")) {
+    $target.closest(".galleryPreviews").toggleClass("moreFonts");
+  } else if ($target.hasClass("gallerySize")) {
+    $target.closest(".galleryPreviews").toggleClass("biggerImages");
+  } else if ($target.hasClass("galleryDelete")) {
+    $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
+      console.log(data);
+      updateSaves(data.saves);
+      doOpenGallery();
+    }).fail(function(data) {
+      alert("Failed to delete font error: "+JSON.stringify(data.responseJSON.error));
+      updateSaves(data.responseJSON.saves);
+      doOpenGallery();
     });
-  };
+  } else if ($target.hasClass('settingGroupCheck')) {
+    $target.parent().toggleClass('active');
+  } else if ($target.hasClass('newImage')) {
+    $target.parent().replaceWith(`<figure class="content imageCont" data-type='image'><img class='image' src='saves/${currentProject}/images/../../../img/Placeholder.jpg' style='max-height: 10em'></figure>`);
+  } else if ($target.hasClass('newTitle')) {
+    $target.parent().replaceWith(`<div class="title content" data-type="title">Title</div>`);
+  } else if ($target.hasClass('newSubtitle')) {
+    $target.parent().replaceWith(`<div class="subTitle content" data-type="subTitle">Sub Title</div>`);
+  } else if ($target.hasClass('newText')) {
+    $target.parent().replaceWith(`<div class="text content" data-type="text">Text</div>`);
+  } else if ($target.hasClass('newName')) {
+    $target.parent().replaceWith(`<div class="names content" data-type="names"><div class="name">Name</div></div>`);
+  } else if ($target.hasClass('newRole')) {
+    $target.parent().replaceWith(`<div class="names content" data-type="names">
+      <div class="pair">
+        <div class="role">Role</div>
+        <div class="name">Name</div>
+      </div>
+    </div>`);
+  } else if ($target.hasClass('newColumns')) {
+    $target.parent().replaceWith(`<div class="content columns blockContainer" data-type="columns" data-columns="2">
+      <section class="block" data-direction="rows">${newContent()}</section>
+      <section class="block" data-direction="rows">${newContent()}</section>
+    </div>`);
+  } else if ($target.hasClass('newSpace')) {
+    $target.parent().replaceWith(`<div class="spacing content" data-type="spacing" style="height:8em"></div>`);
+  } else if ($("html").hasClass("editing") && ($target.hasClass("block") || $target.hasClass("content"))) {
+    let $content = $target.closest(".content, .block");
+    if ($content.length > 0) {
+      editorOpen($content);
+    }
+  }
+  closeMenu();
+});
+
+$(document).change(function(e) {
+  let $target = $(e.target);
+  if ($target.hasClass("settingCheckBox")) {
+    let $cont = $target.closest(".settingProperty");
+    let makeInactive = $cont.hasClass("active") ? true : false;
+    if (makeInactive) {
+      $cont.find(".settingRuleGroup").html("");
+    } else {
+      $cont.find(".settingNewRule").click();
+    }
+    switch ($cont.parent().data('level')) {
+      case 'global':
+        if (makeInactive) {
+          delete settings[$cont.data("setting")];
+          updateSettings();
+        }
+        break;
+      case 'block':
+        if (makeInactive) {
+          $('.block.inEditor').attr('style', '');
+        }
+        break;
+      default:
+        if (makeInactive) {
+          $('.content.inEditor').attr('style', '');
+        }
+        break;
+    }
+    $cont.toggleClass("active");
+  } else if ($target.hasClass("settingKeyInput")) {
+    let $cont = $target.closest(".settingProperty");
+    let value = $target.val();
+    if (value == "color" || value == "background-color") {
+      $target.next().removeAttr("list");
+      $target.next().attr("data-jscolor", "{value:'rgba(51,153,255,0.5)', position:'bottom', height:80, backgroundColor:'#333', palette:'rgba(0,0,0,0) #fff #808080 #000 #996e36 #f55525 #ffe438 #88dd20 #22e0cd #269aff #bb1cd4', paletteCols:11, hideOnPaletteClick:true}");
+    } else if ($target.next().hasClass('jscolor')) {
+      $target.next().remove();
+      $target.parent().append(`<input class="settingValueInput settingProp" data-prev="Placeholder" placeholder="Placeholder" list="${value}">`);
+    } else {
+      $target.next().attr('list', value);
+    }
+    jscolor.install();
+    if ($cont.parent().data('level') === 'global') {
+      let setting = $cont.data("setting");
+      let prev = $target.data("prev");
+      if (settings[setting] !== undefined) {
+        delete settings[setting][prev];
+      } else {
+        settings[setting] = {};
+      }
+      $target.data("prev", value);
+      settings[setting][value] = $target.next().val();
+      updateSettings(true);
+    }
+  } else if ($target.hasClass("settingValueInput")) {
+    let $cont = $target.closest(".settingProperty");
+    let setting = $cont.data("setting");
+    let value = $target.val();
+    let key = $target.prev().val();
+
+    switch ($target.closest('.editorGroup').data('level')) {
+      case 'block':
+        $('.inEditor.block').css(key, value);
+        break;
+      case 'global':
+        if (settings[setting] === undefined) {
+          settings[setting] = {};
+        }
+        settings[setting][key] = value;
+        updateSettings(false);
+        break;
+      default:
+        $('.inEditor.content').css(key, value);
+        break;
+    }
+  }
 });
 
 $(document).keyup(function(e) {
@@ -1120,101 +942,10 @@ $(document).on('paste', function(e) {
   }
 })
 
-function selectForSwap($target) {
-  $target.addClass('draggingSelected');
-  if ($target.hasClass('subTitle') || $target.hasClass('title') || $target.hasClass('text')) {
-    let $cont = $(`<div class="dragCont"></div>`);
-    $cont.append($target.html());
-    $target.html('');
-    $target.append($cont);
-  }
-}
-
-function deselectForSwap($target) {
-  $target.removeClass('draggingSelected');
-  let $cont = $target.children('.dragCont');
-  if ($cont.length !== 0) {
-    $target.append($cont.html());
-    $cont.remove();
-  }
-}
-
-function stopDragging($article, $siblings, $block) {
-  $('.dragging').removeClass('dragging');
-  $('.draggingSelected').removeClass('draggingSelected');
-  $('.dragCont').removeClass('dragCont');
-  $article.off('mouseup');
-  $article.off('mouseover');
-  $siblings.off('mouseover');
-  $siblings.off('mouseout');
-  $block.removeClass('draggingChild');
-}
-
-let moveTimer;
-
 $(document).mousedown(function(e) {
   if (!$('html').hasClass('editing')) return;
   
-  $(document).mouseup(function(e) {
-    clearTimeout(moveTimer);
-  })
-
-  moveTimer = setTimeout(() => {
-    $(document).off('mouseup');
-    let $target = $(e.target);
-    let $content = $target.closest('.content');
-    let $block = $target.closest('.block');
-    let $article = $target.closest('.blockContainer');
-    if ($target.hasClass('blockContainer')) {
-      $article = $target.parent().closest('.blockContainer');
-    }
-    let stopMatch = 'block';
-    if ($target.hasClass('block')) {
-      $content = $target;
-      stopMatch = 'blockContainer';
-      $block = $target.closest('.blockContainer');
-    }
-    if ($content.length !== 0) {
-      $content.addClass('dragging');
-      if (stopMatch == 'block') {
-        editorOpen($block);
-      }
-      $block.addClass('draggingChild');
-  
-      let $siblings = $content.siblings();
-  
-      $siblings.mouseover(function(e) {
-        let $target = $(e.target);
-        selectForSwap($target);
-      })
-      $siblings.mouseout(function(e) {
-        let $target = $(e.target);
-        deselectForSwap($target);
-      })
-  
-      $article.mouseover(function(e) {
-        let $hovered = $(e.target);
-        if (stopMatch == 'block' && $hovered.hasClass('creditsSection')) {
-          stopDragging($article, $siblings, $block);
-        } else if ($hovered.hasClass(stopMatch) && !$hovered.hasClass('draggingChild')) {
-          stopDragging($article, $siblings, $block);
-        }
-      })
-  
-      $article.mouseup(function(e) {
-        let $swap = $(document.elementFromPoint(e.pageX, e.pageY));
-        let $dragging = $('.dragging');
-        if ($dragging.siblings().filter($swap).length !== 0) {
-          if ($dragging.prevAll().filter($swap).length === 0) {
-            $swap.after($dragging);
-          } else {
-            $swap.before($dragging);
-          }
-        }
-        stopDragging($article, $siblings, $block);
-      })
-    }
-  }, 100)
+  doDragging(e);
 });
 
 $(document).keydown(function(e) {
@@ -1252,4 +983,22 @@ $(document).keydown(function(e) {
     }
     return false;
   }
+});
+
+$.each( [ "put", "delete" ], function( i, method ) {
+  jQuery[ method ] = function( url, data, callback, type ) {
+    if ( $.isFunction( data ) ) {
+      type = type || callback;
+      callback = data;
+      data = undefined;
+    }
+
+    return $.ajax({
+      url: url,
+      type: method,
+      dataType: type,
+      data: data,
+      success: callback
+    });
+  };
 });

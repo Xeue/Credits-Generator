@@ -124,12 +124,6 @@ h2 {
   font-size: 1.2em;
 }
 
-#mainBody {
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
-
 #mainBody::before {
   content: "";
   background: inherit;
@@ -137,8 +131,14 @@ h2 {
   inset: 0;
 }
 
-#creditsCont {
+.creditsSection {
+  display: none;
+  padding: 10px calc(50% - 30vw);
+  height: calc(100% - 90px) !important;
+  padding-bottom: 80px;
 }
+
+
 
 header,
 footer {
@@ -174,21 +174,9 @@ header>div {
   pointer-events: none
 }
 
-.creditsBody {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-}
-
 #creditsScroller {
-  overflow-y: hidden;
   margin-top: -5px;
   margin-bottom: -5px;
-  height: 100%;
-  position: relative;
 }
 
 .editing #creditsScroller,
@@ -503,6 +491,8 @@ dialog button {
 
 .renderLable {
   font-size: 0.6em;
+  padding: 3px;
+  margin-top: 5px;
 }
 
 #galleryImages, #galleryFonts {
@@ -914,7 +904,7 @@ dialog footer button:first-of-type {
   border-radius: 5px;
   padding: 10px;
   margin: 15px 0px;
-  outline: 0px solid transparent;
+  outline: 3px dotted transparent;
   position: relative;
 }
 
@@ -926,7 +916,7 @@ dialog footer button:first-of-type {
   border-radius: 5px;
   margin: 5px;
   transition: .2s;
-  outline: 2px ridge transparent;
+  outline: 2px dashed transparent;
 }
 
 .newContent {
@@ -1326,6 +1316,7 @@ menu>button {
   font-style: italic;
   font-weight: bold;
   font-size: 3vh;
+  margin-top: -7px;
 }
 
 .draggingChild * {

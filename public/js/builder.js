@@ -1,46 +1,235 @@
 /*jshint esversion: 6 */
-function l(val) {
-  console.log(val);
-}
 
-var dummyBlock = {
-  "duration": 1,
-  "imageHeight": 24,
-  "spacing": 8,
-  "image": "../../../img/Placeholder.jpg",
-  "title": "Placeholder Title",
-  "subTitle": "Placeholder Subtitle",
-  "text": "Placeholder text",
-  "maxColumns": 2,
-  "columns": [{
-    "title": "Column 1"
-  },{
-    "title": "Column 2"
-  }],
-  "names": [
-    {
-      "role": "Role",
-      "name": "Name"
-    },
-    "Name 2"
-  ]
-};
+async function load(project, version, creditsObject) {
 
-function addBlockMouseOvers() {
-  $(".block").each(function () {
-    $(this).unbind('mouseenter mouseleave');
-    $(this).hover(function() {
-      editorHover($(this));
-    }, function() {
-      editorUnHover($(this));
-    });
+  async function gotCredits(data) {
+    images = data.images;
+    content = data.content;
+    settings = data.globalSettings;
+    fonts = typeof globalFonts !== 'undefined' ? [...new Set ([...globalFonts, ...data.fonts])]: data.fonts;
+    updateSettings();
+    await buildCredits(content);
+    if (typeof sendDuration !== 'undefined') {
+      sendDuration();
+    }
+    $("#creditsFooter").first().click();
+  }
+
+  currentProject = project;
+  $("#loadFile").val(currentProject);
+  let versionString = String($("#loadFile").find(":selected").data("versions"));
+  let versions = [];
+  versions = versionString.split(",");
+
+  if (typeof version === 'undefined') {
+    currentVersion = versions.length;
+  }
+
+  $("#loadVersion").html("");
+  for (var i = 0; i < versions.length; i++) {
+    $("#loadVersion").prepend($("<option value='"+versions[i]+"'>"+versions[i]+"</option>"));
+  }
+
+  $("#loadFileBut").val(currentProject);
+  $("#loadVersion").val(currentVersion);
+  $load = $("#loadVersionBut");
+  $load.html("");
+  for (var j = 0; j < versions.length; j++) {
+    $load.append($("<option value='"+versions[j]+"'>"+versions[j]+"</option>"));
+  }
+  $load.append($("<option value='new'>New Version</option>"));
+
+  let $footer = $("#creditsFooter");
+  $footer.data("tabs", 0);
+  $footer.html('<button id="newArticle">+</button>');
+  if (typeof creditsObject !== 'undefined') {
+    await gotCredits(creditsObject);
+  }
+  await $.get(`save?project=${currentProject}&version=${currentVersion}`)
+  .then(async function(data) {
+    await gotCredits(data);
+  }).fail(function(data) {
+    const returnData = JSON.parse(data.responseText);
+    alert("Couldn't get requested file: "+JSON.stringify(returnData, "", 4));
   });
+  loaded = true;
+  console.log(`${currentProject} version ${currentVersion} loaded`);
 }
+
+function updateSettings(refresh = true) {
+  $("#settingsCSS").remove();
+  let $settings = $("<style id='settingsCSS' type='text/css'></style>");
+  let style = $settings[0];
+  $("head").append($settings);
+  for (var setting in settings) {
+    if (settings.hasOwnProperty(setting)) {
+      let rulesTxt = "";
+      let rules = settings[setting];
+      for (var rule in rules) {
+        if (rules.hasOwnProperty(rule)) {
+          rulesTxt += rule+":"+rules[rule]+";";
+        }
+      }
+      if (!(style.sheet || {}).insertRule) {
+        (style.styleSheet || style.sheet).addRule("."+setting, rulesTxt);
+      } else {
+        style.sheet.insertRule("."+setting+"{"+rulesTxt+"}",0);
+      }
+    }
+  }
+
+  if (isLight(window.getComputedStyle($("#mainBody")[0]).backgroundColor)) {
+    $("html").addClass("light");
+  } else {
+    $("html").removeClass("light");
+  }
+}
+
+function isLight(color) {
+    var r, g, b, hsp;
+    if (color.match(/^rgb/)) {
+        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+        r = color[1];
+        g = color[2];
+        b = color[3];
+    }
+    else {
+        color = +("0x" + color.slice(1).replace(
+        color.length < 5 && /./g, '$&$&'));
+        r = color >> 16;
+        g = color >> 8 & 255;
+        b = color & 255;
+    }
+    hsp = Math.sqrt(
+    0.299 * (r * r) +
+    0.587 * (g * g) +
+    0.114 * (b * b)
+    );
+    if (hsp>127.5) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/* Builder */
+
+async function buildCredits(content) {
+  let active = ' active';
+  const $cont = $("#creditsCont");
+  $cont.html('');
+  const $footer = $("#creditsFooter");
+  content.forEach(article => {
+    let name = typeof article.name !== 'undefined' ? article.name : article.type;
+    const $tab = $(`<button class="tabButton${active}">${name}</button>`)
+    $footer.append($tab);
+    const html = renderBlocks(article.blocks);
+    const $content = $(`<article class="creditsSection blockContainer${active}" data-type="${article.type}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
+    active = '';
+    $cont.append($content);
+  });
+  let imagesPromises = [];
+  $('img').each(function() {
+    $img = $(this);
+    const imagePromise = new Promise((resolve, reject)=>{
+      $img.one('load', function() {
+        resolve()
+      });
+      if(this.complete) {
+        $(this).trigger('load');
+      }
+    })
+    imagesPromises.push(imagePromise);
+  });
+  await Promise.allSettled(imagesPromises);
+}
+
+function renderBlocks(blocks) {
+  let html = "";
+  blocks.forEach(block => {
+    html += `<section class="block" data-direction="${block.type}">`;
+    block.content.forEach(content => {
+      html += renderContent(content);
+    })
+    html += `</section>`;
+  })
+  return html;
+}
+
+function renderContent(content) {
+  let subHtml = "";
+  let style = '';
+  if (typeof content.settings !== "undefined" && Object.values(content.settings).length > 0) {
+    style = 'style="';
+    for (const property in content.settings) {
+      if (Object.hasOwnProperty.call(content.settings, property)) {
+        const value = content.settings[property];
+        style += `${property}: ${value};`;
+      }
+    }
+    style += '"';
+  }
+  switch (content.type) {
+    case "columns":
+      let columns = content.columns || "Full";
+      subHtml += `<div ${style} class='content columns blockContainer cols${columns}' data-type='${content.type}' data-columns='${columns}'>`;
+      subHtml += renderBlocks(content.blocks);
+      subHtml += "</div>";
+      break;
+    case "names":
+      subHtml += `<div ${style} class='names content' data-type='${content.type}'>`;
+
+        for (var i = 0; i < content["names"].length; i++) {
+          const names = content["names"];
+
+          if (typeof names[i] == "object") {
+            subHtml += `<div class='pair'><div class='role'>${names[i].role}</div>`;
+
+            if (typeof names[i].name == "object") {
+              subHtml += "<div class='nameGroup'>";
+              for (var j = 0; j < names[i].name.length; j++) {
+                subHtml += `<div class='name'>${names[i].name[j]}</div>`;
+              }
+              subHtml += "</div>";
+            } else {
+              subHtml += `<div class='name'>${names[i].name}</div>`;
+            }
+
+            subHtml += "</div>";
+
+          } else {
+            subHtml += `<div class='name'>${names[i]}</div>`;
+          }
+
+        }
+
+      subHtml += "</div>";
+      break;
+    case "title":
+    case "subTitle":
+      subHtml += `<div ${style} class="${content.type} content" data-type='${content.type}'>${content.text}</div>`;
+      break;
+    case "text":
+      subHtml += `<div ${style} class='text content' data-type='${content.type}'>${content.text}</div>`;
+      break;
+    case "image":
+      height = content.imageHeight || "10";
+      subHtml += `<figure ${style} class="content imageCont" data-type='${content.type}'><img class='image' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'></figure>`;
+      break;
+    case "spacing":
+      subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.spacing}em'></div>`;
+      break;
+    default:
+  }
+  return subHtml;
+}
+
+/* Un-builder */
 
 function getCreditsJSON() {
   let content = [];
   $('#creditsCont').children().each(function(index) {
-    $content = $(this);
+    let $content = $(this);
     content.push({
       "type": $content.attr('data-type'),
       "name": $content.attr('data-name'),
@@ -156,50 +345,37 @@ function getStylesObject(element, type) {
   return stylesObj;
 }
 
-function getDummyJSON() {
-  return "var credits = ["+JSON.stringify(dummyBlock, null, "\t")+"]\n var settings = {'background':{'font-weight':'normal','font-style':'italic', 'background-color':'#000000'},'subTitle':{'margin-top':'5em','margin-bottom':'2em'},'text':{'margin-top':'1em','font-size':'0.8em'},'role':{'font-weight':'bold','font-style':'italic'},'title':{'font-size':'1.2em','font-weight':'bold','margin-top':'2em','margin-bottom':'2em'}}";
+/* Running */
+
+async function runCredits() {
+  $('.creditsSection').removeClass('active');
+  $("header").addClass("hidden");
+  $("footer").addClass("hidden");
+  $('#creditsCont').addClass('running');
+  editorClose();
+  await sleep(1);
+  let sections = document.getElementsByClassName('creditsSection');
+  for (let index = 0; index < sections.length; index++) {
+    const section = sections[index];
+    const duration = section.getAttribute('data-duration');
+    const type = section.getAttribute('data-type');
+    section.classList.add('active');
+    if (type == 'scroll') {
+      section.style.transition = `${duration}s linear`;
+      section.style.top = `-${section.offsetHeight}px`;
+    } else {
+      section.classList.add('fade');
+      $(section).css('animation-duration', duration+'s');
+    }
+    await sleep(duration);
+    section.classList.remove('active');
+    section.classList.remove('fade');
+    section.style.transition = `0s linear`;
+    section.style.top = `0`;
+  }
+  return true;
 }
 
-function load(project, version) {
-  currentProject = project;
-  $("#loadFile").val(currentProject);
-  let versionString = String($("#loadFile").find(":selected").data("versions"));
-  let versions = [];
-  versions = versionString.split(",");
-
-  if (typeof version === 'undefined') {
-    currentVersion = versions.length;
-  }
-
-  $("#loadVersion").html("");
-  for (var i = 0; i < versions.length; i++) {
-    $("#loadVersion").prepend($("<option value='"+versions[i]+"'>"+versions[i]+"</option>"));
-  }
-
-  $("#loadFileBut").val(currentProject);
-  $("#loadVersion").val(currentVersion);
-  $load = $("#loadVersionBut");
-  $load.html("");
-  for (var j = 0; j < versions.length; j++) {
-    $load.append($("<option value='"+versions[j]+"'>"+versions[j]+"</option>"));
-  }
-  $load.append($("<option value='new'>New Version</option>"));
-
-  let $footer = $("#creditsFooter");
-  $footer.data("tabs", 0);
-  $footer.html('<button id="newArticle">+</button>');
-  $.get(`save?project=${currentProject}&version=${currentVersion}`)
-  .done(function(data) {
-    images = data.images;
-    content = data.content;
-    settings = data.globalSettings;
-    fonts = typeof globalFonts !== 'undefined' ? [...new Set ([...globalFonts, ...data.fonts])]: data.fonts;
-    updateSettings();
-    buildCredits(content);
-    window.dispatchEvent(loadedEvent);
-    $("#creditsFooter").first().click();
-  }).fail(function(data) {
-    const returnData = JSON.parse(data.responseText);
-    alert("Couldn't get requested file: "+JSON.stringify(returnData, "", 4));
-  });;
+async function sleep(seconds) {
+  await new Promise(resolve => setTimeout(resolve, seconds*1000));
 }
