@@ -270,21 +270,22 @@ function getSave(req, res) {
     log("Getting saved credits", "D")
     const project = req.query.project
     const version = req.query.version
-    try {
-        fs.readFile(`${__dirname}/public/saves/${project}/${version}.json`, async (err, buffer)=>{
-            let data = JSON.parse(buffer.toString());
-            data.images = await imageList(project);
-            res.json(data);
-        });
-    } catch (error) {
-        logObj("debugging", error);
-        res.status(500);
-        res.send(JSON.stringify({
-            "status": "error",
-            "message": "Save not found",
-            "error": error
-        }))
-    }
+    fs.readFile(`${__dirname}/public/saves/${project}/${version}.json`, async (err, buffer)=>{
+        if (err) {
+            log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W');
+            logObj(err, 'W');
+            res.status(500);
+            res.send(JSON.stringify({
+                "status": "error",
+                "message": "Save not found",
+                "error": err
+            }))
+            return;
+        }
+        let data = JSON.parse(buffer.toString());
+        data.images = await imageList(project);
+        res.json(data);
+    });
 }
 function doSave(req, res) {
     log("Saving uploaded credits", "D");
