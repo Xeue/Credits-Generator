@@ -28,7 +28,7 @@
         let settings;
         const renderReadyEvent = new Event('renderReady');
         let loaded = false;
-        const template = true;
+        let template = true;
         const projectJson = JSON.parse('<%- JSON.stringify(projectObject) %>');
 
         webcg.on('data', function(data) {
@@ -38,6 +38,7 @@
                 window.dispatchEvent(renderReadyEvent);
               });
             } else {
+              template = false;
               fetch(source)
               .then(response => response.json())
               .then(projectJson => {
