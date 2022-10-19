@@ -189,16 +189,19 @@ body {
 .pair {
  display:grid;
  margin: 10px;
- grid-template-columns: 1fr 1fr;
+ grid-template-areas: "role name";
  gap: 0.8em;
+ grid-template-columns: 1fr 1fr;
 }
 .pair>.name,
 .pair>.nameGroup {
  text-align:left;
+ grid-area: name;
 }
 .pair>.role {
  text-align:right;
- height:fit-content
+ height:fit-content;
+ grid-area: role;
 }
 .text {
  margin-top:1em;

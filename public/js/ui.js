@@ -528,6 +528,47 @@ function stopDragging($hoverCont, $siblings) {
   $(".dragging_content").removeClass('dragging_content');
 }
 
+function contentLastNameCheck($target) {
+  let $deleteable = false;
+  if ($target.html() == "" || $target.html() == "<br>") {
+    let $parent = $target.parent();
+    let $pair = $target.closest(".pair");
+    if ($parent.hasClass('pair')) {
+      if ($pair.siblings().length == 0) {
+        $deleteable = 'Name';
+      } else {
+        $deleteable = $pair;
+      }
+    } else if ($target.siblings().length == 0) {
+      if ($parent.hasClass('nameGroup')) {
+        if ($pair.siblings().length == 0) {
+          $deleteable = 'Name';
+        } else {
+          $deleteable = $pair;
+        }
+      } else {
+        $deleteable = 'Name';
+      }
+    } else {
+      $deleteable = $target;
+    }
+  }
+  return $deleteable;
+}
+
+function contentLastRoleCheck($target) {
+  let $deleteable = false;
+  if ($target.html() == "" || $target.html() == "<br>") {
+    let $parent = $target.parent();
+    if ($parent.siblings().length == 0) {
+      $deleteable = 'Role';
+    } else {
+      $deleteable = $parent;
+    }
+  }
+  return $deleteable;
+}
+
 let moveTimer; /* for the mousedown event to trigger dragging */
 
 // Onloads
@@ -785,6 +826,46 @@ $(document).click(function(e) {
     }
   }
 
+  if ($target.hasClass('role')) {
+    $target.on('keyup', (e)=>{
+      if (e.keyCode !== 8 && e.keyCode !== 46) {
+        $target.removeClass('empty');
+        $target.closest('.toEmpty').removeClass('toEmpty');
+      } else {
+        if ($target.hasClass('empty')) {
+          $('.toEmpty').remove();
+        } else {
+          let $toDelete = contentLastRoleCheck($target);
+          if ($toDelete == 'Role') {
+            $target.html('Role');
+          } else if ($toDelete !== false) {
+            $toDelete.addClass('toEmpty');
+            $target.addClass('empty');
+          }
+        }
+      }
+    });
+  } else if ($target.hasClass('name')) {
+    $target.on('keyup', (e)=>{
+      if (e.keyCode !== 8 && e.keyCode !== 46) {
+        $target.removeClass('empty');
+        $target.closest('.toEmpty').removeClass('toEmpty');
+      } else {
+        if ($target.hasClass('empty')) {
+          $('.toEmpty').remove();
+        } else {
+          let $toDelete = contentLastNameCheck($target);
+          if ($toDelete == 'Name') {
+            $target.html('Name');
+          } else if ($toDelete !== false) {
+            $toDelete.addClass('toEmpty');
+            $target.addClass('empty');
+          }
+        }
+      }
+    });
+  }
+
   if ($target.hasClass("tabButton")) {
     $(".tabButton").removeClass("active");
     $('.creditsSection').removeClass('active');
@@ -869,6 +950,7 @@ $(document).click(function(e) {
 
 $(document).change(function(e) {
   let $target = $(e.target);
+  console.log($target);
   if ($target.hasClass("settingCheckBox")) {
     let $cont = $target.closest(".settingProperty");
     let makeInactive = $cont.hasClass("active") ? true : false;
@@ -961,7 +1043,20 @@ $(document).on('paste', function(e) {
       let text = $target.text();
       if (!$target.hasClass('name')) {
         $target.html(text);
-      } else {
+      } else if (text.includes("td {border:")) {
+        if ($target.parent().hasClass('pair')) {
+          const $group = $(`<div class="nameGroup"></div>`);
+          $target.before($group);
+          $group.append($target)
+        }
+
+        $target.find('tbody').children().each(function() {
+          $target.after(`<div class="name">${$(this).html()}</div>`);
+        });
+        $target.remove();
+      } else if ($target.html().includes('<span')) {
+        $target.html(text);
+      } else if ($target.html().includes('<div')) {
         let $group = $target.children('.nameGroup');
         if ($group.length == 0) {
           $group = $target.children('.names');
@@ -969,6 +1064,17 @@ $(document).on('paste', function(e) {
         } else {
           $target.before($group);
         }
+        $target.remove();
+      } else if ($target.html().includes('<br>')) {
+        if ($target.parent().hasClass('pair')) {
+          const $group = $(`<div class="nameGroup"></div>`);
+          $target.before($group);
+          $group.append($target)
+        }
+        let names = $target.html().split('<br>');
+        names.forEach(name => {
+          $target.after(`<div class="name">${name}</div>`);
+        });
         $target.remove();
       }
     }, 0);
@@ -1017,7 +1123,7 @@ $(document).keydown(function(e) {
         $target.next().removeClass('editSelected');
       });
     } else if ($target.hasClass('role')) {
-      $target.closest('.names').append(`<div class="pair"><div class="role editSelected" contenteditable="true">Role</div><div class="name">Name</div></div>`);
+      $target.closest('.pair').after(`<div class="pair"><div class="role editSelected" contenteditable="true">Role</div><div class="name">Name</div></div>`);
       $target.removeClass('editSelected');
       $target.removeAttr('contenteditable');
       let $new = $target.parent().next().children('.role');
