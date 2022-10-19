@@ -1,4 +1,4 @@
-const serverVersion = "3.3.2";
+const serverVersion = "3.3.3";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
@@ -125,7 +125,8 @@ app.get('/template', async (req, res) => {
         globalFonts: fonts,
         project: project,
         version: version,
-        projectObject: projectObject
+        projectObject: projectObject,
+        host: req.get('host')
     };
     ejs.renderFile(__dirname + '/views/template.ejs', renderParams, (err, html)=>{
         const zip = new AdmZip();

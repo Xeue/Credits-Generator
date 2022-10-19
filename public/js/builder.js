@@ -226,7 +226,7 @@ function renderContent(content) {
       break;
     case "image":
       const height = content.imageHeight || "10";
-      const path = template ? '': `saves/${currentProject}/`;
+      const path = template ? '': `${sitePath}saves/${currentProject}/`;
       subHtml += `<figure ${style} class="content imageCont" data-type='${content.type}'><img class='image' src='${path}images/${content.image}' style='max-height: ${height}em'></figure>`;
       break;
     case "spacing":

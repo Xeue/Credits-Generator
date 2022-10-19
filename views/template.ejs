@@ -29,6 +29,7 @@
         const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         let template = true;
+        const sitePath = '<%=host%>';
         const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
 
         webcg.on('data', function(data) {
