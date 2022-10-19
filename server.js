@@ -1,16 +1,18 @@
-const serverVersion = "3.2.0";
+const serverVersion = "3.3.0";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';
-import express from 'express';
+import express, { response } from 'express';
+import cors from 'cors';
 import fileUpload from 'express-fileupload';
 import fs from 'fs';
 import {log, logObj, logs} from 'xeue-logs';
 import render from './render.js';
-import path from 'path';
+import path, { resolve } from 'path';
 import {fileURLToPath} from 'url';
-import AmdZip from "adm-zip";
+import AdmZip from "adm-zip";
 import commandExists from 'command-exists';
+import ejs from 'ejs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,6 +55,7 @@ printConfig();
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
@@ -110,10 +113,41 @@ app.delete('/images', (req, res) => {
     doDelete(req, res, "images");
 });
 
-app.get('/template', (req, res) => {
+app.get('/template', async (req, res) => {
     log("Request for template", "D");
-    const project = req.query.project;
-    sendZip(res, [`public/template`], project+"_template");
+    const [saves, fonts] = await getSavesAndFonts()
+    const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0];
+    const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count;
+    const buffer = await fs.promises.readFile(`${__dirname}/public/saves/${project}/${version}.json`);
+    const projectObject = JSON.parse(buffer.toString());
+    projectObject.images = await imageList(project);
+    const renderParams = {
+        globalFonts: fonts,
+        project: project,
+        version: version,
+        projectObject: projectObject
+    };
+    ejs.renderFile(__dirname + '/views/template.ejs', renderParams, (err, html)=>{
+        const zip = new AdmZip();
+        zip.addFile("credits.html", Buffer.from(html, "utf8"), "Template");
+        if (fs.existsSync(`public/saves/${project}/images`)) {
+            zip.addLocalFolder(`public/saves/${project}/images`, 'images');
+        }
+        if (fs.existsSync(`public/saves/${project}/fonts`)) {
+            zip.addLocalFolder(`public/saves/${project}/fonts`, 'fonts');
+        }
+        zip.addLocalFolder(`public/fonts`, 'fonts');
+        zip.addFile(`${project}_v${version}.json`,fs.readFileSync(`public/saves/${project}/${version}.json`),'',0o0644);
+        zip.addLocalFile(`public/css/credits.css`,`lib`);
+        zip.addLocalFile(`public/lib/webcg-framework.umd.js`,`lib`);
+        zip.addLocalFile(`public/lib/webcg-devtools.umd.js`,`lib`);
+        zip.addLocalFile(`public/lib/jquery-3.6.0.js`,`lib`);
+        zip.addLocalFile(`public/js/builder.js`,`lib`);
+        const zipBuffer = zip.toBuffer();
+        res.set('Content-disposition', `attachment; filename=${project}_v${version}_template.zip`);
+        res.send(zipBuffer);
+    });
+    //sendZip(res, [`public/template`], project+"_template");
 })
 
 app.get('/render', (req, res) => {
@@ -160,41 +194,7 @@ app.get('/render', (req, res) => {
 function doHome(req, res) {
     log("New client connected", "A");
     res.header('Content-type', 'text/html');
-
-    const fileSearches = [
-        globby(['public/saves']),
-        globby(['public/fonts'])
-    ]
-
-    Promise.all(fileSearches).then(async (values) => {
-
-        let saves = {}
-        values[0].forEach(function(path) {
-            path = path.replace(`public/saves/`,'');
-            path.split('/').reduce( function(prev, current) {
-                if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                    current = parseInt(current.substring(0, current.indexOf(".js")));
-                    let prevCount = parseInt(prev.count);
-                    let count = prevCount;
-                    if (prevCount < current || prev.count == null) {
-                        count = current;
-                    }
-                    return prev.count = count;
-                } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
-                    return prev[current] || (prev[current] = []);
-                } else if (Object.prototype.toString.call(prev) === '[object Array]') {
-                    prev.push(current);
-                    return;
-                }
-                return prev[current] || (prev[current] = {});
-            }, saves)
-        });
-
-        const fonts = [];
-        values[1].forEach((font)=>{
-            fonts.push(font.substring(13));
-        })
-
+    getSavesAndFonts().then(async ([saves, fonts]) => {
         let hasFFMPEG = false;
         try {
             await commandExists('ffmpeg');
@@ -215,52 +215,14 @@ function doHome(req, res) {
             project: req.query.project,
             render: hasFFMPEG
         });
-    });
+    })
 }
 
 function doFrame(req, res) {
     log("New Render Page Spawned", "A");
     res.header('Content-type', 'text/html');
 
-    const fileSearches = [
-        globby(['public/saves']),
-        globby(['public/fonts'])
-    ]
-
-    Promise.all(fileSearches).then((values) => {
-
-        let savesObj = {}
-        values[0].forEach(function(path) {
-            path.split('/').reduce( function(prev, current) {
-                if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                    current = parseInt(current.substring(0, current.indexOf(".js")));
-                    let prevCount = parseInt(prev.count);
-                    let count = prevCount;
-                    if (prevCount < current || prev.count == null) {
-                        count = current;
-                    }
-                    return prev.count = count;
-                } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
-                    return prev[current] || (prev[current] = []);
-                } else if (Object.prototype.toString.call(prev) === '[object Array]') {
-                    prev.push(current);
-                    return;
-                }
-                return prev[current] || (prev[current] = {});
-            }, savesObj)
-        });
-
-        const fonts = [];
-        values[1].forEach((font)=>{
-            fonts.push(font.substring(13));
-        })
-
-        let saves = {};
-        if (typeof savesObj.public.saves !== 'undefined') {
-            saves = savesObj.public.saves;
-        }
-
-
+    getSavesAndFonts().then(async ([saves, fonts]) => {
         res.render('render', {
             globalFonts: fonts,
             fps: req.query.fps,
@@ -463,6 +425,49 @@ function getUpdatedProjects(project) {
     return promise;
 }
 
+async function getSavesAndFonts() {
+    const getData = new Promise((resolve,reject)=>{
+        Promise.all([
+            globby(['public/saves']),
+            globby(['public/fonts'])
+        ]).then(async (values) => {
+    
+            let saves = {}
+            values[0].forEach(function(path) {
+                path = path.replace(`public/saves/`,'');
+                path.split('/').reduce( function(prev, current) {
+                    if (typeof current == "string" && current.indexOf(".js") !== -1) {
+                        current = parseInt(current.substring(0, current.indexOf(".js")));
+                        let prevCount = parseInt(prev.count);
+                        let count = prevCount;
+                        if (prevCount < current || prev.count == null) {
+                            count = current;
+                        }
+                        return prev.count = count;
+                    } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
+                        return prev[current] || (prev[current] = []);
+                    } else if (Object.prototype.toString.call(prev) === '[object Array]') {
+                        prev.push(current);
+                        return;
+                    }
+                    return prev[current] || (prev[current] = {});
+                }, saves)
+            });
+    
+            const fonts = [];
+            values[1].forEach((font)=>{
+                fonts.push(font.substring(13));
+            })
+
+            resolve([
+                saves,
+                fonts
+            ])
+        })
+    })
+    return getData;
+}
+
 function imageList(project) {
     const promise = new Promise((resolve, reject) => {
         globby([`public/saves/${project}/images`]).then((files)=>{
@@ -485,7 +490,7 @@ function imageList(project) {
 }
 
 function sendZip(res, pathArray, zipName) {
-    const zip = new AmdZip();
+    const zip = new AdmZip();
     for (const folder of pathArray) {
         if (fs.existsSync(folder)) {
             zip.addLocalFolder(folder);

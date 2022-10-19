@@ -7,8 +7,8 @@ async function load(project, version, creditsObject) {
     content = data.content;
     settings = data.globalSettings;
     fonts = typeof globalFonts !== 'undefined' ? [...new Set ([...globalFonts, ...data.fonts])]: data.fonts;
-    updateSettings();
     await buildCredits(content);
+    updateSettings();
     if (typeof sendDuration !== 'undefined') {
       sendDuration();
     }
@@ -23,6 +23,8 @@ async function load(project, version, creditsObject) {
 
   if (typeof version === 'undefined') {
     currentVersion = versions.length;
+  } else {
+    currentVersion = version;
   }
 
   $("#loadVersion").html("");
@@ -44,14 +46,15 @@ async function load(project, version, creditsObject) {
   $footer.html('<button id="newArticle">+</button>');
   if (typeof creditsObject !== 'undefined') {
     await gotCredits(creditsObject);
+  } else {
+    await $.get(`save?project=${currentProject}&version=${currentVersion}`)
+    .then(async function(data) {
+      await gotCredits(data);
+    }).fail(function(data) {
+      const returnData = JSON.parse(data.responseText);
+      alert("Couldn't get requested file: "+JSON.stringify(returnData, "", 4));
+    });
   }
-  await $.get(`save?project=${currentProject}&version=${currentVersion}`)
-  .then(async function(data) {
-    await gotCredits(data);
-  }).fail(function(data) {
-    const returnData = JSON.parse(data.responseText);
-    alert("Couldn't get requested file: "+JSON.stringify(returnData, "", 4));
-  });
   loaded = true;
   console.log(`${currentProject} version ${currentVersion} loaded`);
 }
@@ -77,7 +80,7 @@ function updateSettings(refresh = true) {
       }
     }
   }
-
+  console.log($("#mainBody"));
   if (isLight(window.getComputedStyle($("#mainBody")[0]).backgroundColor)) {
     $("html").addClass("light");
   } else {
@@ -222,8 +225,9 @@ function renderContent(content) {
       subHtml += `<div ${style} class='text content' data-type='${content.type}'>${content.text}</div>`;
       break;
     case "image":
-      height = content.imageHeight || "10";
-      subHtml += `<figure ${style} class="content imageCont" data-type='${content.type}'><img class='image' src='saves/${currentProject}/images/${content.image}' style='max-height: ${height}em'></figure>`;
+      const height = content.imageHeight || "10";
+      const path = template ? '': `saves/${currentProject}/`;
+      subHtml += `<figure ${style} class="content imageCont" data-type='${content.type}'><img class='image' src='${path}images/${content.image}' style='max-height: ${height}em'></figure>`;
       break;
     case "spacing":
       subHtml += `<div ${style} class='spacing content' data-type='${content.type}' style='height:${content.spacing}em'></div>`;
@@ -367,12 +371,36 @@ function getStylesObject(element, type) {
 
 /* Running */
 
+function toggleUI() {
+  if ($('#creditsCont').hasClass('running')) {
+    $("header").removeClass("hidden");
+    $("footer").removeClass("hidden");
+    $('#creditsCont').removeClass('running');
+    let $active = $('.active.creditsSection');
+    if ($active.length == 0) {
+      $('.creditsSection')[0].classList.add('active');
+    }
+  } else {
+    $("header").addClass("hidden");
+    $("footer").addClass("hidden");
+    $('#creditsCont').addClass('running');
+    if (typeof editorClose !== 'undefined') {
+      editorClose();
+    }
+  }
+  $("html").removeClass("editing");
+  $("html").removeClass("settings");
+  $("#editorCont").removeClass("open");
+}
+
 async function runCredits() {
   $('.creditsSection').removeClass('active');
   $("header").addClass("hidden");
   $("footer").addClass("hidden");
   $('#creditsCont').addClass('running');
-  editorClose();
+  if (typeof editorClose !== 'undefined') {
+    editorClose();
+  }
   await sleep(1);
   let sections = document.getElementsByClassName('creditsSection');
   for (let index = 0; index < sections.length; index++) {

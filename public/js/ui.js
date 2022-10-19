@@ -28,26 +28,6 @@ function savePopup(context) {
     $("#saveForm").data("type", context);
 }
 
-function toggleUI() {
-  if ($('#creditsCont').hasClass('running')) {
-    $("header").removeClass("hidden");
-    $("footer").removeClass("hidden");
-    $('#creditsCont').removeClass('running');
-    let $active = $('.active.creditsSection');
-    if ($active.length == 0) {
-      $('.creditsSection')[0].classList.add('active');
-    }
-  } else {
-    $("header").addClass("hidden");
-    $("footer").addClass("hidden");
-    $('#creditsCont').addClass('running');
-    editorClose();
-  }
-  $("html").removeClass("editing");
-  $("html").removeClass("settings");
-  $("#editorCont").removeClass("open");
-}
-
 function initRunInBrowser() {
   runWindow = window.open("/run", 1, "directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=900,height=128");
 }
