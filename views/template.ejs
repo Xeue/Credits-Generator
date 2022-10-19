@@ -29,7 +29,7 @@
         const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         let template = true;
-        const projectJson = JSON.parse('<%- JSON.stringify(projectObject) %>');
+        const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
 
         webcg.on('data', function(data) {
             const source = data.source ? data.source.text || data.source : 'local';
