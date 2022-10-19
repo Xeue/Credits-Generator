@@ -272,6 +272,9 @@ function editorContent($editor, $target) {
     } else {
       $editor.append(settingsMakeProperty(contentSettings, type, "inactive"));
     }
+    if (type == 'names') {
+      $editor.append(editorNameSettings($target));
+    }
 }
 function editorColumns($editor, $block) {
   if ($block.parent().hasClass('columns')) {
@@ -313,7 +316,8 @@ function editorBlock($editor, $block, $target) {
         </div>
       </div>
     </div>
-  </section>`)
+  </section>`);
+  $blockSettings.append(editorNameSettings($block));
   $blockSettings.append(settingsMakeProperty(blockSettings, 'default', active));
   $editor.append($blockSettings);
 }
@@ -392,8 +396,44 @@ function editorGlobal($editor, toggleable) {
     } else {
       $globalSettings.append(settingsMakeProperty(settings, setting, "active"))
     }
+    if (setting == 'role') {
+      $globalSettings.append(editorNameSettings($('#creditsCont')));
+    }
   });
   $editor.append($globalSettings);
+}
+
+function editorNameSettings($target) {
+  const flipped = $target.attr('data-flipped') == 'true' ? 'checked="true"' : '';
+  const rolealign = $target.attr('data-rolealign') == 'true' ? 'checked="true"' : '';
+  const namealign = $target.attr('data-namealign') == 'true' ? 'checked="true"' : '';
+  let shown = '';
+  let checked = '';
+  if ($target.attr('data-flipped') == 'true' || $target.attr('data-rolealign') == 'true' || $target.attr('data-namealign') == 'true' ) {
+    shown = ' active';
+    checked = 'checked="true"';
+  }
+  const $namesSection = $(`<section class="settingProperty${shown}" data-prop="nameLayout">
+    <header>
+      <div class="editorHeading" id="editor_nameLayout">Names Layout</div>
+      <input type="checkbox" class="settingCheckBox namesFlip" ${checked}>
+    </header>
+    <div class="editorPropCont editorNamesCont">
+      <div class="editorNameLayouts">
+        <div class="propertyLabel">Flip Names and Roles</div>
+        <input type="checkbox" class="editorNameLayout" data-property="flipped" ${flipped}>
+      </div>
+      <div class="editorNameLayouts">
+        <div class="propertyLabel">Flip Role alignment</div>
+        <input type="checkbox" class="editorNameLayout" data-property="roleAlign" ${rolealign}>
+      </div>
+      <div class="editorNameLayouts">
+        <div class="propertyLabel">Flip Name alignment</div>
+        <input type="checkbox" class="editorNameLayout" data-property="nameAlign" ${namealign}>
+      </div>
+    </div>
+  </section>`);
+  return $namesSection;
 }
 
 function settingsMakeProperty(source, setting, state) {
@@ -517,5 +557,20 @@ $(document).change(function(e) {
     let $content = $('.inEditor.content').children('img');
     $content.attr('src', `saves/${currentProject}/images/${value}`);
     $target.next().attr('src', `saves/${currentProject}/images/${value}`);
-  }
+  } else if ($target.hasClass('editorNameLayout')) {
+    const type = $target.attr('data-property');
+    const state = $target.prop('checked');
+    const level = $target.closest('.editorGroup').attr('data-level');
+    switch (level) {
+      case 'block':
+        $('.block.inEditor').attr('data-'+type, state);
+        break;
+      case 'global':
+        $('#creditsCont').attr('data-'+type, state);
+        break;
+      default:
+        $('.content.inEditor').attr('data-'+type, state);
+        break;
+    }
+  };
 });

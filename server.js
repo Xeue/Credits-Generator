@@ -1,4 +1,4 @@
-const serverVersion = "3.1.7";
+const serverVersion = "3.2.0";
 const serverID = new Date().getTime();
 
 import {globby} from 'globby';

@@ -1129,6 +1129,23 @@ h3 {
   display: flex
 }
 
+.editorPropCont.editorNamesCont {
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+.editorNameLayouts {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 4px;
+}
+.editorNameLayouts:first-of-type {
+  margin-top: 5px;
+}
+.editorNameLayouts:last-of-type {
+  margin-bottom: 5px;
+}
+
 .active .settingPropCont,
 .active .editorPropCont {
   max-height: 100%

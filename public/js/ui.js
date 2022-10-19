@@ -335,7 +335,6 @@ function doOpenGallery() {
 }
 
 function updateSaves(saves) {
-  console.log(saves);
   for (const key in saves) {
     projectFonts[key] = saves[key].fonts;
     images[key] = saves[key].images;
@@ -898,7 +897,6 @@ $(document).click(function(e) {
     $target.closest(".galleryPreviews").toggleClass("biggerImages");
   } else if ($target.hasClass("galleryDelete")) {
     $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
-      console.log(data);
       updateSaves(data.saves);
       doOpenGallery();
     }).fail(function(data) {
@@ -950,7 +948,6 @@ $(document).click(function(e) {
 
 $(document).change(function(e) {
   let $target = $(e.target);
-  console.log($target);
   if ($target.hasClass("settingCheckBox")) {
     let $cont = $target.closest(".settingProperty");
     let makeInactive = $cont.hasClass("active") ? true : false;
@@ -964,16 +961,31 @@ $(document).change(function(e) {
         if (makeInactive) {
           delete settings[$cont.data("setting")];
           updateSettings();
+          if ($target.hasClass('namesFlip')) {
+            $('#creditsCont').removeAttr('data-flipped');
+            $('#creditsCont').removeAttr('data-rolealign');
+            $('#creditsCont').removeAttr('data-namealign');
+          }
         }
         break;
       case 'block':
         if (makeInactive) {
           $('.block.inEditor').attr('style', '');
+          if ($target.hasClass('namesFlip')) {
+            $('.block.inEditor').removeAttr('data-flipped');
+            $('.block.inEditor').removeAttr('data-rolealign');
+            $('.block.inEditor').removeAttr('data-namealign');
+          }
         }
         break;
       default:
         if (makeInactive) {
           $('.content.inEditor').attr('style', '');
+          if ($target.hasClass('namesFlip')) {
+            $('.content.inEditor').removeAttr('data-flipped');
+            $('.content.inEditor').removeAttr('data-rolealign');
+            $('.content.inEditor').removeAttr('data-namealign');
+          }
         }
         break;
     }

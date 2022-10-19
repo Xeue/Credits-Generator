@@ -117,6 +117,9 @@ function isLight(color) {
 async function buildCredits(content) {
   let active = ' active';
   const $cont = $("#creditsCont");
+  if (settings.namesFlipped == true) $cont.attr('data-flipped', 'true');
+  if (settings.roleFlipped == true) $cont.attr('data-rolealign', 'true');
+  if (settings.nameFlipped == true) $cont.attr('data-namealign', 'true');
   $cont.html('');
   const $footer = $("#creditsFooter");
   content.forEach(article => {
@@ -147,7 +150,10 @@ async function buildCredits(content) {
 function renderBlocks(blocks) {
   let html = "";
   blocks.forEach(block => {
-    html += `<section class="block" data-direction="${block.type}">`;
+    const flipped = block.namesFlipped == true ? `data-flipped='true'` : '';
+    const roleFlip = block.roleFlipped == true ? `data-rolealign='true'` : '';
+    const nameFlip = block.nameFlipped == true ? `data-namealign='true'` : '';
+    html += `<section class="block" data-direction="${block.type}" ${flipped} ${roleFlip} ${nameFlip}>`;
     block.content.forEach(content => {
       html += renderContent(content);
     })
@@ -177,7 +183,10 @@ function renderContent(content) {
       subHtml += "</div>";
       break;
     case "names":
-      subHtml += `<div ${style} class='names content' data-type='${content.type}'>`;
+      const flipped = content.namesFlipped == true ? `data-flipped='true'` : '';
+      const roleFlip = content.roleFlipped == true ? `data-rolealign='true'` : '';
+      const nameFlip = content.nameFlipped == true ? `data-namealign='true'` : '';
+      subHtml += `<div ${style} class='names content' data-type='${content.type}'  ${flipped} ${roleFlip} ${nameFlip}>`;
 
         for (var i = 0; i < content["names"].length; i++) {
           const names = content["names"];
@@ -237,6 +246,10 @@ function getCreditsJSON() {
       "blocks": makeBlocksObject($content.children())
     })
   })
+  const $cont = $('#creditsCont');
+  if ($cont.attr('data-flipped') == 'true') settings.namesFlipped = true;
+  if ($cont.attr('data-rolealign') == 'true') settings.roleFlipped = true;
+  if ($cont.attr('data-namealign') == 'true') settings.nameFlipped = true;
   return JSON.stringify({
     "globalSettings": settings,
     "images": images,
@@ -253,6 +266,9 @@ function makeBlocksObject($blocks) {
       "type": $block.attr('data-direction'),
       "content": makeContentsArray($block.children())
     }
+    if ($block.attr('data-flipped') == 'true') block.namesFlipped = true;
+    if ($block.attr('data-rolealign') == 'true') block.roleFlipped = true;
+    if ($block.attr('data-namealign') == 'true') block.nameFlipped = true;
     blocks.push(block);
   });
   return blocks;
@@ -270,6 +286,9 @@ function makeContentsArray($contents) {
 function makeContentObject($content) {
   let content = {};
   content.type = $content.data('type');
+  if ($content.attr('data-flipped') == 'true') content.namesFlipped = true;
+  if ($content.attr('data-rolealign') == 'true') content.roleFlipped = true;
+  if ($content.attr('data-namealign') == 'true') content.nameFlipped = true;
   if (typeof $content.attr('style') !== 'undefined') {
     content.settings = getStylesObject($content[0], content.type);;
   }

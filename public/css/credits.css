@@ -203,6 +203,38 @@ body {
  height:fit-content;
  grid-area: role;
 }
+
+
+[data-flipped="true"] .pair {
+  grid-template-areas: "name role";
+}
+
+[data-flipped="true"] .name {
+  text-align: right;
+}
+
+[data-flipped="true"] .role {
+  text-align: left;
+}
+
+[data-rolealign="true"] .role {
+  text-align: left;
+}
+
+[data-flipped="true"] [data-rolealign="true"] .role,
+[data-flipped="true"][data-rolealign="true"] .role {
+  text-align: right;
+}
+
+[data-namealign="true"] .name {
+  text-align: right;
+}
+
+[data-flipped="true"] [data-namealign="true"] .name,
+[data-flipped="true"][data-namealign="true"] .name {
+  text-align: left;
+}
+
 .text {
  margin-top:1em;
  font-size:.8em;
