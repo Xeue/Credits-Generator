@@ -5,32 +5,28 @@ html {
  font-family:montserrat,sans-serif;
  font-size:24pt;
  color:#fff;
- scroll-behavior:smooth;
+ scroll-behavior:smooth
 }
-
 #mainBody {
-  width: 100%;
-  height: 100%;
-  display: flex;
+ width:100%;
+ height:100%;
+ display:flex
 }
-
 .creditsBody {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
+ height:100%;
+ width:100%;
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between;
+ position:relative
 }
-
 #creditsScroller {
-  overflow-y: hidden;
-  height: 100%;
-  position: relative;
+ overflow-y:hidden;
+ height:100%;
+ position:relative
 }
-
 .columns .subTitle {
- padding-top:1em;
+ padding-top:1em
 }
 .columns[data-columns="1"] {
  display:grid;
@@ -59,9 +55,9 @@ html {
 .background {
  background-color:#000;
  opacity:1;
- background-position: center;
- background-repeat: no-repeat;
- background-size: cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ background-size:cover
 }
 body {
  overflow-anchor:none;
@@ -74,34 +70,29 @@ body {
 }
 #creditsCont {
  text-align:center;
- height: 100%;
+ height:100%
 }
-
 .running {
-  cursor: none;
+ cursor:none
 }
-
 .creditsSection {
-  display: none;
-  width: 60vw;
-  padding: 0 calc(50% - 30vw);
-  max-width: 100%;
-  top: 0;
-  position: absolute;
+ display:none;
+ width:60vw;
+ padding:0 calc(50% - 30vw);
+ max-width:100%;
+ top:0;
+ position:absolute
 }
-
-.creditsSection.active[data-type="fade"] {
-  max-height: 100%;
-  display: grid;
-  align-items: center;
-  height: 100%;
+.creditsSection.active[data-type=fade] {
+ max-height:100%;
+ display:grid;
+ align-items:center;
+ height:100%
 }
-
 .creditsSection.active {
-  display: block;
-  overflow-y: auto;
+ display:block;
+ overflow-y:auto
 }
-
 #creditsLogos {
  opacity:0;
  width:100%;
@@ -170,22 +161,22 @@ body {
 }
 .name,
 .role {
-  border-radius: 5px;
-  transition: 0.2s;
-  outline: 2px ridge transparent;
+ border-radius:5px;
+ transition:.2s;
+ outline:2px ridge transparent
 }
 .title {
  font-size:1.2em;
  font-weight:700;
  padding-bottom:2em;
- padding-top:2em;
+ padding-top:2em
 }
 .block {
  display:flex;
  flex-direction:column
 }
-.block[data-direction="columns"] {
-  flex-direction: row;
+.block[data-direction=columns] {
+ flex-direction:row
 }
 .subTitle {
  padding-bottom:1em;
@@ -193,26 +184,21 @@ body {
  font-size:.8em
 }
 .image~.subTitle {
- padding-top:1em;
+ padding-top:1em
 }
 .pair {
- display:flex;
+ display:grid;
  margin: 10px;
-}
-.pair>* {
- flex:1;
+ grid-template-columns: 1fr 1fr;
+ gap: 0.8em;
 }
 .pair>.name,
 .pair>.nameGroup {
  text-align:left;
- margin-left:.2em;
- padding-left: .2em;
 }
 .pair>.role {
  text-align:right;
- margin-right:.2em;
- padding-right: .2em;
- height: fit-content;
+ height:fit-content
 }
 .text {
  margin-top:1em;
@@ -220,36 +206,32 @@ body {
  white-space:break-spaces
 }
 .image {
- margin:auto !important;
+ margin:auto!important;
  height:fit-content;
- padding: 5px;
- max-width: calc(100% - 10px);
- pointer-events: none;
+ padding:5px;
+ max-width:calc(100% - 10px);
+ pointer-events:none
 }
 figure.content {
-  flex: 1;
-  display: grid;
-  place-items: center;
+ flex:1;
+ display:grid;
+ place-items:center
 }
 .stay {
  opacity:1!important
 }
-
 .running .creditsSection {
-  opacity: 0;
+ opacity:0
 }
-
-.running .active[data-type="scroll"] {
-  opacity: 1;
-  overflow: visible;
-  height: auto;
-  position: absolute;
+.running .active[data-type=scroll] {
+ opacity:1;
+ overflow:visible;
+ height:auto;
+ position:absolute
 }
-
-.running .blockContainer[data-type="scroll"] {
-  padding-top: 100vh;
+.running .blockContainer[data-type=scroll] {
+ padding-top:100vh
 }
-
 .fade {
  animation-name:fade;
  animation-timing-function:ease

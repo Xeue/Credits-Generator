@@ -72,6 +72,9 @@ function editorMakeProperty($json, prop, state) {
         }
         $imgSelect.append($imgOpt);
       });
+      if (imgs == '../../../img/Placeholder.jpg') {
+        $imgSelect.append(`<option value='none' selected hidden disabled>Please select image</option>`);
+      }
       $edit.append($imgSelect);
       $edit.append($img);
       break;
