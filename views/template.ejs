@@ -29,18 +29,18 @@
         const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         let template = true;
-        const sitePath = '<%=host%>';
+        const sitePath = '<%=host%>/';
         const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
 
         webcg.on('data', function(data) {
-            const source = data.source ? data.source.text || data.source : 'local';
-            if (source == 'local') {
+            const project = data.project ? data.project.text || data.project : 'local';
+            if (project == 'local') {
               load(currentProject, currentVersion, projectJson).then(()=>{
                 window.dispatchEvent(renderReadyEvent);
               });
             } else {
               template = false;
-              fetch(source)
+              fetch(`${sitePath}/save?project=${project}`)
               .then(response => response.json())
               .then(projectJson => {
                   load(currentProject, currentVersion, projectJson).then(()=>{

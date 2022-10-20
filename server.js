@@ -115,7 +115,7 @@ app.delete('/images', (req, res) => {
 
 app.get('/template', async (req, res) => {
     log("Request for template", "D");
-    const [saves, fonts] = await getSavesAndFonts()
+    const [saves, fonts] = await getSavesAndFonts();
     const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0];
     const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count;
     const buffer = await fs.promises.readFile(`${__dirname}/public/saves/${project}/${version}.json`);
@@ -148,7 +148,6 @@ app.get('/template', async (req, res) => {
         res.set('Content-disposition', `attachment; filename=${project}_v${version}_template.zip`);
         res.send(zipBuffer);
     });
-    //sendZip(res, [`public/template`], project+"_template");
 })
 
 app.get('/render', (req, res) => {
@@ -192,68 +191,67 @@ app.get('/render', (req, res) => {
 /* Request functions */
 
 
-function doHome(req, res) {
+async function doHome(req, res) {
     log("New client connected", "A");
     res.header('Content-type', 'text/html');
-    getSavesAndFonts().then(async ([saves, fonts]) => {
-        let hasFFMPEG = false;
+    const [saves, fonts] = await getSavesAndFonts();
+    let hasFFMPEG = false;
+    try {
+        await commandExists('ffmpeg');
+        hasFFMPEG = true;
+    } catch (error) {
         try {
-            await commandExists('ffmpeg');
+            await commandExists('FFMPEG');
             hasFFMPEG = true;
         } catch (error) {
-            try {
-                await commandExists('FFMPEG');
-                hasFFMPEG = true;
-            } catch (error) {
-                log('FFMPEG not installed on this server', "W");
-            }
+            log('FFMPEG not installed on this server', "W");
         }
+    }
 
-        res.render('home', {
-            saves: saves,
-            globalFonts: fonts,
-            serverName: config.installName,
-            project: req.query.project,
-            render: hasFFMPEG
-        });
-    })
+    res.render('home', {
+        saves: saves,
+        globalFonts: fonts,
+        serverName: config.installName,
+        project: req.query.project,
+        render: hasFFMPEG
+    });
 }
 
-function doFrame(req, res) {
+async function doFrame(req, res) {
     log("New Render Page Spawned", "A");
     res.header('Content-type', 'text/html');
 
-    getSavesAndFonts().then(async ([saves, fonts]) => {
-        res.render('render', {
-            globalFonts: fonts,
-            fps: req.query.fps,
-            project: req.query.project,
-            version: req.query.version,
-            id: req.query.id
-        });
+    const [saves, fonts] = await getSavesAndFonts();
+
+    res.render('render', {
+        globalFonts: fonts,
+        fps: req.query.fps,
+        project: req.query.project,
+        version: req.query.version,
+        id: req.query.id
     });
 }
 
-function getSave(req, res) {
+async function getSave(req, res) {
     log("Getting saved credits", "D")
-    const project = req.query.project
-    const version = req.query.version
-    fs.readFile(`${__dirname}/public/saves/${project}/${version}.json`, async (err, buffer)=>{
-        if (err) {
-            log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W');
-            logObj(`Error message`, err, 'W');
-            res.status(500);
-            res.send(JSON.stringify({
-                "status": "error",
-                "message": "Save not found",
-                "error": err
-            }))
-            return;
-        }
+    const [saves, fonts] = await getSavesAndFonts();
+    const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0];
+    const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count;
+    try {
+        const buffer = await fs.promises.readFile(`${__dirname}/public/saves/${project}/${version}.json`);
         let data = JSON.parse(buffer.toString());
         data.images = await imageList(project);
         res.json(data);
-    });
+    } catch (error) {
+        log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W');
+        logObj(`Error message`, err, 'W');
+        res.status(500);
+        res.send(JSON.stringify({
+            "status": "error",
+            "message": "Save not found",
+            "error": err
+        }))
+    }
 }
 function doSave(req, res) {
     log("Saving uploaded credits", "D");
@@ -378,95 +376,82 @@ function doUpload(req, res, uploadType) {
         res.status(500).send(err);
     }
 }
-function doDelete(req, res, deleteType) {
+async function doDelete(req, res, deleteType) {
     const file = req.query.file;
     const project = req.query.project;
     const returnObj = {};
-    fs.promises.unlink(`public/saves/${project}/${deleteType}/${file}`)
-    .then(getUpdatedProjects)
-    .then((saves)=>{
+    try {
+        await fs.promises.unlink(`public/saves/${project}/${deleteType}/${file}`);
+        const saves = await getUpdatedProjects();
         returnObj.type = "success";
         returnObj.save = saves[project];
         res.send(returnObj);
-    }).catch((err)=>{
-        getUpdatedProjects().then((saves)=>{
-            logObj("File error", err, "W");
-            res.status(500);
-            returnObj.type = "fail";
-            returnObj.save = saves[project];
-            returnObj.error = err;
-            res.send(returnObj);
-        })
-    });
+    } catch (error) {
+        const saves = await getUpdatedProjects();
+        logObj("File error", error, "W");
+        res.status(500);
+        returnObj.type = "fail";
+        returnObj.save = saves[project];
+        returnObj.error = error;
+        res.send(returnObj);
+    }
 }
 
-function getUpdatedProjects(project) {
-    const promise = new Promise((resolve, reject) => {
-        globby(["public/saves"]).then((files)=>{
-            let output = {};
-            files.forEach(function(path) {
-                path = path.replace(`public/saves/`, '');
-                path.split('/').reduce( function(prev, current) {
-                    if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                        return
-                    } else if (typeof current == "string" && (current == "images" || current == "fonts" )) {
-                        return prev[current] || (prev[current] = []);
-                    } else if (Object.prototype.toString.call(prev) === '[object Array]') {
-                        prev.push(current);
-                        return;
-                    }
-                    return prev[current] || (prev[current] = {});
-                }, output);
-            });
-
-            let resolveObj = typeof project === 'undefined' ? output : output[project];
-            resolve(resolveObj);
-        });
+async function getUpdatedProjects(project) {
+    const files = await globby(["public/saves"]);
+    let output = {};
+    files.forEach(function(path) {
+        path = path.replace(`public/saves/`, '');
+        path.split('/').reduce( function(prev, current) {
+            if (typeof current == "string" && current.indexOf(".js") !== -1) {
+                return
+            } else if (typeof current == "string" && (current == "images" || current == "fonts" )) {
+                return prev[current] || (prev[current] = []);
+            } else if (Object.prototype.toString.call(prev) === '[object Array]') {
+                prev.push(current);
+                return;
+            }
+            return prev[current] || (prev[current] = {});
+        }, output);
     });
-    return promise;
+
+    return typeof project === 'undefined' ? output : output[project];
 }
 
 async function getSavesAndFonts() {
-    const getData = new Promise((resolve,reject)=>{
-        Promise.all([
-            globby(['public/saves']),
-            globby(['public/fonts'])
-        ]).then(async (values) => {
+    const [_saves, _fonts] = await Promise.all([
+        globby(['public/saves']),
+        globby(['public/fonts'])
+    ])
     
-            let saves = {}
-            values[0].forEach(function(path) {
-                path = path.replace(`public/saves/`,'');
-                path.split('/').reduce( function(prev, current) {
-                    if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                        current = parseInt(current.substring(0, current.indexOf(".js")));
-                        let prevCount = parseInt(prev.count);
-                        let count = prevCount;
-                        if (prevCount < current || prev.count == null) {
-                            count = current;
-                        }
-                        return prev.count = count;
-                    } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
-                        return prev[current] || (prev[current] = []);
-                    } else if (Object.prototype.toString.call(prev) === '[object Array]') {
-                        prev.push(current);
-                        return;
-                    }
-                    return prev[current] || (prev[current] = {});
-                }, saves)
-            });
+    const saves = {}
+    _saves.forEach(function(path) {
+        path = path.replace(`public/saves/`,'');
+        path.split('/').reduce( function(prev, current) {
+            if (typeof current == "string" && current.indexOf(".js") !== -1) {
+                current = parseInt(current.substring(0, current.indexOf(".js")));
+                let prevCount = parseInt(prev.count);
+                let count = prevCount;
+                if (prevCount < current || prev.count == null) {
+                    count = current;
+                }
+                return prev.count = count;
+            } else if (typeof current == "string" && (current == "images" || current == "fonts")) {
+                return prev[current] || (prev[current] = []);
+            } else if (Object.prototype.toString.call(prev) === '[object Array]') {
+                prev.push(current);
+                return;
+            }
+            return prev[current] || (prev[current] = {});
+        }, saves)
+    });
     
-            const fonts = [];
-            values[1].forEach((font)=>{
-                fonts.push(font.substring(13));
-            })
-
-            resolve([
-                saves,
-                fonts
-            ])
-        })
+    const fonts = [];
+    _fonts.forEach((font)=>{
+        fonts.push(font.substring(13));
     })
-    return getData;
+
+    return [saves, fonts];
 }
 
 function imageList(project) {

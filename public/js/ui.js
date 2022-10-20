@@ -230,7 +230,7 @@ function doUploadSave() {
             load(project);
           }
         }
-        updateSaves(data.saves);
+        updateSaves(data.save);
         if (!$("#gallery").hasClass("hidden")) {
           doOpenGallery();
         }
@@ -314,30 +314,9 @@ function doOpenGallery() {
   });
 }
 
-function updateSaves(saves) {
-  for (const key in saves) {
-    projectFonts[key] = saves[key].fonts;
-    images[key] = saves[key].images;
-  }
-  fonts = [...new Set ([...globalFonts, Object.values(projectFonts[currentProject])])];
-
-  let $list = $("#font-family");
-  $list.html();
-  fonts.forEach(font => {
-    let fontArr = font.split('.');
-    fontArr.pop();
-    const fontName = fontArr.join('.');
-    let $dataOption = $(`<option value='${fontName}'>${fontName}</option>`);
-    $list.append($dataOption);
-  });
-
-  let $backgroundImg = $("#background-image");
-  $backgroundImg.html();
-  const imagesArr = Object.values(projectFonts[currentProject]);
-  imagesArr.forEach(image => {
-    let $dataOption = $(`<option value='${image}'>${image}</option>`);
-    $backgroundImg.append($dataOption);
-  });
+function updateSaves(save) {
+  images = typeof save.images !== 'undefined' ? save.images : [];
+  fonts = typeof save.fonts !== 'undefined' ? [...new Set ([...globalFonts, save.fonts])] : globalFonts;
 }
 
 function newContent() {
@@ -877,11 +856,11 @@ $(document).click(function(e) {
     $target.closest(".galleryPreviews").toggleClass("biggerImages");
   } else if ($target.hasClass("galleryDelete")) {
     $.delete(`${$target.data("type")}?file=${$target.data("filename")}&project=${currentProject}`, function(data) {
-      updateSaves(data.saves);
+      updateSaves(data.save);
       doOpenGallery();
     }).fail(function(data) {
       alert("Failed to delete font error: "+JSON.stringify(data.responseJSON.error));
-      updateSaves(data.responseJSON.saves);
+      updateSaves(data.responseJSON.save);
       doOpenGallery();
     });
   } else if ($target.hasClass('settingGroupCheck')) {
