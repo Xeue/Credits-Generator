@@ -29,7 +29,7 @@
         const renderReadyEvent = new Event('renderReady');
         let loaded = false;
         let template = true;
-        const sitePath = '<%=host%>/';
+        const sitePath = 'https://<%=host%>/';
         const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
 
         webcg.on('data', function(data) {
@@ -40,7 +40,7 @@
               });
             } else {
               template = false;
-              fetch(`${sitePath}/save?project=${project}`)
+              fetch(`${sitePath}save?project=${project}`)
               .then(response => response.json())
               .then(projectJson => {
                   load(currentProject, currentVersion, projectJson).then(()=>{
