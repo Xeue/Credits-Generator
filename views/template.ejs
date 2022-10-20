@@ -40,6 +40,7 @@
               });
             } else {
               template = false;
+              currentProject = project;
               fetch(`${sitePath}save?project=${project}`)
               .then(response => response.json())
               .then(projectJson => {
