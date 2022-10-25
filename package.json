@@ -1,10 +1,11 @@
 {
   "name": "credits-generator",
-  "version": "3.3.5",
+  "version": "3.4.0",
   "description": "Node based Credits Generating website",
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

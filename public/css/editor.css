@@ -418,6 +418,7 @@ dialog {
   border: none;
   margin: 0;
   padding: 0;
+  z-index: 3;
 }
 
 dialog>* {
@@ -1129,20 +1130,20 @@ h3 {
   display: flex
 }
 
-.editorPropCont.editorNamesCont {
+.editorPropCont.editorLayoutCont {
   flex-direction: column;
   gap: 5px;
   overflow: hidden;
 }
-.editorNameLayouts {
+.editorLayouts {
   display: flex;
   justify-content: space-between;
   margin-right: 4px;
 }
-.editorNameLayouts:first-of-type {
+.editorLayouts:first-of-type {
   margin-top: 5px;
 }
-.editorNameLayouts:last-of-type {
+.editorLayouts:last-of-type {
   margin-bottom: 5px;
 }
 
@@ -1273,7 +1274,7 @@ menu>button {
 
 .menuActive {
   opacity: 1;
-  z-index: 1;
+  z-index: 3;
   transition: top 0s, left 0s, opacity .2s
 }
 

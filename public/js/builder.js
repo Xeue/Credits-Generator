@@ -17,6 +17,8 @@ async function load(project, version, creditsObject) {
 
   currentProject = project;
   $("#loadFile").val(currentProject);
+  $("#uploadFileBut").val(currentProject);
+  Cookies.set("project", currentProject, { secure: true, SameSite: 'Lax' });
   let versionString = String($("#loadFile").find(":selected").data("versions"));
   let versions = [];
   versions = versionString.split(",");
@@ -126,11 +128,35 @@ async function buildCredits(content) {
   $cont.html('');
   const $footer = $("#creditsFooter");
   content.forEach(article => {
-    let name = typeof article.name !== 'undefined' ? article.name : article.type;
+    const name = typeof article.name !== 'undefined' ? article.name : article.type;
+    const trackWidth = typeof article.trackWidth !== 'undefined' ? article.trackWidth : 60;
+    const trackAlign = typeof article.trackAlign !== 'undefined' ? article.trackAlign : 9;
+    const backgroundImage = typeof article.backgroundImage !== 'undefined' ? article.backgroundImage : 'None';
+    const backgroundAlign = typeof article.backgroundAlign !== 'undefined' ? article.backgroundAlign : false;
     const $tab = $(`<button class="tabButton${active}">${name}</button>`)
     $footer.append($tab);
     const html = renderBlocks(article.blocks);
-    const $content = $(`<article class="creditsSection blockContainer${active}" data-type="${article.type}" data-name="${name}" data-duration="${article.duration}">${html}</article>`);
+    const $content = $(`<article
+      class="creditsSection blockContainer${active}"
+      data-type="${article.type}"
+      data-name="${name}"
+      data-duration="${article.duration}">
+        ${html}
+    </article>`);
+    $content.attr('data-trackAlign', trackAlign);
+    $content.attr('data-trackWidth', trackWidth);
+    $content.attr('data-backgroundAlign', backgroundAlign);
+    $content.attr('data-backgroundImage', backgroundImage);
+    $content.css('width', trackWidth+'vw');
+    $content.css('background-size', trackWidth+'vw');
+    $content.css('padding-left', `calc(${trackAlign-1} * (100% - ${trackWidth}vw)/16)`);
+    $content.css('padding-right', `calc(${17-trackAlign} * (100% - ${trackWidth}vw)/16)`);
+    $content.css('background-position-x', `calc(${100*((trackAlign-1)/16)}%)`);
+    if (backgroundImage == 'None') {
+      $content.css('background-image', '');
+    } else {
+      $content.css('background-image', `url('saves/${currentProject}/images/${backgroundImage}')`);
+    }
     active = '';
     $cont.append($content);
   });
@@ -247,6 +273,10 @@ function getCreditsJSON() {
       "type": $content.attr('data-type'),
       "name": $content.attr('data-name'),
       "duration": $content.attr('data-duration'),
+      "trackWidth": $content.attr('data-trackWidth'),
+      "trackAlign": $content.attr('data-trackAlign'),
+      "backgroundImage": $content.attr('data-backgroundImage'),
+      "backgroundAlign": $content.attr('data-backgroundAlign'),
       "blocks": makeBlocksObject($content.children())
     })
   })

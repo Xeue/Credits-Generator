@@ -1,6 +1,3 @@
-const serverVersion = "3.3.5";
-const serverID = new Date().getTime();
-
 import {globby} from 'globby';
 import express, { response } from 'express';
 import cors from 'cors';
@@ -13,6 +10,10 @@ import {fileURLToPath} from 'url';
 import AdmZip from "adm-zip";
 import commandExists from 'command-exists';
 import ejs from 'ejs';
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const {version} = require("./package.json");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,13 +41,10 @@ const logsConfig = {
 }
 
 logs.setConf(logsConfig);
-
 const app = express()
-if (!fs.existsSync(__dirname+'/public/saves')){
-    fs.mkdirSync(__dirname+'/public/saves', { recursive: true });
-}
+await folderExists(__dirname+'/public/saves', true);
 logs.printHeader('Credits Generator');
-log('Running version: v'+serverVersion, ['H', 'SERVER', logs.g]);
+log('Running version: v'+version, ['H', 'SERVER', logs.g]);
 printConfig();
 
 
@@ -128,17 +126,19 @@ app.get('/template', async (req, res) => {
         projectObject: projectObject,
         host: req.get('host')
     };
-    ejs.renderFile(__dirname + '/views/template.ejs', renderParams, (err, html)=>{
+    ejs.renderFile(__dirname + '/views/template.ejs', renderParams, async (err, html)=>{
         const zip = new AdmZip();
         zip.addFile("credits.html", Buffer.from(html, "utf8"), "Template");
-        if (fs.existsSync(`public/saves/${project}/images`)) {
+
+        if (await folderExists(`public/saves/${project}/images`)) {
             zip.addLocalFolder(`public/saves/${project}/images`, 'images');
         }
-        if (fs.existsSync(`public/saves/${project}/fonts`)) {
+        if (await folderExists(`public/saves/${project}/fonts`)) {
             zip.addLocalFolder(`public/saves/${project}/fonts`, 'fonts');
         }
+
         zip.addLocalFolder(`public/fonts`, 'fonts');
-        zip.addFile(`${project}_v${version}.json`,fs.readFileSync(`public/saves/${project}/${version}.json`),'',0o0644);
+        zip.addFile(`${project}_v${version}.json`, await fs.promises.readFile(`public/saves/${project}/${version}.json`),'',0o0644);
         zip.addLocalFile(`public/css/credits.css`,`lib`);
         zip.addLocalFile(`public/lib/webcg-framework.umd.js`,`lib`);
         zip.addLocalFile(`public/lib/webcg-devtools.umd.js`,`lib`);
@@ -253,7 +253,7 @@ async function getSave(req, res) {
         }))
     }
 }
-function doSave(req, res) {
+async function doSave(req, res) {
     log("Saving uploaded credits", "D");
     const project = req.body.project;
     let version = req.body.version;
@@ -277,12 +277,10 @@ function doSave(req, res) {
             let uploaded = req.files.JSON;
     
             const projectDir = `public/saves/${project}`;
-            if (!fs.existsSync(projectDir)){
-                fs.mkdirSync(projectDir, { recursive: true });
-            }
+            await folderExists(projectDir, true);
 
             if (version == "new") {
-                let files = fs.readdirSync(projectDir);
+                let files = await fs.promises.readdir(projectDir);
                 let count = 0;
                 files.forEach(file => {
                     const current = parseInt(file.substring(0, file.indexOf(".json")));
@@ -316,7 +314,7 @@ function doSave(req, res) {
     }
 }
 
-function doUpload(req, res, uploadType) {
+async function doUpload(req, res, uploadType) {
     log("Saving uploaded Images/Fonts", "D");
     const project = req.body.project;
     const newProject = req.body.new;
@@ -342,13 +340,12 @@ function doUpload(req, res, uploadType) {
 
             const projectDir = `public/saves/${project}`;
             const imgDir = uploadType == 'fonts' ? `public/${uploadType}` : `public/saves/${project}/${uploadType}`;
-            if (!fs.existsSync(imgDir)){
-                fs.mkdirSync(imgDir, { recursive: true });
-            }
+
+            await folderExists(imgDir, true);
 
             if (newProject) {
                 const template = `{}`
-                fs.writeFile(`${projectDir}/1.json`, template, (err)=>{});
+                await fs.promises.writeFile(`${projectDir}/1.json`, template);
                 returnObj.new = true;
                 returnObj.project = project;
             } else {
@@ -365,11 +362,9 @@ function doUpload(req, res, uploadType) {
                 uploadedItems.mv(`${imgDir}/${uploadedItems.name}`);
             }
 
-            getUpdatedProjects(project).then((save)=>{
-                returnObj.type = "success";
-                returnObj.save = save;
-                res.send(returnObj);
-            });
+            returnObj.type = "success";
+            returnObj.save = await getUpdatedProjects(project);
+            res.send(returnObj);
         }
     } catch (err) {
         logObj("File upload error", err, "E");
@@ -403,7 +398,7 @@ async function getUpdatedProjects(project) {
     files.forEach(function(path) {
         path = path.replace(`public/saves/`, '');
         path.split('/').reduce( function(prev, current) {
-            if (typeof current == "string" && current.indexOf(".js") !== -1) {
+            if (typeof current == "string" && current.indexOf(".json") !== -1) {
                 return
             } else if (typeof current == "string" && (current == "images" || current == "fonts" )) {
                 return prev[current] || (prev[current] = []);
@@ -428,8 +423,8 @@ async function getSavesAndFonts() {
     _saves.forEach(function(path) {
         path = path.replace(`public/saves/`,'');
         path.split('/').reduce( function(prev, current) {
-            if (typeof current == "string" && current.indexOf(".js") !== -1) {
-                current = parseInt(current.substring(0, current.indexOf(".js")));
+            if (typeof current == "string" && current.indexOf(".json") !== -1) {
+                current = parseInt(current.substring(0, current.indexOf(".json")));
                 let prevCount = parseInt(prev.count);
                 let count = prevCount;
                 if (prevCount < current || prev.count == null) {
@@ -475,12 +470,12 @@ function imageList(project) {
     return promise;
 }
 
-function sendZip(res, pathArray, zipName) {
+async function sendZip(res, pathArray, zipName) {
     const zip = new AdmZip();
     for (const folder of pathArray) {
-        if (fs.existsSync(folder)) {
+        if (await folderExists(folder)) {
             zip.addLocalFolder(folder);
-        }
+        };
     }
     const zipBuffer = zip.toBuffer();
     res.set('Content-disposition', `attachment; filename=${zipName}.zip`);
@@ -504,4 +499,25 @@ function printConfig() {
             log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`, ['H', 'CONFIG', logs.c]);
         }
     }
+}
+
+async function folderExists(path, makeIfNotPresent = false) {
+    let found = true;
+    try {
+        await fs.promises.access(path);
+    } catch (error) {
+        found = false;
+        if (makeIfNotPresent) {
+            log(`Folder: ${logs.y}(${path})${logs.reset} not found, creating it`, 'D');
+            try {
+                await fs.promises.mkdir(path, {'recursive': true});
+            } catch (error) {
+                log(`Couldn't create folder: ${logs.y}(${path})${logs.reset}`, 'W');
+                logObj('Message', error, "W");
+            }
+        } else {
+            log(`Folder: ${logs.y}(${path})${logs.reset} not found`, 'D');
+        }
+    }
+    return found;
 }

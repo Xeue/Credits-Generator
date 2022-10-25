@@ -291,7 +291,7 @@ function editorBlock($editor, $block, $target) {
   let checked = $target.hasClass('block') ? 'checked' : '';
   let blockLevel = $target.hasClass('block') ? 'class="active"' : '';
   $editor.append(`<header ${blockLevel}>
-    <h3>Block Settings</h3>
+    <h3>Group Settings</h3>
     <input type="checkbox" id="settingEnable_block" class="settingGroupCheck" ${checked}>
   </header>`);
   
@@ -367,6 +367,7 @@ function editorScroll($editor, toggleable, $target) {
       </div>
     </div>
   </section>`)
+  $scrollSettings.append(editorTrackSettings($target));
   $scrollSettings.append(`<section class="settingProperty active" data-setting="sectionName">
     <header>
       <div class="settingHeading" id="setting_sectionName">${creditsType} Name</div>
@@ -390,14 +391,12 @@ function editorGlobal($editor, toggleable) {
     </header>`);
   }
   let $globalSettings = $('<section class="editorGroup" data-level="global"></section>');
+  $globalSettings.append(editorNameSettings($('#creditsCont')));
   globalSettingsOptions.forEach(setting => {
     if (typeof settings[setting] === 'undefined') {
       $globalSettings.append(settingsMakeProperty(settings, setting, "inactive"))
     } else {
       $globalSettings.append(settingsMakeProperty(settings, setting, "active"))
-    }
-    if (setting == 'role') {
-      $globalSettings.append(editorNameSettings($('#creditsCont')));
     }
   });
   $editor.append($globalSettings);
@@ -418,22 +417,70 @@ function editorNameSettings($target) {
       <div class="editorHeading" id="editor_nameLayout">Names Layout</div>
       <input type="checkbox" class="settingCheckBox namesFlip" ${checked}>
     </header>
-    <div class="editorPropCont editorNamesCont">
-      <div class="editorNameLayouts">
+    <div class="editorPropCont editorLayoutCont">
+      <div class="editorLayouts">
         <div class="propertyLabel">Flip Names and Roles</div>
         <input type="checkbox" class="editorNameLayout" data-property="flipped" ${flipped}>
       </div>
-      <div class="editorNameLayouts">
+      <div class="editorLayouts">
         <div class="propertyLabel">Flip Role alignment</div>
         <input type="checkbox" class="editorNameLayout" data-property="roleAlign" ${rolealign}>
       </div>
-      <div class="editorNameLayouts">
+      <div class="editorLayouts">
         <div class="propertyLabel">Flip Name alignment</div>
         <input type="checkbox" class="editorNameLayout" data-property="nameAlign" ${namealign}>
       </div>
     </div>
   </section>`);
   return $namesSection;
+}
+
+function editorTrackSettings($target) {
+  const align = $target.attr('data-trackAlign') !== undefined ? $target.attr('data-trackAlign') : 9;
+  const width = $target.attr('data-trackWidth') !== undefined ? $target.attr('data-trackWidth') : 60;
+  const backgroundImage = $target.attr('data-backgroundImage') !== undefined ? $target.attr('data-backgroundImage') : 'None';
+  const backgroundAlign = $target.attr('data-backgroundAlign') !== 'false' ? 'checked="true"' : '';
+
+  let imageHTML = backgroundImage == 'None' ? `<option value="none" selected>None</option>` : `<option value="none" selected>None</option>`;
+  images.forEach(image => {
+    if (image == backgroundImage) {
+      imageHTML += `<option selected value='${image}'>${image}</option>`;
+    } else {
+      imageHTML += `<option value='${image}'>${image}</option>`;
+    }
+  });
+
+  const $trackSection = $(`<section class="settingProperty active" data-prop="trackLayout">
+    <header>
+      <div class="editorHeading" id="editor_trackLayout">Track Layout</div>
+    </header>
+    <div class="editorPropCont editorLayoutCont">
+      <div class="editorLayouts">
+        <div class="propertyLabel">Track Alignment</div>
+        <input type="range" min="1" value="${align}" max="17" class="editorLayoutSlider" id="trackAlign" data-property="align">
+      </div>
+
+      <div class="editorLayouts">
+        <div class="propertyLabel">Track Width</div>
+        <input type="range" min="10" value="${width}" max="100" class="editorLayoutSlider" id="trackWidth" data-property="width">
+      </div>
+
+      <div class="editorLayouts">
+        <div class="propertyLabel">Background Image</div>
+        <select class="editorTrackImage editorProp">
+          ${imageHTML}
+        </select>
+      </div>
+
+      <div class="editorLayouts">
+        <div class="propertyLabel">Align background with track</div>
+        <input type="checkbox" class="editorLayout" data-property="backgroundAlign" ${backgroundAlign}>
+      </div>
+
+    </div>
+  </section>`);
+
+  return $trackSection;
 }
 
 function settingsMakeProperty(source, setting, state) {
@@ -552,6 +599,22 @@ $(document).change(function(e) {
     editorNumChange($target, $target.val());
   } else if ($target.is('#editorInput_duration')) {
     editorNumChange($target, $target.val());
+  } else if ($target.hasClass('editorTrackImage')) {
+    const $article = $('.creditsSection.active');
+    if ($target.val() == 'None') {
+      $article.css('background-image', '');
+      $article.attr('data-backgroundImage', 'None');
+    } else {
+      $article.css('background-image', `url('saves/${currentProject}/images/${$target.val()}')`);
+      $article.attr('data-backgroundImage', $target.val());
+    }
+  } else if ($target.hasClass('editorLayout')) {
+    const $article = $('.creditsSection.active');
+    if ($target.is(":checked")) {
+      $article.attr('data-backgroundAlign', 'true');
+    } else {
+      $article.attr('data-backgroundAlign', 'false');
+    }
   } else if ($target.hasClass("editorProp")) {
     let value = $target.val();
     let $content = $('.inEditor.content').children('img');
@@ -574,3 +637,19 @@ $(document).change(function(e) {
     }
   };
 });
+
+$(document).on('input', function(e) {
+  const $target = $(e.target);
+  if ($target.hasClass('editorLayoutSlider')) {
+    const width = $('#trackWidth').val();
+    const align = $('#trackAlign').val();
+    const $article = $('.creditsSection.active');
+    $article.attr('data-trackAlign', align);
+    $article.attr('data-trackWidth', width);
+    $article.css('width', width+'vw');
+    $article.css('background-size', width+'vw');
+    $article.css('padding-left', `calc(${align-1} * (100% - ${width}vw)/16)`);
+    $article.css('padding-right', `calc(${17-align} * (100% - ${width}vw)/16)`);
+    $article.css('background-position-x', `calc(${100*((align-1)/16)}%)`);
+  }
+})

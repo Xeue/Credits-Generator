@@ -61,6 +61,7 @@ function sendDuration() {
 
 function doSave() {
     let type = $("#saveForm").data("type");
+    console.log(type);
     let project,version,file;
 
     if ($("#saveExisting").hasClass("selected")) {
@@ -78,7 +79,7 @@ function doSave() {
     }
 
     let formdata = new FormData();
-    if (type == "Upload") {
+    if (type == "Import") {
       $upload = $("#saveUpload");
       if ($upload.prop('files').length > 0) {
         file = $upload.prop('files')[0];
@@ -316,7 +317,7 @@ function doOpenGallery() {
 
 function updateSaves(save) {
   images = typeof save.images !== 'undefined' ? save.images : [];
-  fonts = typeof save.fonts !== 'undefined' ? [...new Set ([...globalFonts, save.fonts])] : globalFonts;
+  fonts = typeof save.fonts !== 'undefined' ? [...new Set ([...globalFonts, ...save.fonts])] : globalFonts;
 }
 
 function newContent() {
@@ -636,7 +637,13 @@ $(function() {
     });
 
     $("#galleryRefresh").click(function() {
-      doOpenGallery();
+      $.getJSON('save', {
+        'project':currentProject,
+        'version':currentVersion
+      }, (save)=>{
+        updateSaves(save);
+        doOpenGallery();
+      })
     });
 
     $("#downloadMultiButton").click(function() {
@@ -754,7 +761,9 @@ $(function() {
       Cookies.set("tutorial", "done", { secure: true, SameSite: 'Lax' });
     });
 
-    load(defaultProject);
+    let loadProject = Cookies.get('project');
+    loadProject = typeof loadProject === 'undefined' ? defaultProject : loadProject;
+    load(loadProject);
 });
 
 $(document).click(function(e) {
