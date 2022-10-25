@@ -1202,7 +1202,7 @@ function makeV3BlocksFromV2(credits) {
           case "columns":
             let columns = {
               "type": "columns",
-              "blocks": makeBlocks(propValue)
+              "blocks": makeV3BlocksFromV2(propValue)
             }
             if (typeof objc["maxColumns"] !== "undefined") {
               columns.columns = objc["maxColumns"];
@@ -1218,6 +1218,17 @@ function makeV3BlocksFromV2(credits) {
       "type":"rows",
       "content": newContent}
   })
+}
+
+function loadV2FromURL(project, version) {
+  let source = `https://credits.chilton.tv/saves/${project}/${version}.js`;
+  return new Promise((resolve, reject) => {
+    var script = document.createElement("script");
+    script.onload = resolve;
+    script.onerror = reject;
+    script.src = source;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  });
 }
 
 function saveConvertV2toV3(credits, fades, settings) {
@@ -1247,4 +1258,10 @@ function saveConvertV2toV3(credits, fades, settings) {
   output.images = [];
 
   return output;
+}
+
+async function convertV2toV3(project, version) {
+  await loadV2FromURL(project, version);
+  const result = saveConvertV2toV3(credits, endFades, settings);
+  console.log(result);
 }

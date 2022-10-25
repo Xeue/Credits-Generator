@@ -129,7 +129,8 @@ async function buildCredits(content) {
   const $footer = $("#creditsFooter");
   content.forEach(article => {
     const name = typeof article.name !== 'undefined' ? article.name : article.type;
-    const trackWidth = typeof article.trackWidth !== 'undefined' ? article.trackWidth : 60;
+    const trackWidth = typeof article.trackWidth !== 'undefined' ? article.trackWidth : 1152;
+    const trackWidthVW = trackWidth/1920 * 100;
     const trackAlign = typeof article.trackAlign !== 'undefined' ? article.trackAlign : 9;
     const backgroundImage = typeof article.backgroundImage !== 'undefined' ? article.backgroundImage : 'None';
     const backgroundAlign = typeof article.backgroundAlign !== 'undefined' ? article.backgroundAlign : false;
@@ -147,15 +148,15 @@ async function buildCredits(content) {
     $content.attr('data-trackWidth', trackWidth);
     $content.attr('data-backgroundAlign', backgroundAlign);
     $content.attr('data-backgroundImage', backgroundImage);
-    $content.css('width', trackWidth+'vw');
-    $content.css('background-size', trackWidth+'vw');
-    $content.css('padding-left', `calc(${trackAlign-1} * (100% - ${trackWidth}vw)/16)`);
-    $content.css('padding-right', `calc(${17-trackAlign} * (100% - ${trackWidth}vw)/16)`);
-    $content.css('background-position-x', `calc(${100*((trackAlign-1)/16)}%)`);
+    $content.css('width', trackWidthVW+'vw');
+    $content.css('--background-size', trackWidthVW+'vw');
+    $content.css('padding-left', `calc(${trackAlign-1} * (100% - ${trackWidthVW}vw)/16)`);
+    $content.css('padding-right', `calc(${17-trackAlign} * (100% - ${trackWidthVW}vw)/16)`);
+    $content.css('--background-position-x', `calc(${100*((trackAlign-1)/16)}%)`);
     if (backgroundImage == 'None') {
-      $content.css('background-image', '');
+      $content.css('--background-image', '');
     } else {
-      $content.css('background-image', `url('saves/${currentProject}/images/${backgroundImage}')`);
+      $content.css('--background-image', `url('../saves/${currentProject}/images/${backgroundImage}')`);
     }
     active = '';
     $cont.append($content);
@@ -431,6 +432,7 @@ async function runCredits() {
   if (typeof editorClose !== 'undefined') {
     editorClose();
   }
+  $('.creditsSection')[0].classList.add('active');
   await sleep(1);
   let sections = document.getElementsByClassName('creditsSection');
   for (let index = 0; index < sections.length; index++) {
@@ -446,10 +448,12 @@ async function runCredits() {
       $(section).css('animation-duration', duration+'s');
     }
     await sleep(duration);
-    section.classList.remove('active');
-    section.classList.remove('fade');
+    if (index + 1 < sections.length) {
+      section.classList.remove('active');
+      section.classList.remove('fade');
+      section.style.top = `0`;
+    }
     section.style.transition = `0s linear`;
-    section.style.top = `0`;
   }
   return true;
 }

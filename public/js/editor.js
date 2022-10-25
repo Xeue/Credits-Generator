@@ -437,7 +437,7 @@ function editorNameSettings($target) {
 
 function editorTrackSettings($target) {
   const align = $target.attr('data-trackAlign') !== undefined ? $target.attr('data-trackAlign') : 9;
-  const width = $target.attr('data-trackWidth') !== undefined ? $target.attr('data-trackWidth') : 60;
+  const width = $target.attr('data-trackWidth') !== undefined ? $target.attr('data-trackWidth') : 1152;
   const backgroundImage = $target.attr('data-backgroundImage') !== undefined ? $target.attr('data-backgroundImage') : 'None';
   const backgroundAlign = $target.attr('data-backgroundAlign') !== 'false' ? 'checked="true"' : '';
 
@@ -461,8 +461,8 @@ function editorTrackSettings($target) {
       </div>
 
       <div class="editorLayouts">
-        <div class="propertyLabel">Track Width</div>
-        <input type="range" min="10" value="${width}" max="100" class="editorLayoutSlider" id="trackWidth" data-property="width">
+        <div class="propertyLabel">Track Width (<span id="trackWidthMon">${width}</span>px)</div>
+        <input type="range" min="100" value="${width}" max="1920" class="editorLayoutSlider" id="trackWidth" data-property="width">
       </div>
 
       <div class="editorLayouts">
@@ -602,10 +602,10 @@ $(document).change(function(e) {
   } else if ($target.hasClass('editorTrackImage')) {
     const $article = $('.creditsSection.active');
     if ($target.val() == 'None') {
-      $article.css('background-image', '');
+      $article.css('--background-image', '');
       $article.attr('data-backgroundImage', 'None');
     } else {
-      $article.css('background-image', `url('saves/${currentProject}/images/${$target.val()}')`);
+      $article.css('--background-image', `url('../saves/${currentProject}/images/${$target.val()}')`);
       $article.attr('data-backgroundImage', $target.val());
     }
   } else if ($target.hasClass('editorLayout')) {
@@ -641,15 +641,17 @@ $(document).change(function(e) {
 $(document).on('input', function(e) {
   const $target = $(e.target);
   if ($target.hasClass('editorLayoutSlider')) {
-    const width = $('#trackWidth').val();
+    const width = $('#trackWidth').val()
+    const widthVW = width/1920 * 100;
     const align = $('#trackAlign').val();
     const $article = $('.creditsSection.active');
     $article.attr('data-trackAlign', align);
     $article.attr('data-trackWidth', width);
-    $article.css('width', width+'vw');
-    $article.css('background-size', width+'vw');
-    $article.css('padding-left', `calc(${align-1} * (100% - ${width}vw)/16)`);
-    $article.css('padding-right', `calc(${17-align} * (100% - ${width}vw)/16)`);
-    $article.css('background-position-x', `calc(${100*((align-1)/16)}%)`);
+    $article.css('width', widthVW+'vw');
+    $article.css('--background-size', widthVW+'vw');
+    $article.css('padding-left', `calc(${align-1} * (100% - ${widthVW}vw)/16)`);
+    $article.css('padding-right', `calc(${17-align} * (100% - ${widthVW}vw)/16)`);
+    $article.css('--background-position-x', `calc(${100*((align-1)/16)}%)`);
+    $('#trackWidthMon').html(width);
   }
 })
