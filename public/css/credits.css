@@ -105,6 +105,9 @@ body {
   background-position-x: var(--background-position-x);
   background-repeat: no-repeat;
 }
+.casparCG .creditsSection::before {
+  z-index: -1;
+}
 .running .creditsSection::before {
   position: fixed;
 }

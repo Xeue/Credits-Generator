@@ -18,7 +18,9 @@ async function load(project, version, creditsObject) {
   currentProject = project;
   $("#loadFile").val(currentProject);
   $("#uploadFileBut").val(currentProject);
-  Cookies.set("project", currentProject, { secure: true, SameSite: 'Lax' });
+  if (typeof Cookies !== 'undefined') {
+    Cookies.set("project", currentProject, { secure: true, SameSite: 'Lax' });
+  }
   let versionString = String($("#loadFile").find(":selected").data("versions"));
   let versions = [];
   versions = versionString.split(",");
@@ -156,7 +158,8 @@ async function buildCredits(content) {
     if (backgroundImage == 'None') {
       $content.css('--background-image', '');
     } else {
-      $content.css('--background-image', `url('../saves/${currentProject}/images/${backgroundImage}')`);
+      const path = template ? '../' : `../${sitePath}saves/${currentProject}/`;
+      $content.css('--background-image', `url('${path}images/${backgroundImage}')`);
     }
     active = '';
     $cont.append($content);
@@ -174,7 +177,7 @@ async function buildCredits(content) {
     })
     imagesPromises.push(imagePromise);
   });
-  await Promise.allSettled(imagesPromises);
+  await Promise.all(imagesPromises);
 }
 
 function renderBlocks(blocks) {
