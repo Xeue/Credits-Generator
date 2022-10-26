@@ -5,6 +5,7 @@ import cors from 'cors'
 import fileUpload from 'express-fileupload'
 import fs from 'fs'
 import {log, logObj, logs} from 'xeue-logs'
+import config from 'xeue-config'
 import render from './render.js'
 import path from 'path'
 import {fileURLToPath} from 'url'
@@ -19,34 +20,34 @@ const {version} = require('./package.json')
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-let config
-try {
-	config = JSON.parse(fs.readFileSync(__dirname + '/config.conf'))
-} catch (error) {
-	log('There is an error with the config file or it doesn\'t exist, please check it', 'E')
-	logObj('Config error', error, 'E')
-	process.exit(1)
-}
-config.loggingLevel = config.loggingLevel ? config.loggingLevel : 'W'
-config.debugLineNum = config.debugLineNum ? config.debugLineNum : false
-config.port = config.port ? config.port : 3000
-config.devMode = config.devMode ? config.devMode : false
-config.installName = config.installName ? config.installName : 'Unknown Site'
+logs.printHeader('Credits Generator')
 
-const logsConfig = {
+config.default('port', 8080)
+config.default('installName', 'Unknown Site')
+config.default('debugLineNum', false)
+config.default('loggingLevel', 'W')
+config.default('devMode', false)
+
+config.require('port')
+config.require('installName', [], 'Name of the site, this appears in the tab in browser')
+config.require('loggingLevel', ['A','D','W','E'], 'What level of logs should be recorded (A)ll (D)ebug (W)arning (E)rror')
+
+if (!await config.fromFile(__dirname + '/config.conf')) {
+	config.fromCLI(__dirname + '/config.conf')
+}
+
+logs.setConf({
 	'createLogFile': true,
 	'logsFileName': 'CreditsLogging',
 	'configLocation': __dirname,
 	'loggingLevel': config.loggingLevel,
 	'debugLineNum': config.debugLineNum
-}
+})
 
-logs.setConf(logsConfig)
 const app = express()
 await folderExists(__dirname+'/public/saves', true)
-logs.printHeader('Credits Generator')
 log('Running version: v'+version, ['H', 'SERVER', logs.g])
-printConfig()
+config.print()
 
 
 /* Express setup & Endpoints */
@@ -152,10 +153,11 @@ app.get('/template', async (req, res) => {
 })
 
 app.get('/render', (req, res) => {
-	let project = req.query.project
-	let version = req.query.version
-	let fps = parseInt(req.query.fps)
-	let frames = parseInt(req.query.frames)
+	const project = req.query.project
+	const version = req.query.version
+	const fps = parseInt(req.query.fps)
+	const frames = parseInt(req.query.frames)
+	log(`Starting render of project: ${project} version: ${version} at frame rate: ${fps}`, 'D')
 	let width = 1920
 	let height = 1080
 	switch (parseInt(req.query.resolution)) {
@@ -193,7 +195,7 @@ app.get('/render', (req, res) => {
 
 
 async function doHome(req, res) {
-	log('New client connected', 'A')
+	log('Client requesting home page', 'A')
 	res.header('Content-type', 'text/html')
 	const [saves, fonts] = await getSavesAndFonts()
 	let hasFFMPEG = false
@@ -375,6 +377,7 @@ async function doUpload(req, res, uploadType) {
 async function doDelete(req, res, deleteType) {
 	const file = req.query.file
 	const project = req.query.project
+	log(`Deleting file: ${file} from: ${project}`, 'A')
 	const returnObj = {}
 	try {
 		await fs.promises.unlink(`public/saves/${project}/${deleteType}/${file}`)
@@ -394,6 +397,7 @@ async function doDelete(req, res, deleteType) {
 }
 
 async function getUpdatedProjects(project) {
+	log('Getting new projects list', 'A')
 	const files = await globby(['public/saves'])
 	let output = {}
 	files.forEach(function(path) {
@@ -415,6 +419,7 @@ async function getUpdatedProjects(project) {
 }
 
 async function getSavesAndFonts() {
+	log('Getting updated saves and fonts', 'A')
 	const [_saves, _fonts] = await Promise.all([
 		globby(['public/saves']),
 		globby(['public/fonts'])
@@ -451,6 +456,7 @@ async function getSavesAndFonts() {
 }
 
 function imageList(project) {
+	log('Getting list of images', 'A')
 	const promise = new Promise((resolve) => {
 		globby([`public/saves/${project}/images`]).then((files)=>{
 			let output = {}
@@ -472,6 +478,7 @@ function imageList(project) {
 }
 
 async function sendZip(res, pathArray, zipName) {
+	log(`Creating and sending zip: ${zipName}`, 'A')
 	const zip = new AdmZip()
 	for (const folder of pathArray) {
 		if (await folderExists(folder)) {
@@ -484,23 +491,6 @@ async function sendZip(res, pathArray, zipName) {
 }
 
 /* Utility Functions */
-
-
-function printConfig() {
-	for (const key in config) {
-		if (Object.hasOwnProperty.call(config, key)) {
-			const value = config[key]
-			log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`, ['H', 'CONFIG', logs.c])
-		}
-	}
-
-	for (const key in logsConfig) {
-		if (Object.hasOwnProperty.call(logsConfig, key)) {
-			const value = logsConfig[key]
-			log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.b}${value}${logs.reset}`, ['H', 'CONFIG', logs.c])
-		}
-	}
-}
 
 async function folderExists(path, makeIfNotPresent = false) {
 	let found = true
