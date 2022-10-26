@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="lib/credits.css">
+    <style>
+        <% globalFonts.forEach(function(font) { %>
+            @font-face {
+                font-family: "<%- font.substring(0,font.indexOf(".")) %>";
+                src: url("fonts/<%- font %>");
+            }
+        <% }); %>
+    </style>
+    <script src="lib/webcg-framework.umd.js"></script>
+    <script src="lib/jquery-3.6.0.js"></script>
+    <script src="lib/builder.js"></script>
+    <script>
+        let globalFonts = '<%- JSON.stringify(globalFonts) %>';
+        let fonts = '<%- JSON.stringify(globalFonts) %>';
+        let images;
+        let content;
+        let currentProject = '<%=project%>';
+        let currentVersion = parseInt('<%=version%>');
+        let dataOptions = [];
+        let runWindow;
+        let settings;
+        const renderReadyEvent = new Event('renderReady');
+        let loaded = false;
+        let template = true;
+        const sitePath = 'https://<%=host%>/';
+        const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
+
+        webcg.on('data', function(data) {
+          const project = data.project ? data.project.text || data.project : 'local';
+          if (project == 'local') {
+            load(currentProject, currentVersion, projectJson).then(()=>{
+              window.dispatchEvent(renderReadyEvent);
+            });
+          } else {
+            template = false;
+            currentProject = project;
+            fetch(`${sitePath}save?project=${project}`)
+            .then(response => response.json())
+            .then(projectJson => {
+              load(currentProject, currentVersion, projectJson).then(()=>{
+                window.dispatchEvent(renderReadyEvent);
+              });
+            });
+          }
+        })
+
+        webcg.on('play', function() {
+          runCredits();
+        })
+
+        webcg.on('stop', async () => {
+          $('#creditsCont').addClass('fadeOut');
+          await sleep(2);
+          $('.creditsSection').removeClass('active');
+          $('.creditsSection').css('transition', 'all 0s linear 0s');
+          $('.creditsSection').css('top', 0);
+          $('#creditsCont').removeClass('fadeOut');
+        })
+    </script>
+  </head>
+
+  <body id="mainBody" class="background casparCG">
+    <main id="scene" class="background creditsBody">
+      <div id="creditsScroller">
+        <div id="creditsCont">
+        </div>
+      </div>
+    </main>
+  </body>
+
+</html>

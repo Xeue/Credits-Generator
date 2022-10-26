@@ -1,47 +1,69 @@
 html {
  background-color:#0000;
- opacity:0;
  box-sizing:border-box;
  overflow:hidden;
  font-family:montserrat,sans-serif;
- font-size:3vh;
+ font-size:24pt;
  color:#fff;
- scroll-behavior:smooth;
- transition:1s
+ scroll-behavior:smooth
+}
+#mainBody {
+ width:100%;
+ height:100%;
+ display:flex
+}
+.creditsBody {
+ height:100%;
+ width:100%;
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between;
+ position:relative
+}
+
+.fadeOut {
+  opacity: 0;
+  transition: 2s;
+}
+
+#creditsScroller {
+ overflow-y:hidden;
+ height:100%;
+ position:relative
 }
 .columns .subTitle {
- margin-top:2em
+ padding-top:1em
 }
-.cols1 {
+.columns[data-columns="1"] {
  display:grid;
  grid-template-columns:repeat(1,1fr)
 }
-.cols2 {
+.columns[data-columns="2"] {
  display:grid;
  grid-template-columns:repeat(2,1fr)
 }
-.cols3 {
+.columns[data-columns="3"] {
  display:grid;
  grid-template-columns:repeat(3,1fr)
 }
-.cols4 {
+.columns[data-columns="4"] {
  display:grid;
  grid-template-columns:repeat(4,1fr)
 }
-.cols5 {
+.columns[data-columns="5"] {
  display:grid;
  grid-template-columns:repeat(5,1fr)
 }
-.cols6 {
+.columns[data-columns="6"] {
  display:grid;
  grid-template-columns:repeat(6,1fr)
 }
 .background {
  background-color:#000;
  opacity:1;
- background-position: center;
- background-repeat: no-repeat;
- background-size: cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ background-size:cover
 }
 body {
  overflow-anchor:none;
@@ -54,9 +76,49 @@ body {
 }
 #creditsCont {
  text-align:center;
+ height:100%;
+}
+.running {
+ cursor:none
+}
+.creditsSection {
+ display:none;
  width:60vw;
- margin:auto;
- padding-top:100vh
+ padding:0 calc(50% - 30vw);
+ max-width:100%;
+ top:0;
+ background-repeat: repeat-y;
+}
+.creditsSection.active[data-type=fade] {
+ max-height:100%;
+ display:grid;
+ align-items:center;
+ height:100%
+}
+.creditsSection.active {
+ display:block;
+ overflow-y:auto
+}
+.creditsSection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: var(--background-image);
+  background-size: var(--background-size);
+  background-position-x: var(--background-position-x);
+  background-repeat: no-repeat;
+}
+.casparCG .creditsSection::before {
+  z-index: -1;
+}
+.running .creditsSection::before {
+  position: fixed;
+}
+.creditsSection[data-backgroundalign="false"] {
+  background-size: cover !important;
 }
 #creditsLogos {
  opacity:0;
@@ -106,8 +168,6 @@ body {
  justify-content:space-around;
  padding:0 20%
 }
-.imageGroup .image {
-}
 .subTitle,
 .role {
  font-weight:700;
@@ -124,53 +184,111 @@ body {
  margin-top:3px;
  margin-bottom:3px
 }
+.name,
+.role {
+ border-radius:5px;
+ transition:.2s;
+ outline:2px ridge transparent
+}
 .title {
  font-size:1.2em;
  font-weight:700;
- margin-bottom:2em;
- margin-top:2em
+ padding-bottom:2em;
+ padding-top:2em
 }
 .block {
  display:flex;
  flex-direction:column
 }
+.block[data-direction=columns] {
+ flex-direction:row
+}
 .subTitle {
- margin-bottom:2em;
- margin-top:5em;
+ padding-bottom:1em;
+ padding-top:1em;
  font-size:.8em
 }
 .image~.subTitle {
- margin-top:2em
+ padding-top:1em
 }
 .pair {
- display:flex;
- margin-top:10px;
- margin-bottom:10px
-}
-.pair>* {
- flex:1
+ display:grid;
+ margin: 10px;
+ grid-template-areas: "role name";
+ gap: 0.8em;
+ grid-template-columns: 1fr 1fr;
 }
 .pair>.name,
 .pair>.nameGroup {
  text-align:left;
- margin-left:.4em
+ grid-area: name;
 }
 .pair>.role {
  text-align:right;
- margin-right:.4em
+ grid-area: role;
 }
+
+
+[data-flipped="true"] .pair {
+  grid-template-areas: "name role";
+}
+
+[data-flipped="true"] .name {
+  text-align: right;
+}
+
+[data-flipped="true"] .role {
+  text-align: left;
+}
+
+[data-rolealign="true"] .role {
+  text-align: left;
+}
+
+[data-flipped="true"] [data-rolealign="true"] .role,
+[data-flipped="true"][data-rolealign="true"] .role {
+  text-align: right;
+}
+
+[data-namealign="true"] .name {
+  text-align: right;
+}
+
+[data-flipped="true"] [data-namealign="true"] .name,
+[data-flipped="true"][data-namealign="true"] .name {
+  text-align: left;
+}
+
 .text {
  margin-top:1em;
  font-size:.8em;
  white-space:break-spaces
 }
 .image {
- max-width:75%;
- margin:auto;
- height:fit-content
+ margin:auto!important;
+ padding:5px;
+ max-width:calc(100% - 10px);
+ pointer-events:none
+}
+figure.content {
+ flex:1;
+ display:grid;
+ place-items:center
 }
 .stay {
  opacity:1!important
+}
+.running .creditsSection {
+ opacity:0
+}
+.running .active[data-type=scroll] {
+ opacity:1;
+ overflow:visible;
+ height:auto !important;
+ position:absolute
+}
+.running .blockContainer[data-type=scroll] {
+ padding-top:100vh
 }
 .fade {
  animation-name:fade;

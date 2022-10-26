@@ -25,8 +25,8 @@
   --blue: rgb(18, 66, 107);
   --blueBorder: rgb(13, 48, 78);
 
-  --inEditor: rgb(255 0 0 / 23%);
-  --menuSelected: rgba(255, 136, 136, .23);
+  --inEditor: rgba(0, 159, 255, 0.18);
+  --menuSelected: rgba(42, 249, 84, 0.23);
   --editorHover: rgba(0, 4, 254, .18);
   --emptyBlock: rgba(124, 193, 85, 0.23);
 
@@ -35,6 +35,8 @@
   --transparent: transparent;
   --halfTransparent: rgba(255, 255, 255, .05);
   --semiTransparent: rgba(255, 255, 255, .13);
+
+  --dragColour: rgba(0, 255, 255, 0.33);
 
   --system-ui: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
@@ -45,18 +47,18 @@
   --accentBackground: rgb(234, 234, 234);
   --accentBackgroundBorder: hsl(0, 0%, 84%);
 
-  --accentLight: hsl(0, 0%, 88%);
-  --accentLightBorder: hsl(0, 0%, 95%);
+  --accentLight: rgb(200, 200, 200);
+  --accentLightBorder: rgb(165, 165, 165);
 
-  --accentMid: rgb(241, 241, 241);
-  --accentMidBorder: hsl(0, 0%, 92%);
+  --accentMid: rgb(255, 124, 124);
+  --accentMidBorder: rgb(211, 130, 130);
 
   --accentDark: rgb(245, 245, 245);
   --accentDarkBorder: rgb(234, 234, 234);
 
   --accentVeryDark: rgb(255, 255, 255);
   
-  --textBoxBackground: hsl(0, 0%, 96%);
+  --textBoxBackground: rgb(205, 205, 205);
   --textBoxShadow: hsl(0, 0%, 89%);
 
   --red: rgb(255, 46, 46);
@@ -65,16 +67,17 @@
   --blue: rgb(82, 175, 255);
   --blueBorder: rgb(70, 170, 255);
 
-  --inEditor: hsla(208, 100%, 50%, 0.23);
-  --menuSelected: hsla(0, 100%, 77%, 0.23);
-  --editorHover: hsla(239, 100%, 50%, 0.18);
-  --emptyBlock: hsla(98, 47%, 55%, 0.23);
+  --inEditor: rgba(255, 0, 0, 0.23);
+  --menuSelected: rgba(255, 138, 138, 0.23);
+  --editorHover: rgba(0, 4, 255, 0.18);
+  --emptyBlock: rgba(211, 0, 255, 0.23);
 
   --white: hsl(0, 0%, 100%);
   --text: rgb(39, 39, 39);
   --transparent: transparent;
   --halfTransparent: rgba(0, 0, 0, 0.05);
-  --semiTransparent: hsla(0, 0%, 100%, 0.13);
+  --semiTransparent: rgba(108, 108, 108, 0.13);
+  --dragColour: rgba(121, 198, 255, 0.33);
 }
 
 .light .settingProperty,
@@ -121,12 +124,6 @@ h2 {
   font-size: 1.2em;
 }
 
-#mainBody {
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
-
 #mainBody::before {
   content: "";
   background: inherit;
@@ -134,13 +131,14 @@ h2 {
   inset: 0;
 }
 
-#creditsCont {
-  padding-top: 2em;
-  padding-bottom: 200px;
-  align-items: center;
-  display: flex;
-  flex-direction: column
+.creditsSection {
+  display: none;
+  padding: 10px calc(50% - 30vw);
+  height: calc(100% - 90px) !important;
+  padding-bottom: 80px;
 }
+
+
 
 header,
 footer {
@@ -160,23 +158,25 @@ main footer {
   font-size: initial;
 }
 
+main > header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+}
+main > header> * {
+  margin-left: 5px;
+}
+.gridSpacer {
+  flex: 1;
+}
+
 header>div {
   pointer-events: none
 }
 
-.creditsBody {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-}
-
 #creditsScroller {
-  overflow-y: auto;
   margin-top: -5px;
-  margin-bottom: -5px
+  margin-bottom: -5px;
 }
 
 .editing #creditsScroller,
@@ -230,7 +230,7 @@ menu button {
   min-width: 50px;
   color: var(--text);
   transition: .2s;
-  margin-left: 7px;
+  /*! margin-left: 7px; */
   background-color: transparent;
   border: none;
   border-top: transparent 1px solid
@@ -282,6 +282,7 @@ input[type=text],
   min-width: 50px;
   color: var(--text);
   transition: .2s;
+  -webkit-user-select: text;
   user-select: text
 }
 
@@ -290,8 +291,8 @@ footer select,
 dialog select {
   background-image: url(../img/arrow_down.png);
   color: var(--text);
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   background-position-x: right;
   background-position-y: center;
   background-repeat: no-repeat;
@@ -318,9 +319,9 @@ header select:focus {
 }
 
 input[type=checkbox] {
-  appearance: none;
   -moz-appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   width: 44px;
   height: 24px;
   border-radius: 12px;
@@ -358,6 +359,10 @@ input[type=checkbox][readonly] {
 
 input[type=checkbox] {
   margin: 2px
+}
+
+input[type="checkbox"].settingGroupCheck {
+  background-color: var(--textBoxBackground);
 }
 
 input[type=checkbox]:checked {
@@ -414,6 +419,7 @@ dialog {
   border: none;
   margin: 0;
   padding: 0;
+  z-index: 3;
 }
 
 dialog>* {
@@ -431,11 +437,14 @@ dialog>* {
 
 dialog>*>section {
   padding: 10px;
-  font-size: 16pt
+  font-size: 16pt;
+  overflow-y: auto;
 }
 
 dialog footer {
-  display: flex
+  display: grid;
+  grid-auto-flow: column;
+  grid-column-gap: 7px;
 }
 
 dialog header,
@@ -456,6 +465,18 @@ dialog button {
   border-top: 1px solid var(--accentLightBorder);
 }
 
+.name:focus-visible,
+.role:focus-visible,
+.content:focus,
+.content:focus-visible {
+  outline: 2px solid rgb(31, 112, 171);
+  background: var(--semiTransparent);
+}
+
+.inEditor.content {
+  outline: 2px dashed rgb(31, 112, 171);
+}
+
 .downloadRow {
   display: flex;
   justify-content: space-between;
@@ -472,6 +493,8 @@ dialog button {
 
 .renderLable {
   font-size: 0.6em;
+  padding: 3px;
+  margin-top: 5px;
 }
 
 #galleryImages, #galleryFonts {
@@ -727,25 +750,28 @@ dialog footer button:first-of-type {
 }
 
 #creditsFooter {
+  width: -moz-fit-content;
   width: fit-content;
   max-width: calc(100% - 24px);
   position: absolute;
   bottom: 0;
   left: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-column-gap: 7px;
+  z-index: 2;
 }
 
 #creditsButton {
   margin-left: 0px;
 }
 
-#newFade {
+#newArticle {
   order: 1;
   display: none;
 }
 
-.editing #newFade {
+.editing #newArticle {
   display: block;
 }
 
@@ -781,6 +807,9 @@ dialog footer button:first-of-type {
   background: var(--accentDark)
 }
 
+.editing .content:hover {
+  background-color: var(--semiTransparent);
+}
 
 .editing .block:hover {
   background-color: var(--halfTransparent);
@@ -792,8 +821,86 @@ dialog footer button:first-of-type {
   border-radius: 8px
 }
 
+.menuSelected.content::after,
+.inEditor.content::after,
+.dragging::after,
+.editing .block::after,
+.editing .columns::after {
+  content: "Editing";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-size: 10pt;
+  font-weight: normal;
+  font-style: italic;
+  font-family: var(--system-ui);
+}
+
+.editing .block::after {
+  content: "Group";
+  top: 0px;
+  left: 3px;
+  color: var(--semiTransparent);
+  z-index: 1;
+  cursor: move;
+}
+
+.editing .columns::after {
+  content: "Columns";
+  color: var(--semiTransparent);
+  z-index: 1;
+  left: 50%;
+  top: -20px;
+  transform: translateX(-50%);
+  cursor: move;
+}
+
+.menuSelected.content::after {
+  content: "Selected for Menu";
+}
+
+.dragging::after {
+  content: "Moving";
+}
+
+.dragging.block::after {
+  content: "Group, Moving";
+  top: 0px;
+  left: 3px;
+  color: var(--white);
+  z-index: 1;
+  cursor: move;
+}
+
+#creditsFooter .dragging::after {
+  content: "Moving";
+  font-size: 7pt;
+}
+
+.menuSelected.inEditor.content::after {
+  content: "Editing, Selected for Menu";
+}
+
+.dragging.menuSelected::after {
+  content: "Selected for Menu, Moving";
+}
+
+.dragging.inEditor.content::after {
+  content: "Editing, Moving";
+}
+
+.dragging.menuSelected.inEditor.content::after {
+  content: "Editing, Selected for Menu, Moving";
+}
+
+.inEditor,
+.dragging,
+.menuSelected {
+  position: relative;
+}
+
 .editing .block.menuSelected {
-  background-color: var(--menuSelected)
+  background-color: var(--menuSelected);
 }
 
 .editing .block:empty {
@@ -810,36 +917,66 @@ dialog footer button:first-of-type {
   justify-content: center;
 }
 
-.editing .block:hover {
-  margin-bottom: 2em;
-  margin-top: 2em;
-}
-
 .block {
-    position: relative;
-}
-
-.block {
-  margin-bottom: 0;
-  margin-top: 0;
   transition: .1s;
-  border-radius: 8px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
-  width: 100%;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 15px 0px;
+  outline: 3px dotted transparent;
+  position: relative;
 }
 
-.editing .columns > .block:hover {
-  /*! margin-left: 1.5em; */
-  margin-bottom: 0;
-  margin-top: 0;
-  /*! width: calc(100% - 3em); */
+.editing .block {
+    outline: 3px dotted var(--transparentDark);
+}
+
+.content {
+  border-radius: 5px;
+  margin: 5px;
+  transition: .2s;
+  outline: 2px dashed transparent;
+}
+
+.newContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 0.12fr));
+  font-family: var(--system-ui);
+  font-size: 0.5em;
+  background: var(--emptyBlock) !important;
+  padding: 20px;
+  justify-content: center;
+  transition: 0s;
+}
+
+.newContent div {
+  filter: grayscale(1);
+  transition: 0.3s;
+}
+.newContent div:hover {
+  filter: none;
+  font-weight: bold;
+}
+.newContent div * {
+  pointer-events: none;
+}
+
+.newContent .dragCont {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 0.12fr));
+  font-family: var(--system-ui);
+  background: var(--emptyBlock) !important;
+  padding: 20px;
+  justify-content: center;
+  font-weight: normal !important;
+}
+.newContent.draggingSelected {
+  display: block;
+  padding: 0;
 }
 
 .columns > .block {
-  margin-right: 0;
-  padding: 0 0 10px 0;
+  margin: 10px;
+  padding: 10px;
 }
 
 .addNewButAfter,
@@ -876,12 +1013,10 @@ dialog footer button:first-of-type {
   transition: .1s;
   margin: auto
 }
-.editing .columns:hover {
-  column-gap: 40px;
-}
 .columns {
   transition: .2s;
   column-gap: 0px;
+  position: relative;
 }
 .columns>.block .addNewButAfter {
   width: 1.5em;
@@ -905,9 +1040,12 @@ dialog footer button:first-of-type {
 }
 
 .editing #editButton,
-#menuDelete,
 .settings #settings,
-#menuDelete {
+#menuDeleteContent, 
+#menuDeleteBlock,
+#menuDeleteFade,
+#menuDeleteSetting,
+#menuDeleteColumn {
   background-color: var(--red);
   border-top: 1px var(--redBorder) solid
 }
@@ -923,12 +1061,41 @@ dialog footer button:first-of-type {
   justify-content: space-between;
   align-items: center;
   transition: .3s;
-  background: 0 0
+  background: 0 0;
+  text-transform: capitalize;
+}
+
+#editorCont > header {
+  margin: 5px 10px 2px 8px;
+  width: auto;
+  padding-bottom: 0;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.1em;
+  text-transform: capitalize;
+}
+.editorGroup {
+  border: 2px dotted var(--accentLightBorder);
+  margin: 13px;
+  border-radius: 15px;
+  display: none;
+  margin-bottom: 5px;
+}
+.active + .editorGroup {
+  display: block;
+}
+
+.editorGroup > .editorProperty,
+.editorGroup > .settingProperty{
+  margin: 5px;
 }
 
 .propertyLabel {
   padding: 4px 5px;
   font-size: 12pt;
+  margin: auto 2px;
 }
 
 .settingProperty,
@@ -948,12 +1115,34 @@ dialog footer button:first-of-type {
   border-top: 1px solid var(--accentDarkBorder);
 }
 
+.editorHeading,
+.settingHeading {
+  font-size: 0.8em;
+}
+
 .settingPropCont,
 .editorPropCont {
   max-height: 0;
   background-color: var(--accentVeryDark);
   transition: .3s;
   display: flex
+}
+
+.editorPropCont.editorLayoutCont {
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+.editorLayouts {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 4px;
+}
+.editorLayouts:first-of-type {
+  margin-top: 5px;
+}
+.editorLayouts:last-of-type {
+  margin-bottom: 5px;
 }
 
 .active .settingPropCont,
@@ -1033,16 +1222,6 @@ dialog footer button:first-of-type {
   min-width: calc(100% - 10px);
 }
 
-.dragging {
-  position: absolute;
-  transform: scale(1.05);
-  width: calc(100% - 20px);
-}
-
-.dragging header>* {
-  pointer-events: none
-}
-
 header *,
 footer *,
 header,
@@ -1051,6 +1230,11 @@ dialog,
 #editorCont,
 .editing .block:empty::before {
   font-family: var(--system-ui);
+}
+
+.tabButton {
+  text-transform: capitalize;
+  min-width: 100px;
 }
 
 #editorCont::after {
@@ -1076,57 +1260,59 @@ menu {
   border-radius: 10px;
   padding: 10px;
   transition: top 0s .2s, left 0s .2s, opacity .2s;
-  padding-left: 5px;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 0;
+  display: grid;
   margin: 0;
+  grid-row-gap: 10px;
 }
 
 menu>button {
-  margin-bottom: 10px;
   background-color: var(--accentLight);
   border-top: 1px var(--accentLightBorder) solid;
 }
 
 .menuActive {
   opacity: 1;
-  z-index: 1;
+  z-index: 3;
   transition: top 0s, left 0s, opacity .2s
 }
 
-.menuDelete #menuMoveUp,
-.menuDelete #menuMoveDown {
+#menuDeleteColumn,
+#newContent,
+#sectionsSettings,
+#menuDeleteContent,
+#newBlock,
+#menuDeleteBlock,
+#menuDeleteFade,
+#menuDeleteSetting {
   display: none
 }
 
-.menuMove #menuDelete {
-  display: none
+.menuColumn #menuDeleteColumn {
+  display: block;
 }
 
-.menuNoUp #menuMoveUp {
-  display: none
+.menuContent #newContent,
+.menuContent #menuDeleteContent {
+  display: block;
 }
 
-.menuNoDown #menuMoveDown {
-  display: none
+.menuBlock #newBlock,
+.menuBlock #menuDeleteBlock {
+  display: block;
 }
 
-.menuFade > #menuDelete::after {
-  content: " fade";
+.menuTabs #menuDeleteFade,
+.menuTabs #sectionsSettings {
+  display: block;
 }
 
-.menuBlock > #menuDelete::after {
-  content: " block";
+.menuSetting #menuDeleteSetting {
+  display: block;
 }
 
-* {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none
+.menuBlock.menuBlockNew #menuDeleteBlock,
+.menuContent.menuContentNew #menuDeleteContent {
+  display: none;
 }
 
 .menuActive.above::after {
@@ -1153,6 +1339,61 @@ menu>button {
   border-right: 10px solid transparent;
   border-bottom: 10px solid var(--accentBackground);
   transform: translate(-50%, -100%)
+}
+
+.draggingSelected {
+  background: var(--dragColour) !important;
+  position: relative;
+}
+
+.draggingSelected > * {
+  filter: blur(4px) !important;
+}
+
+.dragging_block .content:not(.blockContainer) {
+  pointer-events: none;
+}
+
+.dragging_content .block,
+.dragging_content .content > * {
+  pointer-events: none;
+}
+
+.dragging_content .content {
+  pointer-events: all;
+}
+
+.draggingSelected::before {
+  content: "Move Here";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--system-ui);
+  z-index: 1;
+  text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.58);
+  font-style: italic;
+  font-weight: bold;
+  font-size: 3vh;
+  margin-top: -7px;
+  pointer-events: none;
+}
+
+#creditsFooter .dragging_block > :hover:not(.dragging)::before,
+#creditsFooter .draggingSelected::before {
+  font-size: 14pt;
+  white-space: nowrap;
+  margin-top: 0px;
+}
+
+.dragging_block *,
+.dragging_content * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.dragging {
+  background: var(--dragColour) !important;;
 }
 
 #toutorial>div {
