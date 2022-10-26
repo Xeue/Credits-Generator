@@ -20,6 +20,12 @@ html {
  justify-content:space-between;
  position:relative
 }
+
+.fadeOut {
+  opacity: 0;
+  transition: 2s;
+}
+
 #creditsScroller {
  overflow-y:hidden;
  height:100%;
@@ -162,8 +168,6 @@ body {
  justify-content:space-around;
  padding:0 20%
 }
-.imageGroup .image {
-}
 .subTitle,
 .role {
  font-weight:700;
@@ -221,7 +225,6 @@ body {
 }
 .pair>.role {
  text-align:right;
- height:fit-content;
  grid-area: role;
 }
 

@@ -29,5 +29,8 @@
     "puppeteer": "^18.0.5",
     "ws": "^8.8.1",
     "xeue-logs": "^1.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.26.0"
   }
 }

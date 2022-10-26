@@ -33,30 +33,35 @@
         const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
 
         webcg.on('data', function(data) {
-            const project = data.project ? data.project.text || data.project : 'local';
-            if (project == 'local') {
+          const project = data.project ? data.project.text || data.project : 'local';
+          if (project == 'local') {
+            load(currentProject, currentVersion, projectJson).then(()=>{
+              window.dispatchEvent(renderReadyEvent);
+            });
+          } else {
+            template = false;
+            currentProject = project;
+            fetch(`${sitePath}save?project=${project}`)
+            .then(response => response.json())
+            .then(projectJson => {
               load(currentProject, currentVersion, projectJson).then(()=>{
                 window.dispatchEvent(renderReadyEvent);
               });
-            } else {
-              template = false;
-              currentProject = project;
-              fetch(`${sitePath}save?project=${project}`)
-              .then(response => response.json())
-              .then(projectJson => {
-                  load(currentProject, currentVersion, projectJson).then(()=>{
-                      window.dispatchEvent(renderReadyEvent);
-                  });
-              });
-            }
+            });
+          }
         })
 
         webcg.on('play', function() {
-            runCredits();
+          runCredits();
         })
 
-        webcg.on('stop', function() {
-            
+        webcg.on('stop', async () => {
+          $('#creditsCont').addClass('fadeOut');
+          await sleep(2);
+          $('.creditsSection').removeClass('active');
+          $('.creditsSection').css('transition', 'all 0s linear 0s');
+          $('.creditsSection').css('top', 0);
+          $('#creditsCont').removeClass('fadeOut');
         })
     </script>
   </head>

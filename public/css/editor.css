@@ -282,6 +282,7 @@ input[type=text],
   min-width: 50px;
   color: var(--text);
   transition: .2s;
+  -webkit-user-select: text;
   user-select: text
 }
 
@@ -290,8 +291,8 @@ footer select,
 dialog select {
   background-image: url(../img/arrow_down.png);
   color: var(--text);
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   background-position-x: right;
   background-position-y: center;
   background-repeat: no-repeat;
@@ -318,9 +319,9 @@ header select:focus {
 }
 
 input[type=checkbox] {
-  appearance: none;
   -moz-appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   width: 44px;
   height: 24px;
   border-radius: 12px;
@@ -749,6 +750,7 @@ dialog footer button:first-of-type {
 }
 
 #creditsFooter {
+  width: -moz-fit-content;
   width: fit-content;
   max-width: calc(100% - 24px);
   position: absolute;
@@ -965,7 +967,6 @@ dialog footer button:first-of-type {
   background: var(--emptyBlock) !important;
   padding: 20px;
   justify-content: center;
-  width: ;
   font-weight: normal !important;
 }
 .newContent.draggingSelected {
@@ -1011,9 +1012,6 @@ dialog footer button:first-of-type {
   box-shadow: var(--textBoxShadow) 0 1px 5px -3px;
   transition: .1s;
   margin: auto
-}
-.editing .columns:hover {
-  /*! column-gap: 40px; */
 }
 .columns {
   transition: .2s;
