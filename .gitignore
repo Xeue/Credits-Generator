@@ -105,4 +105,4 @@ dist
 
 saves/
 logs/
-config.conf
+*.conf

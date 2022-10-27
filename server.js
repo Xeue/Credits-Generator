@@ -12,6 +12,7 @@ import {fileURLToPath} from 'url'
 import AdmZip from 'adm-zip'
 import commandExists from 'command-exists'
 import ejs from 'ejs'
+import readline from 'readline'
 
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
@@ -22,177 +23,178 @@ const __dirname = path.dirname(__filename)
 
 logs.printHeader('Credits Generator')
 
-config.default('port', 8080)
-config.default('installName', 'Unknown Site')
-config.default('debugLineNum', false)
-config.default('loggingLevel', 'W')
-config.default('devMode', false)
+{ /* Config setup */
+	config.default('port', 8080)
+	config.default('installName', 'Unknown Site')
+	config.default('debugLineNum', false)
+	config.default('loggingLevel', 'W')
+	config.default('createLogFile', true)
+	config.default('devMode', false)
 
-config.require('port')
-config.require('installName', [], 'Name of the site, this appears in the tab in browser')
-config.require('loggingLevel', ['A','D','W','E'], 'What level of logs should be recorded (A)ll (D)ebug (W)arning (E)rror')
+	config.require('port')
+	config.require('installName', [], 'Name of the site, this appears in the tab in browser')
+	config.require('loggingLevel', ['A','D','W','E'], 'What level of logs should be recorded (A)ll (D)ebug (W)arning (E)rror')
+	config.require('createLogFile', [true, false], 'Generate log file')
 
-if (!await config.fromFile(__dirname + '/config.conf')) {
-	config.fromCLI(__dirname + '/config.conf')
+	if (!await config.fromFile(__dirname + '/config.conf')) {
+		await config.fromCLI(__dirname + '/config.conf')
+	}
+
+	logs.setConf({
+		'createLogFile': config.get('createLogFile'),
+		'logsFileName': 'CreditsLogging',
+		'configLocation': __dirname,
+		'loggingLevel': config.get('loggingLevel'),
+		'debugLineNum': config.get('debugLineNum')
+	})
 }
 
-logs.setConf({
-	'createLogFile': true,
-	'logsFileName': 'CreditsLogging',
-	'configLocation': __dirname,
-	'loggingLevel': config.loggingLevel,
-	'debugLineNum': config.debugLineNum
-})
-
+userInput()
 const app = express()
 await folderExists(__dirname+'/public/saves', true)
 log('Running version: v'+version, ['H', 'SERVER', logs.g])
 config.print()
 
+{ /* Express setup & Endpoints */
+	app.set('views', __dirname + '/views')
+	app.set('view engine', 'ejs')
+	app.use(cors())
+	app.use(express.json())
+	app.use(express.static('public'))
+	app.use(express.urlencoded({ extended: true }))
+	app.use(fileUpload({
+		createParentPath: true
+	}))
 
-/* Express setup & Endpoints */
-
-
-app.set('views', __dirname + '/views')
-app.set('view engine', 'ejs')
-app.use(cors())
-app.use(express.json())
-app.use(express.static('public'))
-app.use(express.urlencoded({ extended: true }))
-app.use(fileUpload({
-	createParentPath: true
-}))
-
-app.listen(config.port, '0.0.0.0', () => {
-	log(`Credits Generator can be accessed at http://localhost:${config.port}`, ['C', 'SERVER', logs.g])
-})
-
-app.get('/',  (req, res) =>  {
-	doHome(req, res)
-})
-
-app.get('/frame',  (req, res) =>  {
-	doFrame(req, res)
-})
-
-app.get('/run', (req, res) => {
-	log('Requesting run dialog', 'A')
-	res.header('Content-type', 'text/html')
-	res.render('run', {})
-})
-
-app.get('/save', (req, res) => {
-	getSave(req, res)
-})
-app.post('/save', (req, res) => {
-	doSave(req, res)
-})
-
-
-app.get('/fonts', (req, res) => {
-	log('Request for fonts', 'D')
-	const project = req.query.project
-	sendZip(res, ['public/fonts',`public/saves/${project}/fonts`], project+'_fonts')
-})
-app.post('/fonts', (req, res) => {
-	doUpload(req, res, 'fonts')
-})
-app.delete('/fonts', (req, res) => {
-	doDelete(req, res, 'fonts')
-})
-
-app.post('/images', (req, res) => {
-	doUpload(req, res, 'images')
-})
-app.get('/images', (req, res) => {
-	log('Request for images', 'D')
-	const project = req.query.project
-	sendZip(res, [`public/saves/${project}/images`], project+'_images')
-})
-app.delete('/images', (req, res) => {
-	doDelete(req, res, 'images')
-})
-
-app.get('/template', async (req, res) => {
-	log('Request for template', 'D')
-	const [saves, fonts] = await getSavesAndFonts()
-	const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0]
-	const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count
-	const buffer = await fs.promises.readFile(`${__dirname}/public/saves/${project}/${version}.json`)
-	const projectObject = JSON.parse(buffer.toString())
-	projectObject.images = await imageList(project)
-	const renderParams = {
-		globalFonts: fonts,
-		project: project,
-		version: version,
-		projectObject: projectObject,
-		host: req.get('host')
-	}
-	ejs.renderFile(__dirname + '/views/template.ejs', renderParams, async (err, html)=>{
-		const zip = new AdmZip()
-		zip.addFile('credits.html', Buffer.from(html, 'utf8'), 'Template')
-
-		if (await folderExists(`public/saves/${project}/images`)) {
-			zip.addLocalFolder(`public/saves/${project}/images`, 'images')
-		}
-		if (await folderExists(`public/saves/${project}/fonts`)) {
-			zip.addLocalFolder(`public/saves/${project}/fonts`, 'fonts')
-		}
-
-		zip.addLocalFolder('public/fonts', 'fonts')
-		zip.addFile(`${project}_v${version}.json`, await fs.promises.readFile(`public/saves/${project}/${version}.json`),'',0o0644)
-		zip.addLocalFile('public/css/credits.css','lib')
-		zip.addLocalFile('public/lib/webcg-framework.umd.js','lib')
-		zip.addLocalFile('public/lib/webcg-devtools.umd.js','lib')
-		zip.addLocalFile('public/lib/jquery-3.6.0.js','lib')
-		zip.addLocalFile('public/js/builder.js','lib')
-		const zipBuffer = zip.toBuffer()
-		res.set('Content-disposition', `attachment; filename=${project}_v${version}_template.zip`)
-		res.send(zipBuffer)
+	app.listen(config.get('port'), '0.0.0.0', () => {
+		log(`Credits Generator can be accessed at http://localhost:${config.get('port')}`, ['C', 'SERVER', logs.g])
 	})
-})
 
-app.get('/render', (req, res) => {
-	const project = req.query.project
-	const version = req.query.version
-	const fps = parseInt(req.query.fps)
-	const frames = parseInt(req.query.frames)
-	log(`Starting render of project: ${project} version: ${version} at frame rate: ${fps}`, 'D')
-	let width = 1920
-	let height = 1080
-	switch (parseInt(req.query.resolution)) {
-	case 1440:
-		height = 720
-		width = 1440
-		break
-	case 1920:
-		height = 1080
-		width = 1920
-		break
-	case 3840:
-		height = 2160
-		width = 3840
-		break
-	case 4096:
-		height = 2160
-		width = 4096
-		break
-	default:
-		break
-	}
-	render(`http://localhost:${config.port}`, project, version, fps, frames, width, height, true, logsConfig)
-		.then(()=>{
-			setTimeout(()=>{
-				sendZip(res, [`public/saves/${project}/renders/${version}/`], `${project}_credits`)
-			},1000)
-		}).catch((err)=>{
-			logObj('Rendering error', err, 'E')
+	app.get('/',  (req, res) =>  {
+		doHome(req, res)
+	})
+
+	app.get('/frame',  (req, res) =>  {
+		doFrame(req, res)
+	})
+
+	app.get('/run', (req, res) => {
+		log('Requesting run dialog', 'A')
+		res.header('Content-type', 'text/html')
+		res.render('run', {})
+	})
+
+	app.get('/save', (req, res) => {
+		getSave(req, res)
+	})
+	app.post('/save', (req, res) => {
+		doSave(req, res)
+	})
+
+
+	app.get('/fonts', (req, res) => {
+		log('Request for fonts', 'D')
+		const project = req.query.project
+		sendZip(res, ['public/fonts',`public/saves/${project}/fonts`], project+'_fonts')
+	})
+	app.post('/fonts', (req, res) => {
+		doUpload(req, res, 'fonts')
+	})
+	app.delete('/fonts', (req, res) => {
+		doDelete(req, res, 'fonts')
+	})
+
+	app.post('/images', (req, res) => {
+		doUpload(req, res, 'images')
+	})
+	app.get('/images', (req, res) => {
+		log('Request for images', 'D')
+		const project = req.query.project
+		sendZip(res, [`public/saves/${project}/images`], project+'_images')
+	})
+	app.delete('/images', (req, res) => {
+		doDelete(req, res, 'images')
+	})
+
+	app.get('/template', async (req, res) => {
+		log('Request for template', 'D')
+		const [saves, fonts] = await getSavesAndFonts()
+		const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0]
+		const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count
+		const buffer = await fs.promises.readFile(`${__dirname}/public/saves/${project}/${version}.json`)
+		const projectObject = JSON.parse(buffer.toString())
+		projectObject.images = await imageList(project)
+		const renderParams = {
+			globalFonts: fonts,
+			project: project,
+			version: version,
+			projectObject: projectObject,
+			host: req.get('host')
+		}
+		ejs.renderFile(__dirname + '/views/template.ejs', renderParams, async (err, html)=>{
+			const zip = new AdmZip()
+			zip.addFile('credits.html', Buffer.from(html, 'utf8'), 'Template')
+
+			if (await folderExists(`public/saves/${project}/images`)) {
+				zip.addLocalFolder(`public/saves/${project}/images`, 'images')
+			}
+			if (await folderExists(`public/saves/${project}/fonts`)) {
+				zip.addLocalFolder(`public/saves/${project}/fonts`, 'fonts')
+			}
+
+			zip.addLocalFolder('public/fonts', 'fonts')
+			zip.addFile(`${project}_v${version}.json`, await fs.promises.readFile(`public/saves/${project}/${version}.json`),'',0o0644)
+			zip.addLocalFile('public/css/credits.css','lib')
+			zip.addLocalFile('public/lib/webcg-framework.umd.js','lib')
+			zip.addLocalFile('public/lib/webcg-devtools.umd.js','lib')
+			zip.addLocalFile('public/lib/jquery-3.6.0.js','lib')
+			zip.addLocalFile('public/js/builder.js','lib')
+			const zipBuffer = zip.toBuffer()
+			res.set('Content-disposition', `attachment; filename=${project}_v${version}_template.zip`)
+			res.send(zipBuffer)
 		})
-})
+	})
 
+	app.get('/render', (req, res) => {
+		const project = req.query.project
+		const version = req.query.version
+		const fps = parseInt(req.query.fps)
+		const frames = parseInt(req.query.frames)
+		log(`Starting render of project: ${project} version: ${version} at frame rate: ${fps}`, 'D')
+		let width = 1920
+		let height = 1080
+		switch (parseInt(req.query.resolution)) {
+		case 1440:
+			height = 720
+			width = 1440
+			break
+		case 1920:
+			height = 1080
+			width = 1920
+			break
+		case 3840:
+			height = 2160
+			width = 3840
+			break
+		case 4096:
+			height = 2160
+			width = 4096
+			break
+		default:
+			break
+		}
+		render(`http://localhost:${config.get('port')}`, project, version, fps, frames, width, height, true, logsConfig)
+			.then(()=>{
+				setTimeout(()=>{
+					sendZip(res, [`public/saves/${project}/renders/${version}/`], `${project}_credits`)
+				},1000)
+			}).catch((err)=>{
+				logObj('Rendering error', err, 'E')
+			})
+	})
+}
 
 /* Request functions */
-
 
 async function doHome(req, res) {
 	log('Client requesting home page', 'A')
@@ -214,12 +216,11 @@ async function doHome(req, res) {
 	res.render('home', {
 		saves: saves,
 		globalFonts: fonts,
-		serverName: config.installName,
+		serverName: config.get('installName'),
 		project: req.query.project,
 		render: hasFFMPEG
 	})
 }
-
 async function doFrame(req, res) {
 	log('New Render Page Spawned', 'A')
 	res.header('Content-type', 'text/html')
@@ -234,7 +235,6 @@ async function doFrame(req, res) {
 		id: req.query.id
 	})
 }
-
 async function getSave(req, res) {
 	log('Getting saved credits', 'D')
 	const [saves, font] = await getSavesAndFonts()
@@ -316,7 +316,6 @@ async function doSave(req, res) {
 		res.status(500).send(err)
 	}
 }
-
 async function doUpload(req, res, uploadType) {
 	log('Saving uploaded Images/Fonts', 'D')
 	const project = req.body.project
@@ -417,7 +416,6 @@ async function getUpdatedProjects(project) {
 
 	return typeof project === 'undefined' ? output : output[project]
 }
-
 async function getSavesAndFonts() {
 	log('Getting updated saves and fonts', 'A')
 	const [_saves, _fonts] = await Promise.all([
@@ -511,4 +509,63 @@ async function folderExists(path, makeIfNotPresent = false) {
 		}
 	}
 	return found
+}
+
+function userInput() {
+	const reader = readline.createInterface(process.stdin, process.stdout)
+	reader.on('line', async function (command) {
+		reader.close()
+		readline.moveCursor(process.stdout, 0, -1)
+		readline.clearLine(process.stdout, 1)
+		console.log(`${logs.reset}[ User Input ] ${logs.w}  USER:${logs.reset} ${logs.c}${command}`)
+		switch (command) {
+		case 'config':
+			await config.fromCLI(__dirname + '/config.conf')
+			logs.setConf({
+				'createLogFile': config.get('createLogFile'),
+				'logsFileName': 'CreditsLogging',
+				'configLocation': __dirname,
+				'loggingLevel': config.get('loggingLevel'),
+				'debugLineNum': config.get('debugLineNum')
+			})
+			break
+		case 'exit':
+		case 'quit':
+		case 'q': {
+			doExitCheck()
+			break
+		}
+		default:
+			log('User entered invalid command, ignoring')
+		}
+		userInput()
+	})
+	
+	reader.on('SIGINT', () => {
+		reader.close()
+		reader.removeAllListeners()
+		doExitCheck()
+	})
+	return reader
+}
+
+function doExitCheck() {
+	const exitReader = readline.createInterface(process.stdin, process.stdout)
+	log('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
+	exitReader.on('SIGINT', () => {
+		exitReader.close()
+		console.log()
+		log('Exiting', ['H','',logs.r])
+		process.exit()
+	})
+	exitReader.question(`${logs.reset}[ User Input ] ${logs.r}      |${logs.reset} ${logs.c}`, (input) => {
+		exitReader.close()
+		if (input.match(/^y(es)?$/i) || input == '') {
+			log('Exiting', ['H','',logs.r])
+			process.exit()
+		} else {
+			log('Exit canceled', ['H','',logs.g])
+			return userInput()
+		}
+	})
 }

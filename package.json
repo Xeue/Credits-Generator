@@ -1,6 +1,6 @@
 {
   "name": "credits-generator",
-  "version": "3.4.3",
+  "version": "3.4.4",
   "description": "Node based Credits Generating website",
   "main": "server.js",
   "type": "module",
@@ -29,7 +29,7 @@
     "puppeteer": "^19.2.0",
     "readline-sync": "^1.4.10",
     "ws": "^8.10.0",
-    "xeue-config": "^1.0.1",
+    "xeue-config": "^1.1.2",
     "xeue-logs": "^1.1.7"
   },
   "devDependencies": {
