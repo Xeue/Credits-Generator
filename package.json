@@ -1,6 +1,6 @@
 {
   "name": "credits-generator",
-  "version": "3.4.4",
+  "version": "3.4.5",
   "description": "Node based Credits Generating website",
   "main": "server.js",
   "type": "module",
@@ -29,8 +29,8 @@
     "puppeteer": "^19.2.0",
     "readline-sync": "^1.4.10",
     "ws": "^8.10.0",
-    "xeue-config": "^1.1.2",
-    "xeue-logs": "^1.1.7"
+    "xeue-config": "^1.2.8",
+    "xeue-logs": "^1.4.1"
   },
   "devDependencies": {
     "eslint": "^8.26.0"

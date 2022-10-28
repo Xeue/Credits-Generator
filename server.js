@@ -12,7 +12,6 @@ import {fileURLToPath} from 'url'
 import AdmZip from 'adm-zip'
 import commandExists from 'command-exists'
 import ejs from 'ejs'
-import readline from 'readline'
 
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
@@ -21,9 +20,10 @@ const {version} = require('./package.json')
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-logs.printHeader('Credits Generator')
+config.useLogger(logs)
 
 { /* Config setup */
+	console.clear()
 	config.default('port', 8080)
 	config.default('installName', 'Unknown Site')
 	config.default('debugLineNum', false)
@@ -37,6 +37,7 @@ logs.printHeader('Credits Generator')
 	config.require('createLogFile', [true, false], 'Generate log file')
 
 	if (!await config.fromFile(__dirname + '/config.conf')) {
+		logs.printHeader('Credits Generator')
 		await config.fromCLI(__dirname + '/config.conf')
 	}
 
@@ -47,13 +48,28 @@ logs.printHeader('Credits Generator')
 		'loggingLevel': config.get('loggingLevel'),
 		'debugLineNum': config.get('debugLineNum')
 	})
+	logs.printHeader('Credits Generator')
+
+	config.userInput(async (command)=>{
+		switch (command) {
+		case 'config':
+			await config.fromCLI(__dirname + '/config.conf')
+			logs.setConf({
+				'createLogFile': config.get('createLogFile'),
+				'logsFileName': 'CreditsLogging',
+				'configLocation': __dirname,
+				'loggingLevel': config.get('loggingLevel'),
+				'debugLineNum': config.get('debugLineNum')
+			})
+			return true
+		}
+	})
+	log('Running version: v'+version, ['H', 'SERVER', logs.g])
+	config.print()
 }
 
-userInput()
 const app = express()
 await folderExists(__dirname+'/public/saves', true)
-log('Running version: v'+version, ['H', 'SERVER', logs.g])
-config.print()
 
 { /* Express setup & Endpoints */
 	app.set('views', __dirname + '/views')
@@ -509,63 +525,4 @@ async function folderExists(path, makeIfNotPresent = false) {
 		}
 	}
 	return found
-}
-
-function userInput() {
-	const reader = readline.createInterface(process.stdin, process.stdout)
-	reader.on('line', async function (command) {
-		reader.close()
-		readline.moveCursor(process.stdout, 0, -1)
-		readline.clearLine(process.stdout, 1)
-		console.log(`${logs.reset}[ User Input ] ${logs.w}  USER:${logs.reset} ${logs.c}${command}`)
-		switch (command) {
-		case 'config':
-			await config.fromCLI(__dirname + '/config.conf')
-			logs.setConf({
-				'createLogFile': config.get('createLogFile'),
-				'logsFileName': 'CreditsLogging',
-				'configLocation': __dirname,
-				'loggingLevel': config.get('loggingLevel'),
-				'debugLineNum': config.get('debugLineNum')
-			})
-			break
-		case 'exit':
-		case 'quit':
-		case 'q': {
-			doExitCheck()
-			break
-		}
-		default:
-			log('User entered invalid command, ignoring')
-		}
-		userInput()
-	})
-	
-	reader.on('SIGINT', () => {
-		reader.close()
-		reader.removeAllListeners()
-		doExitCheck()
-	})
-	return reader
-}
-
-function doExitCheck() {
-	const exitReader = readline.createInterface(process.stdin, process.stdout)
-	log('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
-	exitReader.on('SIGINT', () => {
-		exitReader.close()
-		console.log()
-		log('Exiting', ['H','',logs.r])
-		process.exit()
-	})
-	exitReader.question(`${logs.reset}[ User Input ] ${logs.r}      |${logs.reset} ${logs.c}`, (input) => {
-		exitReader.close()
-		if (input.match(/^y(es)?$/i) || input == '') {
-			log('Exiting', ['H','',logs.r])
-			process.exit()
-		} else {
-			log('Exit canceled', ['H','',logs.g])
-			return userInput()
-		}
-	})
 }
