@@ -1,19 +1,19 @@
 /* eslint-disable no-undef */
 function openMenu(e) {
 	$('.menuSelected').removeClass('menuSelected')
-	let $ele = $(document.elementFromPoint(e.pageX, e.pageY))
-	let $menu = $('menu')
+	const $ele = $(document.elementFromPoint(e.pageX, e.pageY))
+	const $menu = $('menu')
 	let left = e.pageX
-	let width = $(document).width()
-	let height = $(document).height()
-	let menuWidth = $menu.outerWidth()
-	let menuHeight = $menu.outerHeight()
+	const width = $(document).width()
+	const height = $(document).height()
+	const menuWidth = $menu.outerWidth()
+	const menuHeight = $menu.outerHeight()
 	if ((width - left) < menuWidth) {
 		left = width - menuWidth
 	}
     
 
-	let $block = $ele.closest('.block')
+	const $block = $ele.closest('.block')
 	$menu.removeAttr('class')
 
 	if ($ele.hasClass('settingProp')) {
@@ -32,7 +32,12 @@ function openMenu(e) {
 		$menu.addClass('menuSetting')
 		$menu.addClass('menuActive')
 		$ele.addClass('menuSelected')
-	} else if ($ele.hasClass('tabButton') && $('.tabButton').length > 1 && !$ele.is('#newArticle') && $('html').hasClass('editing')) {
+	} else if (
+		$ele.hasClass('tabButton')
+		&& $('.tabButton').length > 1
+		&& !$ele.is('#newArticle')
+		&& $('html').hasClass('editing')
+	) {
 		$menu.addClass('above')
 		$menu.removeClass('bellow')
 		left -= menuWidth/2
@@ -50,11 +55,11 @@ function openMenu(e) {
 		$menu.css('left', left+'px')
 		$menu.addClass('menuActive')
 
-		$content = $ele.closest('.content')
+		const $content = $ele.closest('.content')
 
 		$block.addClass('domSearch')
 		$content.addClass('domSearch')
-		let $closest = $ele.closest('.domSearch')
+		const $closest = $ele.closest('.domSearch')
 		$block.removeClass('domSearch')
 		$content.removeClass('domSearch')
 
@@ -68,6 +73,7 @@ function openMenu(e) {
 			$block.addClass('menuSelected')
 			$menu.addClass('menuBlock')
 			$menu.addClass('menuContent')
+			$menu.addClass('menuContentNoDelete')
 		} else {
 			$content.addClass('menuSelected')
 			$block.addClass('menuSelected')
@@ -79,7 +85,7 @@ function openMenu(e) {
 			$menu.addClass('menuBlockNew')
 		}
 		if ($content.siblings().length == 0 && $content.hasClass('newContent')) {
-			$menu.addClass('menuContentNew')
+			$menu.addClass('menuContentNoDelete')
 		}
 	} else {
 		closeMenu()
@@ -166,10 +172,10 @@ function selectForMenu($ele, prop) {
 }
 
 $(document).click(function(e) {
-	$target = $(e.target)
+	const $target = $(e.target)
 
 	if ($target.is('#menuDeleteSetting')) {
-		$sel = $('.menuSelected')
+		let $sel = $('.menuSelected')
         
 		if ($sel.hasClass('settingValueInput')) {
 			$sel = $sel.prev()
@@ -181,7 +187,7 @@ $(document).click(function(e) {
 		} else if ($group.data('level') == 'block') {
 			$('.block.inEditor').css($sel.val(), '')
 		} else {
-			let setting = $sel.closest('.settingProperty').data('setting')
+			const setting = $sel.closest('.settingProperty').data('setting')
 			if ($sel.hasClass('settingKeyInput')) {
 				delete settings[setting][$sel.val()]
 			} else {
@@ -191,8 +197,8 @@ $(document).click(function(e) {
 		}
 		$sel.parent().remove()
 	} else if ($target.is('#menuDeleteContent') || $target.is('#menuDeleteColumn')) {
-		let $sel = $('.content.menuSelected')
-		let $parent = $sel.parent()
+		const $sel = $('.content.menuSelected')
+		const $parent = $sel.parent()
 		$sel.remove()
 		if ($parent.children().length == 0) {
 			$parent.append(newContent())
@@ -200,8 +206,8 @@ $(document).click(function(e) {
 	} else if ($target.is('#menuDeleteBlock')) {
 		$('.block.menuSelected').remove()
 	} else if ($target.is('#menuDeleteFade')) {
-		$sel = $('.menuSelected')
-		let index = $('.tabButton').index($sel)
+		const $sel = $('.menuSelected')
+		const index = $('.tabButton').index($sel)
 		$($('.creditsSection')[index]).remove()
 		$sel.remove()
 	} else if ($target.is('#newContent')) {
@@ -213,15 +219,14 @@ $(document).click(function(e) {
 			$content.after(newContent())
 		}
 	} else if ($target.is('#newBlock')) {
-		let $block = $('.menuSelected.block')
+		const $block = $('.menuSelected.block')
 		if ($block.length !== 0) {
 			$block.after(`<section class="block" data-direction="rows">${newContent()}</section>`)
 		} else {
 			$('.menuSelected.columns').append(`<section class="block" data-direction="rows">${newContent()}</section>`)
 		}
 	} else if ($target.is('#sectionsSettings')) {
-		let index = $('.tabButton').index($('.tabButton.menuSelected'))
-		console.log(index)
+		const index = $('.tabButton').index($('.tabButton.menuSelected'))
 		settingsOpen(true, $($('.creditsSection')[index]))
 	}
 })

@@ -156,6 +156,7 @@ main footer {
   border-radius: 8px;
   border-top: 1px solid var(--accentBackgroundBorder);
   font-size: initial;
+  user-select: none;
 }
 
 main > header {
@@ -1311,7 +1312,7 @@ menu>button {
 }
 
 .menuBlock.menuBlockNew #menuDeleteBlock,
-.menuContent.menuContentNew #menuDeleteContent {
+.menuContent.menuContentNoDelete #menuDeleteContent {
   display: none;
 }
 

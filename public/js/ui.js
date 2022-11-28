@@ -1050,19 +1050,26 @@ $(document).mousedown(function(e) {
 
 	moveTimer = setTimeout(() => {
 		$(document).off('mouseup')
-		let $target = $(e.target)
+		const $target = $(e.target)
 		if ($target.hasClass('tabButton')) {
 			doSectionDragging($target)
 		} else if ($target.hasClass('content')) {
 			doDragging($target, 'content')
 		} else if ($target.hasClass('block')) {
 			doDragging($target, 'block')
+		} else if (
+			$target.hasClass('name')
+			|| $target.hasClass('nameGroup')
+			|| $target.hasClass('pair')
+			|| $target.hasClass('role')
+		) {
+			doDragging($target.closest('.content'), 'content')
 		}
 	}, 100)
 })
 
 $(document).keydown(function(e) {
-	let $target = $(e.target)
+	const $target = $(e.target)
 	if ($target.attr('contenteditable')) {
 		if ($target.hasClass('text')) {
 			return
@@ -1100,7 +1107,7 @@ $(document).keydown(function(e) {
 
 $.each( [ 'put', 'delete' ], function( i, method ) {
 	jQuery[ method ] = function( url, data, callback, type ) {
-		if ( $.isFunction( data ) ) {
+		if (typeof data === "function") {
 			type = type || callback
 			callback = data
 			data = undefined
