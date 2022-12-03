@@ -121,6 +121,69 @@ function settingsOpen(keepOpen = false, $target) {
 	$editor.addClass('open')
 }
 
+function fontsOpen($target) {
+	fontsClose()
+	$target.addClass('fontsEditing')
+	const settings = makeContentObject($target).settings
+	const fontFamilys = []
+	fonts.map(font => {
+		return font.split('.')[0]
+	}).forEach(font => {
+		let selected = ''
+		if (typeof settings !== 'undefined') {
+			if (font === settings['font-family']) {
+				selected = 'selected'
+			}
+		}
+		const option = `<option ${selected}>${font}</option>`
+		fontFamilys.push(option)
+	});
+	const fontSizes = [
+		'8pt','10pt','12pt','16pt','20pt','24pt','28pt','32pt','36pt','40pt','44pt','48pt'
+	].map(size => {
+		let selected = ''
+		if (typeof settings !== 'undefined') {
+			if (size === settings['font-size']) {
+				selected = 'selected'
+			}
+		}
+		return `<option ${selected}>${size}</option>`
+	})
+
+	let bold = ''
+	let italic = ''
+	let underlined = ''
+	if (typeof settings !== 'undefined') {
+		if (settings['font-weight'] == 'bold'
+		|| settings['font-weight'] == 'bolder') {
+			bold = 'active'
+		}
+
+		if (settings['font-style'] == 'italic') {
+			italic = 'active'
+		}
+
+		if (settings['text-decoration'] == 'underline') {
+			underlined = 'active'
+		}
+	}
+
+	const template = `<ul id="fontEditor">
+		<button type="button" class="${bold}" id="fontBoldToggle">B</button>
+		<button type="button" class="${italic}" id="fontItalicToggle">I</button>
+		<button type="button" class="${underlined}" id="fontUnderlineToggle">U</button>
+		<span>Font</span>
+		<select id="fontFamily"><option selected>Default</option>${fontFamilys.join('')}</select>
+		<span>Font Weight</span>
+		<select id="fontSize"><option selected>Default</option>${fontSizes.join('')}</select>
+	</ul>`
+	$target.append(template)
+}
+function fontsClose() {
+	$('#fontEditor').remove()
+	$('.fontsEditing').removeClass('fontsEditing')
+}
+
 function editorOpen($target) {
 	$('html').removeClass('settings')
 	$('.inEditor').removeClass('inEditor')
@@ -135,7 +198,14 @@ function editorOpen($target) {
 	let isBlock = $target.hasClass('block') ? true : false
 
 	if (!isBlock) {
+		$editor.data('type', 'content')
 		editorContent($editor, $target)
+		if ($target.hasClass('title')
+		|| $target.hasClass('subTitle')
+		|| $target.hasClass('names')
+		|| $target.hasClass('text')) {
+			fontsOpen($target)
+		}
 	} else {
 		$editor.data('type', 'block')
 	}
@@ -534,6 +604,33 @@ $(document).click(function(e) {
 		num--
 		$target.prev().val(num)
 		editorNumChange($target, num)
+	} else if ($target.is('#fontBoldToggle')) {
+		const $content = $('.fontsEditing')
+		if ($target.hasClass('active')) {
+			$content.css('font-weight', '')
+		} else {
+			$content.css('font-weight', 'bold')
+		}
+		$target.toggleClass('active')
+		editorOpen($content)
+	} else if ($target.is('#fontItalicToggle')) {
+		const $content = $('.fontsEditing')
+		if ($target.hasClass('active')) {
+			$content.css('font-style', '')
+		} else {
+			$content.css('font-style', 'italic')
+		}
+		$target.toggleClass('active')
+		editorOpen($content)
+	} else if ($target.is('#fontUnderlineToggle')) {
+		const $content = $('.fontsEditing')
+		if ($target.hasClass('active')) {
+			$content.css('text-decoration', '')
+		} else {
+			$content.css('text-decoration', 'underline')
+		}
+		$target.toggleClass('active')
+		editorOpen($content)
 	}
 })
 
@@ -593,6 +690,23 @@ $(document).change(function(e) {
 			$('.content.inEditor').attr('data-'+type, state)
 			break
 		}
+
+	} else if ($target.is('#fontFamily')) {
+		const $content = $('.fontsEditing')
+		if ($target.val() == 'Default') {
+			$content.css('font-family', '')
+		} else {
+			$content.css('font-family', $target.val())
+		}
+		editorOpen($content)
+	} else if ($target.is('#fontSize')) {
+		const $content = $('.fontsEditing')
+		if ($target.val() == 'Default') {
+			$content.css('font-size', '')
+		} else {
+			$content.css('font-size', $target.val())
+		}
+		editorOpen($content)
 	}
 })
 

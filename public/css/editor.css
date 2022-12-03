@@ -221,7 +221,8 @@ header button,
 footer button,
 dialog button,
 #editorCont button,
-menu button {
+menu button,
+#fontEditor button {
   font-size: 16px;
   cursor: pointer;
   height: 2.5em;
@@ -255,7 +256,8 @@ header button:hover,
 footer button:hover,
 dialog button:hover,
 #editorCont button:hover,
-menu button {
+menu button,
+#fontEditor button:hover {
   background-color: var(--accentDark);
   border-top: 1px var(--accentDarkBorder) solid;
 }
@@ -266,8 +268,8 @@ menu button:hover {
 }
 
 button.active {
-  background-color: var(--blue);
-  border-top: var(--blueBorder) 1px solid
+  background-color: var(--blue) !important;
+  border-top: var(--blueBorder) 1px solid !important;
 }
 
 input[type=text],
@@ -289,7 +291,8 @@ input[type=text],
 
 header select,
 footer select,
-dialog select {
+dialog select,
+#fontEditor select {
   background-image: url(../img/arrow_down.png);
   color: var(--text);
   -webkit-appearance: none;
@@ -308,7 +311,8 @@ dialog select {
   border: 1px var(--accentMid) solid;
   border-radius: 5px;
   min-width: 50px;
-  filter: none
+  filter: none;
+  width: fit-content;
 }
 
 header select:focus {
@@ -1250,6 +1254,33 @@ dialog,
 
 .editorNameInput.editorProp {
   margin: 0 5px
+}
+
+
+#fontEditor {
+  background: var(--accentBackground);
+  padding: 7px;
+  margin: 5px;
+  border-radius: 8px;
+  border-top: 1px solid var(--accentBackgroundBorder);
+  font-size: initial;
+  user-select: none;
+  opacity: 1;
+  z-index: 1;
+  position: absolute;
+  top: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  translate: -50%;
+  left: 50%;
+  white-space: nowrap;
+  align-items: center;
+  gap: 10px;
+  cursor: auto;
+  font-size: 12pt;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-family: var(--system-ui) !important;
 }
 
 menu {

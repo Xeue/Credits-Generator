@@ -399,7 +399,6 @@ function getStylesObject(element, type) {
 			stylesObj[prop] = value
 		}
 	})
-	console.log(stylesObj)
 	return stylesObj
 }
 
