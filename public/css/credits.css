@@ -188,7 +188,8 @@ body {
 .role {
  border-radius:5px;
  transition:.2s;
- outline:2px ridge transparent
+ outline:2px ridge transparent;
+ position: relative;
 }
 .title {
  font-size:1.2em;
@@ -226,6 +227,7 @@ body {
 .pair>.role {
  text-align:right;
  grid-area: role;
+ position: relative;
 }
 
 
@@ -233,7 +235,7 @@ body {
   grid-template-areas: "name role";
 }
 
-[data-flipped="true"] .name {
+[data-flipped="true"] .pair .name {
   text-align: right;
 }
 
@@ -250,12 +252,12 @@ body {
   text-align: right;
 }
 
-[data-namealign="true"] .name {
+[data-namealign="true"] .pair .name {
   text-align: right;
 }
 
-[data-flipped="true"] [data-namealign="true"] .name,
-[data-flipped="true"][data-namealign="true"] .name {
+[data-flipped="true"] [data-namealign="true"] .pair .name,
+[data-flipped="true"][data-namealign="true"] .pair .name {
   text-align: left;
 }
 

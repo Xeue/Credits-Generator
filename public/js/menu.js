@@ -211,6 +211,8 @@ $(document).click(function(e) {
 		$($('.creditsSection')[index]).remove()
 		$sel.remove()
 	} else if ($target.is('#newContent')) {
+		deleteClose()
+		fontsClose()
 		let $content = $('.menuSelected.content')
 		if ($content.length == 0) {
 			$content = $('.menuSelected.block')
@@ -219,6 +221,8 @@ $(document).click(function(e) {
 			$content.after(newContent())
 		}
 	} else if ($target.is('#newBlock')) {
+		deleteClose()
+		fontsClose()
 		const $block = $('.menuSelected.block')
 		if ($block.length !== 0) {
 			$block.after(`<section class="block" data-direction="rows">${newContent()}</section>`)

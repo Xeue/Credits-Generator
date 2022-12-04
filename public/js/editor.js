@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function editorMakeProperty($json, prop, state) {
 	if (prop == 'imageHeight' || prop == 'maxColumns') {
@@ -137,7 +138,7 @@ function fontsOpen($target) {
 		}
 		const option = `<option ${selected}>${font}</option>`
 		fontFamilys.push(option)
-	});
+	})
 	const fontSizes = [
 		'8pt','10pt','12pt','16pt','20pt','24pt','28pt','32pt','36pt','40pt','44pt','48pt'
 	].map(size => {
@@ -182,6 +183,35 @@ function fontsOpen($target) {
 function fontsClose() {
 	$('#fontEditor').remove()
 	$('.fontsEditing').removeClass('fontsEditing')
+}
+
+function deleteOpen($target) {
+	deleteClose()
+	$target.addClass('hasDelete')
+	$target.append(`<ul id="deleteCont">
+		<button type="button" id="deleteNameRole"></button>
+	</ul>`)
+	$('#deleteNameRole').on('click', deleteDo)
+}
+function deleteClose() {
+	$('#deleteCont').remove()
+	$('.hasDelete').removeClass('hasDelete')
+}
+function deleteDo() {
+	const $target = $('.hasDelete')
+	if ($target.hasClass('role')) {
+		const $pair = $target.closest('.pair')
+		const siblings = $pair.siblings('.pair').length
+		console.log(siblings)
+		if (siblings > 0) {
+			$pair.remove()
+		}
+	} else if ($target.hasClass('name')) {
+		const siblings = $target.siblings('.name').length
+		if (siblings > 0) {
+			$target.remove()
+		}
+	}
 }
 
 function editorOpen($target) {
@@ -592,7 +622,7 @@ function editorNumChange($target, num) {
 	}
 }
 
-$(document).click(function(e) {
+$(document).on('click', function(e) {
 	let $target = $(e.target)
 	if ($target.hasClass('editorPlus')) {
 		let num = $target.next().val()
@@ -634,7 +664,7 @@ $(document).click(function(e) {
 	}
 })
 
-$(document).change(function(e) {
+$(document).on('change', function(e) {
 	let $target = $(e.target)
 	if ($target.is('#editorInput_direction')) {
 		$('.inEditor.block').attr('data-direction', $target.val())

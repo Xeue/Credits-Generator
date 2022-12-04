@@ -222,7 +222,8 @@ footer button,
 dialog button,
 #editorCont button,
 menu button,
-#fontEditor button {
+#fontEditor button,
+#deleteNameRole {
   font-size: 16px;
   cursor: pointer;
   height: 2.5em;
@@ -232,7 +233,6 @@ menu button,
   min-width: 50px;
   color: var(--text);
   transition: .2s;
-  /*! margin-left: 7px; */
   background-color: transparent;
   border: none;
   border-top: transparent 1px solid
@@ -1257,7 +1257,8 @@ dialog,
 }
 
 
-#fontEditor {
+#fontEditor,
+#deleteCont {
   background: var(--accentBackground);
   padding: 7px;
   margin: 5px;
@@ -1268,11 +1269,8 @@ dialog,
   opacity: 1;
   z-index: 1;
   position: absolute;
-  top: 100%;
   display: grid;
   grid-auto-flow: column;
-  translate: -50%;
-  left: 50%;
   white-space: nowrap;
   align-items: center;
   gap: 10px;
@@ -1281,6 +1279,47 @@ dialog,
   font-style: normal !important;
   font-weight: normal !important;
   font-family: var(--system-ui) !important;
+}
+
+#deleteNameRole {
+  width: 2em;
+  height: 2em;
+  min-width: 2em;
+}
+
+#fontEditor {
+  top: calc(100% + 5px);
+  translate: -50%;
+  left: 50%;
+}
+
+#deleteCont,
+[data-flipped="true"] .name #deleteCont {
+  padding: 5px;
+  top: 50%;
+  right: 100%;
+  left: auto;
+  translate: 0% -50%;
+  margin: 0 5px;
+}
+
+.name #deleteCont,
+[data-flipped="true"] #deleteCont {
+  left: 100%;
+  right: auto;
+}
+
+#deleteNameRole {
+  background-image: url(../img/bin.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: grayscale(1);
+  transition: 0.2s;
+}
+
+#deleteNameRole:hover {
+  filter: none;
 }
 
 menu {

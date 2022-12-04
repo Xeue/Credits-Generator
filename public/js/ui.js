@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function firstTimeCheck() {
 	let firstTime = Cookies.get('tutorial')
@@ -526,17 +527,17 @@ $(function() {
 	window.addEventListener('message', runCommand, false)
 	firstTimeCheck()
 
-	$('#loadFile').change(function(){
+	$('#loadFile').on('change', function(){
 		load($('#loadFile').val())
 	})
 
-	$('#loadVersion').change(function(){
+	$('#loadVersion').on('change', function(){
 		currentVersion = $('#loadVersion').val()
 		$('#loadVersionBut').val(currentVersion)
 		load(currentProject, currentVersion)
 	})
 
-	$('#loadFileBut').change(function(){
+	$('#loadFileBut').on('change', function(){
 		let versionString = String($(this).find(':selected').data('versions'))
 		let versions = []
 		versions = versionString.split(',')
@@ -548,7 +549,7 @@ $(function() {
 		$load.append($('<option value=\'new\'>New Version</option>'))
 	})
 
-	$('#editButton').click(function() {
+	$('#editButton').on('click', function() {
 		$('html').removeClass('settings')
 		if ($('html').hasClass('editing')) {
 			editorClose()
@@ -557,21 +558,21 @@ $(function() {
 		editorReset()
 	})
 
-	$('#uploadButton').click(function() {
+	$('#uploadButton').on('click', function() {
 		$('#saveFile').removeClass('hidden')
 		$('#saveNew').addClass('selected')
 		$('#saveExisting').removeClass('selected')
 		$('#saveExisting').removeClass('hidden')
 		savePopup('Import')
 	})
-	$('#saveButton').click(function() {
+	$('#saveButton').on('click', function() {
 		$('#saveFile').addClass('hidden')
 		$('#saveNew').removeClass('selected')
 		$('#saveExisting').removeClass('hidden')
 		$('#saveExisting').addClass('selected')
 		savePopup('Save')
 	})
-	$('#newButton').click(function() {
+	$('#newButton').on('click', function() {
 		$('#saveFile').addClass('hidden')
 		$('#saveExisting').removeClass('selected')
 		$('#saveNew').addClass('selected')
@@ -579,24 +580,24 @@ $(function() {
 		savePopup('New')
 	})
 
-	$('#uploadMediaButton').click(function() {
+	$('#uploadMediaButton').on('click', function() {
 		$('#uploadMedia').toggleClass('hidden')
 		$('#uploadMedia').addClass('uploadMedia')
 		$('#uploadMedia').removeClass('uploadFont')
 	})
-	$('#uploadFontButton').click(function() {
+	$('#uploadFontButton').on('click', function() {
 		$('#uploadMedia').toggleClass('hidden')
 		$('#uploadMedia').removeClass('uploadMedia')
 		$('#uploadMedia').addClass('uploadFont')
 	})
 
-	$('#renderButton').click(function() {
+	$('#renderButton').on('click', function() {
 		$('#render').toggleClass('hidden')
 	})
-	$('#renderClose').click(function() {
+	$('#renderClose').on('click', function() {
 		$('#render').toggleClass('hidden')
 	})
-	$('#renderDo').click(function() {
+	$('#renderDo').on('click', function() {
 		$.get('/render', {
 			fps: $('#renderRate').val(),
 			resolution: $('#renderRes').val(),
@@ -618,16 +619,16 @@ $(function() {
 		})
 	})
 
-	$('#galleryButton').click(function() {
+	$('#galleryButton').on('click', function() {
 		doOpenGallery()
 		$('#gallery').toggleClass('hidden')
 	})
 
-	$('#galleryButClose').click(function() {
+	$('#galleryButClose').on('click', function() {
 		$('#gallery').toggleClass('hidden')
 	})
 
-	$('#galleryRefresh').click(function() {
+	$('#galleryRefresh').on('click', function() {
 		$.getJSON('save', {
 			'project':currentProject,
 			'version':currentVersion
@@ -637,15 +638,15 @@ $(function() {
 		})
 	})
 
-	$('#downloadMultiButton').click(function() {
+	$('#downloadMultiButton').on('click', function() {
 		$('#downloadsPopup').toggleClass('hidden')
 	})
 
-	$('#downloadButCancel').click(function() {
+	$('#downloadButCancel').on('click', function() {
 		$('#downloadsPopup').toggleClass('hidden')
 	})
 
-	$('#downloadButDone').click(function() {
+	$('#downloadButDone').on('click', function() {
 		$('#downloadsPopup').toggleClass('hidden')
 		if ($('#downloadFile').next().prop('checked')) {
 			let creditsJSON = getCreditsJSON()
@@ -663,65 +664,65 @@ $(function() {
 		}
 	})
 
-	$('#downloadTemplate').click(function() {
+	$('#downloadTemplate').on('click', function() {
 		$('#downloadTemplate').toggleClass('selected')
 	})
 
-	$('#downloadFonts').click(function() {
+	$('#downloadFonts').on('click', function() {
 		$('#downloadFonts').toggleClass('selected')
 	})
 
-	$('#downloadImg').click(function() {
+	$('#downloadImg').on('click', function() {
 		$('#downloadImg').toggleClass('selected')
 	})
 
-	$('#saveButCancel').click(function() {
+	$('#saveButCancel').on('click', function() {
 		$('#newSave').toggleClass('hidden')
 	})
 
-	$('#uploadButCancel').click(function() {
+	$('#uploadButCancel').on('click', function() {
 		$('#uploadMedia').toggleClass('hidden')
 	})
 
-	$('#saveButSave').click(function() {
+	$('#saveButSave').on('click', function() {
 		doSave()
 	})
 
-	$('#uploadButSave').click(function() {
+	$('#uploadButSave').on('click', function() {
 		doUploadSave()
 	})
 
-	$('#saveExisting').click(function() {
+	$('#saveExisting').on('click', function() {
 		if (!$(this).hasClass('selected')) {
 			$(this).toggleClass('selected')
 			$('#saveNew').toggleClass('selected')
 		}
 	})
-	$('#saveNew').click(function() {
+	$('#saveNew').on('click', function() {
 		if (!$(this).hasClass('selected')) {
 			$(this).toggleClass('selected')
 			$('#saveExisting').toggleClass('selected')
 		}
 	})
 
-	$('#uploadExisting').click(function() {
+	$('#uploadExisting').on('click', function() {
 		if (!$(this).hasClass('selected')) {
 			$(this).toggleClass('selected')
 			$('#uploadNew').toggleClass('selected')
 		}
 	})
-	$('#uploadNew').click(function() {
+	$('#uploadNew').on('click', function() {
 		if (!$(this).hasClass('selected')) {
 			$(this).toggleClass('selected')
 			$('#uploadExisting').toggleClass('selected')
 		}
 	})
 
-	$('#downloadImgButton').click(function() {
+	$('#downloadImgButton').on('click', function() {
 		$('body').append(`<iframe style="display:none;" src="images?project=${currentProject}"></iframe>`)
 	})
 
-	$('#full').click(function() {
+	$('#full').on('click', function() {
 		if (window.innerWidth == screen.width && window.innerHeight == screen.height) {
 			if (document.exitFullscreen) {
 				document.exitFullscreen()
@@ -733,11 +734,11 @@ $(function() {
 		}
 	})
 
-	$('#tutClose').click(function() {
+	$('#tutClose').on('click', function() {
 		$('#toutorial').toggleClass('hidden')
 		Cookies.set('tutorial', 'done', { secure: true, SameSite: 'Lax' })
 	})
-	$('#help').click(function() {
+	$('#help').on('click', function() {
 		$('#toutorial').toggleClass('hidden')
 		Cookies.set('tutorial', 'done', { secure: true, SameSite: 'Lax' })
 	})
@@ -747,7 +748,7 @@ $(function() {
 	load(loadProject)
 })
 
-$(document).click(function(e) {
+$(document).on('click', function(e) {
 	let $target = $(e.target)
 
 	if ($target.hasClass('content') || $target.hasClass('name') || $target.hasClass('role')) {
@@ -756,62 +757,37 @@ $(document).click(function(e) {
 		$('.editSelected').removeClass('editSelected')
 		let type = 'contenteditable'
 		let setting = 'true'
-		if ($target.is('figure') || $target.hasClass('spacing') || $target.hasClass('columns') || $target.hasClass('newContent') || $target.hasClass('names')) {
+		if ($target.is('figure')
+		|| $target.hasClass('spacing')
+		|| $target.hasClass('columns')
+		|| $target.hasClass('newContent')
+		|| $target.hasClass('names')) {
 			type = 'tabindex'
 			setting = '0'
 		}
+
 		if ($('html').hasClass('editing')) {
 			$target.addClass('editSelected')
 			$target.attr(type, setting)
-			$target.focus()
-			$target.on('blur', () => {
+			$target.trigger('focus')
+			if ($target.hasClass('name')
+			|| $target.hasClass('role')) {
+				deleteOpen($target)
+			}
+			$target.on('focusout', event => {
+				console.log(event.relatedTarget)
+				if ($(event.relatedTarget).is('#deleteNameRole')) {
+					deleteDo()
+				}
 				$target.removeAttr(type)
 				$target.removeClass('editSelected')
+				deleteClose()
 			})
 		} else {
 			$target.removeAttr(type)
 			$target.removeClass('editSelected')
+			deleteClose()
 		}
-	}
-
-	if ($target.hasClass('role')) {
-		$target.on('keyup', (e)=>{
-			if (e.keyCode !== 8 && e.keyCode !== 46) {
-				$target.removeClass('empty')
-				$target.closest('.toEmpty').removeClass('toEmpty')
-			} else {
-				if ($target.hasClass('empty')) {
-					$('.toEmpty').remove()
-				} else {
-					let $toDelete = contentLastRoleCheck($target)
-					if ($toDelete == 'Role') {
-						$target.html('Role')
-					} else if ($toDelete !== false) {
-						$toDelete.addClass('toEmpty')
-						$target.addClass('empty')
-					}
-				}
-			}
-		})
-	} else if ($target.hasClass('name')) {
-		$target.on('keyup', (e)=>{
-			if (e.keyCode !== 8 && e.keyCode !== 46) {
-				$target.removeClass('empty')
-				$target.closest('.toEmpty').removeClass('toEmpty')
-			} else {
-				if ($target.hasClass('empty')) {
-					$('.toEmpty').remove()
-				} else {
-					let $toDelete = contentLastNameCheck($target)
-					if ($toDelete == 'Name') {
-						$target.html('Name')
-					} else if ($toDelete !== false) {
-						$toDelete.addClass('toEmpty')
-						$target.addClass('empty')
-					}
-				}
-			}
-		})
 	}
 
 	if ($target.hasClass('tabButton')) {
@@ -895,7 +871,7 @@ $(document).click(function(e) {
 	closeMenu()
 })
 
-$(document).change(function(e) {
+$(document).on('change', function(e) {
 	let $target = $(e.target)
 	if ($target.hasClass('settingCheckBox')) {
 		let $cont = $target.closest('.settingProperty')
@@ -903,7 +879,7 @@ $(document).change(function(e) {
 		if (makeInactive) {
 			$cont.find('.settingRuleGroup').html('')
 		} else {
-			$cont.find('.settingNewRule').click()
+			$cont.find('.settingNewRule').trigger('click')
 		}
 		switch ($cont.parent().data('level')) {
 		case 'global':
@@ -1042,9 +1018,9 @@ $(document).on('paste', function(e) {
 	}
 })
 
-$(document).mousedown(function(e) {
+$(document).on('mousedown', function(e) {
 	if (!$('html').hasClass('editing')) return
-	$(document).mouseup(function() {
+	$(document).on('mouseup', function() {
 		clearTimeout(moveTimer)
 	})
 
@@ -1068,7 +1044,7 @@ $(document).mousedown(function(e) {
 	}, 100)
 })
 
-$(document).keydown(function(e) {
+$(document).on('keydown', function(e) {
 	const $target = $(e.target)
 	if ($target.attr('contenteditable')) {
 		if ($target.hasClass('text')) {
@@ -1085,7 +1061,7 @@ $(document).keydown(function(e) {
 			$target.after($('<div class="name editSelected" contenteditable="true"></div>'))
 			$target.removeClass('editSelected')
 			$target.removeAttr('contenteditable')
-			$target.next().focus()
+			$target.next().trigger('focus')
 			$target.next().on('blur', () => {
 				$target.next().removeAttr('contenteditable')
 				$target.next().removeClass('editSelected')
@@ -1095,7 +1071,7 @@ $(document).keydown(function(e) {
 			$target.removeClass('editSelected')
 			$target.removeAttr('contenteditable')
 			let $new = $target.parent().next().children('.role')
-			$new.focus()
+			$new.trigger('focus')
 			$new.on('blur', () => {
 				$new.removeAttr('contenteditable')
 				$new.removeClass('editSelected')
@@ -1107,7 +1083,7 @@ $(document).keydown(function(e) {
 
 $.each( [ 'put', 'delete' ], function( i, method ) {
 	jQuery[ method ] = function( url, data, callback, type ) {
-		if (typeof data === "function") {
+		if (typeof data === 'function') {
 			type = type || callback
 			callback = data
 			data = undefined
