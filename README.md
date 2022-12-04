@@ -31,4 +31,5 @@ This is a website to create and run credits for film/tv. It can either be run in
 
 * Download the template
 * Load template into casparCG
-* Rest of the process I can't remeber... Will update next time I have caspar and the template in front of me
+* Play template
+* Profit???
