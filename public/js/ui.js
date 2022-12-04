@@ -58,7 +58,6 @@ function sendDuration() {
 
 function doSave() {
 	let type = $('#saveForm').data('type')
-	console.log(type)
 	let project,version,file
 
 	if ($('#saveExisting').hasClass('selected')) {
@@ -775,7 +774,6 @@ $(document).on('click', function(e) {
 				deleteOpen($target)
 			}
 			$target.on('focusout', event => {
-				console.log(event.relatedTarget)
 				if ($(event.relatedTarget).is('#deleteNameRole')) {
 					deleteDo()
 				}

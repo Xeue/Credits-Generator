@@ -188,9 +188,25 @@ function fontsClose() {
 function deleteOpen($target) {
 	deleteClose()
 	$target.addClass('hasDelete')
-	$target.append(`<ul id="deleteCont">
-		<button type="button" id="deleteNameRole"></button>
-	</ul>`)
+
+	if ($target.hasClass('role')) {
+		const $pair = $target.closest('.pair')
+		const siblings = $pair.siblings('.pair').length
+		if (siblings > 0) {
+			$target.append(`<ul id="deleteCont">
+				<button type="button" id="deleteNameRole"></button>
+			</ul>`)
+		}
+	} else if ($target.hasClass('name')) {
+		const siblings = $target.siblings('.name').length
+		if (siblings > 0) {
+			$target.append(`<ul id="deleteCont">
+				<button type="button" id="deleteNameRole"></button>
+			</ul>`)
+		}
+	}
+
+
 	$('#deleteNameRole').on('click', deleteDo)
 }
 function deleteClose() {
@@ -202,7 +218,6 @@ function deleteDo() {
 	if ($target.hasClass('role')) {
 		const $pair = $target.closest('.pair')
 		const siblings = $pair.siblings('.pair').length
-		console.log(siblings)
 		if (siblings > 0) {
 			$pair.remove()
 		}
