@@ -250,9 +250,12 @@ function editorOpen($target) {
 		|| $target.hasClass('names')
 		|| $target.hasClass('text')) {
 			fontsOpen($target)
+		} else {
+			fontsClose()
 		}
 	} else {
 		$editor.data('type', 'block')
+		fontsClose()
 	}
 	editorColumns($editor, $block)
 	editorBlock($editor, $block, $target)
@@ -264,6 +267,8 @@ function editorOpen($target) {
 }
 function editorClose() {
 	let $editor = $('#editorCont')
+	fontsClose()
+	deleteClose()
 	$editor.removeClass('open')
 	$('.inEditor').removeClass('inEditor')
 	$('html').removeClass('settings')

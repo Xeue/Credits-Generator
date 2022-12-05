@@ -267,6 +267,8 @@ function renderContent(content) {
 /* Un-builder */
 
 function getCreditsJSON() {
+	fontsClose()
+	deleteClose()
 	let content = []
 	$('#creditsCont').children().each(function() {
 		let $content = $(this)
