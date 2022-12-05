@@ -30,7 +30,7 @@
         let loaded = false;
         let template = true;
         const sitePath = 'https://<%=host%>/';
-        const projectJson = JSON.parse(`<%- JSON.stringify(projectObject) %>`);
+        const projectJson = <%- JSON.stringify(projectObject) %>;
 
         webcg.on('data', function(data) {
           const project = data.project ? data.project.text || data.project : 'local';
