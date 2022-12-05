@@ -182,10 +182,21 @@ async function buildCredits(content) {
 function renderBlocks(blocks) {
 	let html = ''
 	blocks.forEach(block => {
+		let style = ''
+		if (typeof block.settings !== 'undefined' && Object.values(block.settings).length > 0) {
+			style = 'style="'
+			for (const property in block.settings) {
+				if (Object.hasOwnProperty.call(block.settings, property)) {
+					const value = block.settings[property]
+					style += `${property}: ${value};`
+				}
+			}
+			style += '"'
+		}
 		const flipped = block.namesFlipped == true ? 'data-flipped=\'true\'' : ''
 		const roleFlip = block.roleFlipped == true ? 'data-rolealign=\'true\'' : ''
 		const nameFlip = block.nameFlipped == true ? 'data-namealign=\'true\'' : ''
-		html += `<section class="block" data-direction="${block.type}" ${flipped} ${roleFlip} ${nameFlip}>`
+		html += `<section ${style} class="block" data-direction="${block.type}" ${flipped} ${roleFlip} ${nameFlip}>`
 		block.content.forEach(content => {
 			html += renderContent(content)
 		})
@@ -301,7 +312,8 @@ function makeBlocksObject($blocks) {
 		const $block = $(this)
 		const block = {
 			'type': $block.attr('data-direction'),
-			'content': makeContentsArray($block.children())
+			'content': makeContentsArray($block.children()),
+			'settings': getStylesObject($block[0], content.type)
 		}
 		if ($block.attr('data-flipped') == 'true') block.namesFlipped = true
 		if ($block.attr('data-rolealign') == 'true') block.roleFlipped = true
@@ -389,7 +401,7 @@ function makeContentObject($content) {
 	return content
 }
 
-function getStylesObject(element, type) {    
+function getStylesObject(element, type = 'none') {    
 	const stylesObj = {}
 	const cssArray = element.style.cssText.split('; ')
 	if (cssArray[0] == '') return {}
