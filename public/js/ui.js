@@ -795,7 +795,7 @@ $(document).on('click', function(e) {
 		let index = $('.tabButton').index($target)
 		$($('.creditsSection')[index]).addClass('active')
 
-		if ($('html').hasClass('editing')) {
+		if ($('html').hasClass('editing') || $('html').hasClass('settings')) {
 			settingsOpen(true)
 		}
 	} else if ($target.is('#newArticle')) {

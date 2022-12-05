@@ -229,8 +229,7 @@ $(document).click(function(e) {
 			$('.menuSelected.columns').append(`<section class="block" data-direction="rows">${newContent()}</section>`)
 		}
 	} else if ($target.is('#sectionsSettings')) {
-		const index = $('.tabButton').index($('.tabButton.menuSelected'))
-		settingsOpen(true, $($('.creditsSection')[index]))
+		settingsOpen(true)
 	}
 })
 

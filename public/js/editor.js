@@ -101,7 +101,9 @@ function editorMakeProperty($json, prop, state) {
 	return $property
 }
 
-function settingsOpen(keepOpen = false, $target) {
+function settingsOpen(keepOpen = false) {
+	const $target = $('.creditsSection.active')
+
 	if ($('html').hasClass('settings') && !keepOpen) {
 		editorClose()
 		return

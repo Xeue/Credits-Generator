@@ -118,7 +118,7 @@ body {
   position: fixed;
 }
 .creditsSection[data-backgroundalign="false"] {
-  background-size: cover !important;
+  --background-size: cover !important;
 }
 #creditsLogos {
  opacity:0;
