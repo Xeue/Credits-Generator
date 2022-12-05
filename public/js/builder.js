@@ -46,7 +46,7 @@ async function load(project, version, creditsObject) {
 
 	let $footer = $('#creditsFooter')
 	$footer.data('tabs', 0)
-	$footer.html('<button id="newArticle">+</button>')
+	$footer.html('<button id="newArticle">New Fade/Scroll</button>')
 	if (typeof creditsObject !== 'undefined') {
 		await gotCredits(creditsObject)
 	} else {

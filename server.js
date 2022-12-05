@@ -234,7 +234,8 @@ async function doHome(req, res) {
 		globalFonts: fonts,
 		serverName: config.get('installName'),
 		project: req.query.project,
-		render: hasFFMPEG
+		render: hasFFMPEG,
+		version: version
 	})
 }
 async function doFrame(req, res) {

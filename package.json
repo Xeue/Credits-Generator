@@ -1,6 +1,6 @@
 {
   "name": "credits-generator",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "description": "Node based Credits Generating website",
   "main": "server.js",
   "type": "module",

@@ -802,6 +802,7 @@ $(document).on('click', function(e) {
 		$('.tabButton').removeClass('active')
 		$('#creditsFooter').append('<button class="tabButton active">scroll</button>')
 		$('#creditsCont').append(newArticle())
+		settingsOpen(true)
 	} else if ($target.is('#settings')) {
 		settingsOpen()
 	} else if ($target.is('#run')) {
