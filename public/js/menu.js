@@ -2,7 +2,7 @@
 function openMenu(e) {
 	$('.menuSelected').removeClass('menuSelected')
 	const $ele = $(document.elementFromPoint(e.pageX, e.pageY))
-	const $menu = $('menu')
+	const $menu = $('#rightClickMenu')
 	let left = e.pageX
 	const width = $(document).width()
 	const height = $(document).height()
@@ -45,8 +45,7 @@ function openMenu(e) {
 		$menu.addClass('menuActive')
 		$menu.addClass('menuTabs')
 		$ele.addClass('menuSelected')
-		menuHeight = $menu.outerHeight()
-		let top = $ele.offset().top - menuHeight - 10
+		const top = $ele.offset().top - menuHeight - 10
 		$menu.css('top', top+'px')
 	} else if ($block.length != 0 && $('html').hasClass('editing')) {
 		$menu.removeClass('bellow')
@@ -92,7 +91,7 @@ function openMenu(e) {
 	}
 }
 function closeMenu() {
-	let $menu = $('menu')
+	let $menu = $('#rightClickMenu')
 	$menu.css('top', 0)
 	$menu.css('left', 0)
 	$menu.removeClass('menuActive')

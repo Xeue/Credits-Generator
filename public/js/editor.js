@@ -169,7 +169,7 @@ function fontsOpen($target) {
 		}
 	}
 
-	const template = `<ul id="fontEditor">
+	const template = `<menu id="fontEditor" contenteditable="false">
 		<button type="button" class="${bold}" id="fontBoldToggle">B</button>
 		<button type="button" class="${italic}" id="fontItalicToggle">I</button>
 		<button type="button" class="${underlined}" id="fontUnderlineToggle">U</button>
@@ -177,7 +177,7 @@ function fontsOpen($target) {
 		<select id="fontFamily"><option selected>Default</option>${fontFamilys.join('')}</select>
 		<span>Font Weight</span>
 		<select id="fontSize"><option selected>Default</option>${fontSizes.join('')}</select>
-	</ul>`
+	</menu>`
 	$target.append(template)
 }
 function fontsClose() {
@@ -193,16 +193,16 @@ function deleteOpen($target) {
 		const $pair = $target.closest('.pair')
 		const siblings = $pair.siblings('.pair').length
 		if (siblings > 0) {
-			$target.append(`<ul id="deleteCont">
+			$target.append(`<menu id="deleteCont" contenteditable="false">
 				<button type="button" id="deleteNameRole"></button>
-			</ul>`)
+			</menu>`)
 		}
 	} else if ($target.hasClass('name')) {
 		const siblings = $target.siblings('.name').length
 		if (siblings > 0) {
-			$target.append(`<ul id="deleteCont">
+			$target.append(`<menu id="deleteCont" contenteditable="false">
 				<button type="button" id="deleteNameRole"></button>
-			</ul>`)
+			</menu>`)
 		}
 	}
 

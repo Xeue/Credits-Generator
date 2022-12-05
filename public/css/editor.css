@@ -163,10 +163,10 @@ main > header {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
+  gap: 5px;
+  justify-content: end;
 }
-main > header> * {
-  margin-left: 5px;
-}
+
 .gridSpacer {
   flex: 1;
 }
@@ -221,7 +221,7 @@ header button,
 footer button,
 dialog button,
 #editorCont button,
-menu button,
+#rightClickMenu button,
 #fontEditor button,
 #deleteNameRole {
   font-size: 16px;
@@ -256,13 +256,13 @@ header button:hover,
 footer button:hover,
 dialog button:hover,
 #editorCont button:hover,
-menu button,
+#rightClickMenu button,
 #fontEditor button:hover {
   background-color: var(--accentDark);
   border-top: 1px var(--accentDarkBorder) solid;
 }
 
-menu button:hover {
+#rightClickMenu button:hover {
   background-color: var(--accentDark);
   border-top: 1px var(--accentDarkBorder) solid
 }
@@ -312,7 +312,7 @@ dialog select,
   border-radius: 5px;
   min-width: 50px;
   filter: none;
-  width: fit-content;
+  width: max-content;
 }
 
 header select:focus {
@@ -755,8 +755,7 @@ dialog footer button:first-of-type {
 }
 
 #creditsFooter {
-  width: -moz-fit-content;
-  width: fit-content;
+  width: max-content;
   max-width: calc(100% - 24px);
   position: absolute;
   bottom: 0;
@@ -1046,11 +1045,11 @@ dialog footer button:first-of-type {
 
 .editing #editButton,
 .settings #settings,
-#menuDeleteContent, 
-#menuDeleteBlock,
-#menuDeleteFade,
-#menuDeleteSetting,
-#menuDeleteColumn {
+#rightClickMenu #menuDeleteContent, 
+#rightClickMenu #menuDeleteBlock,
+#rightClickMenu #menuDeleteFade,
+#rightClickMenu #menuDeleteSetting,
+#rightClickMenu #menuDeleteColumn {
   background-color: var(--red);
   border-top: 1px var(--redBorder) solid
 }
@@ -1323,7 +1322,7 @@ dialog,
   filter: none;
 }
 
-menu {
+#rightClickMenu {
   opacity: 0;
   z-index: -1;
   position: fixed;
@@ -1337,12 +1336,12 @@ menu {
   grid-row-gap: 10px;
 }
 
-menu>button {
+#rightClickMenu>button {
   background-color: var(--accentLight);
   border-top: 1px var(--accentLightBorder) solid;
 }
 
-.menuActive {
+#rightClickMenu.menuActive {
   opacity: 1;
   z-index: 3;
   transition: top 0s, left 0s, opacity .2s
