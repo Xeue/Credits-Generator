@@ -30,11 +30,13 @@ config.useLogger(logs)
 	config.default('loggingLevel', 'W')
 	config.default('createLogFile', true)
 	config.default('devMode', false)
+	config.default('allowRender', false)
 
 	config.require('port')
 	config.require('installName', [], 'Name of the site, this appears in the tab in browser')
 	config.require('loggingLevel', ['A','D','W','E'], 'What level of logs should be recorded (A)ll (D)ebug (W)arning (E)rror')
 	config.require('createLogFile', [true, false], 'Generate log file')
+	config.require('allowRender', [true, false], 'Allow FFMPEG based rendering')
 
 	if (!await config.fromFile(__dirname + '/config.conf')) {
 		logs.printHeader('Credits Generator')
@@ -235,6 +237,7 @@ async function doHome(req, res) {
 		serverName: config.get('installName'),
 		project: req.query.project,
 		render: hasFFMPEG,
+		allowRender: config.get('allowRender'),
 		version: version
 	})
 }
