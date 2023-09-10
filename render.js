@@ -2,7 +2,6 @@
 import puppeteer from 'puppeteer'
 import { spawn } from 'child_process'
 import OS from 'os'
-import {log, logObj, logs} from 'xeue-logs'
 import fs from 'fs'
 
 function rendererFactory(
@@ -17,8 +16,8 @@ function rendererFactory(
 			args: ['--font-render-hinting=none'],
 		})
 		const page = await browser.newPage()
-		page.on('console', (msg) => log(`Host page (${id}) log: ${msg.text()}`, 'D'))
-		page.on('pageerror', (msg) => logObj(`Host page (${id}) error`, msg, 'E'))
+		page.on('console', (msg) => logger.log(`Host page (${id}) log: ${msg.text()}`, 'D'))
+		page.on('pageerror', (msg) => logger.object(`Host page (${id}) error`, msg, 'E'))
 		await page.goto(url+'&id='+id, { waitUntil: 'load' })
 		await page.setViewport({
 			width: info.width,
@@ -48,7 +47,7 @@ function rendererFactory(
 							omitBackground: alpha
 						})
 				marks.push(Date.now())
-				log(`${name} render(${i}) finished, timing=${marks
+				logger.log(`${name} render(${i}) finished, timing=${marks
 					.map((v, i, a) => (i === 0 ? null : v - a[i - 1]))
 					.slice(1)}`, 'A'
 				)
@@ -79,7 +78,7 @@ function createParallelRender(
 			const id = nextWorkerId++
 			const worker = { id, renderer: rendererFactory(`Worker ${id}`, id, url, info, alpha)}
 			available.push(worker)
-			log('Spawn worker '+worker.id, 'D')
+			logger.log('Spawn worker '+worker.id, 'D')
 			if (waiting) waiting.nudge()
 		}
 		if (available.length > 0) {
@@ -107,7 +106,7 @@ function createParallelRender(
 				continue
 			}
 			try {
-				log(`Worker ${worker.id} is starting ${taskDescription}`, 'A')
+				logger.log(`Worker ${worker.id} is starting ${taskDescription}`, 'A')
 				const result = await fn(worker.renderer)
 				available.push(worker)
 				if (waiting) waiting.nudge()
@@ -138,7 +137,7 @@ function ffmpegOutput(fps, folder, fileName, fileType, alpha) {
 		fs.mkdirSync(folder, { recursive: true })
 	}
 	let debugLevel = 'error'
-	switch (logs.loggingLevel) {
+	switch (logger.loggingLevel) {
 	case 'W':
 		debugLevel = 'warning'
 		break
@@ -172,16 +171,16 @@ function ffmpegOutput(fps, folder, fileName, fileType, alpha) {
 		`${folder}/${fileName}.${fileType}`,
 	]
 	const ffmpeg = spawn('ffmpeg', args)
-	log('Started FFMPEG', ['D','FFMPEG'])
+	logger.log('Started FFMPEG', ['D','FFMPEG'])
 
 	ffmpeg.stdout.setEncoding('utf8')
 	ffmpeg.stdout.on('data', function(data) {
-		log(data, ['D','FFMPEG', logs.p, false])
+		logger.log(data, ['D','FFMPEG', logger.p, false])
 	})
 
 	ffmpeg.stderr.setEncoding('utf8')
 	ffmpeg.stderr.on('data', function(data) {
-		log(data, ['E','FFMPEG', logs.r, false])
+		logger.log(data, ['E','FFMPEG', logger.r, false])
 	})
 
 	return {
@@ -192,7 +191,7 @@ function ffmpegOutput(fps, folder, fileName, fileType, alpha) {
 			ffmpeg.stdin.end()
 			return new Promise((resolve) => {
 				ffmpeg.on('close', function() {
-					log('Render complete', ['C','FFMPEG'])
+					logger.log('Render complete', ['C','FFMPEG'])
 					resolve()
 				})
 			})
@@ -200,8 +199,7 @@ function ffmpegOutput(fps, folder, fileName, fileType, alpha) {
 	}
 }
   
-export default async function render(path, project, version, fps, frames, width, height, alpha, logsConfig) {
-	logs.setConf(logsConfig)
+export default async function render(path, project, version, fps, frames, width, height, alpha, logger) {
 	const info = {
 		width: width,
 		height: height,
@@ -217,7 +215,7 @@ export default async function render(path, project, version, fps, frames, width,
 	const fileType = alpha ? 'mov' : 'mp4'
 	const folder = `public/saves/${project}/renders`
 	const fileName = `${project}_v${version}_credits`
-	logObj(`Rendering ${fileType} file ${fileName}`, info)
+	logger.object(`Rendering ${fileType} file ${fileName}`, info)
 
 	const output = ffmpegOutput(
 		fps,
@@ -232,11 +230,11 @@ export default async function render(path, project, version, fps, frames, width,
 		promises.push({ promise: renderer.render(i), frame: i })
 	}
 	for (let i = 0; i < promises.length; i++) {
-		log(`Render progress frame ${promises[i].frame} ${i}/${promises.length}`,'D')
+		logger.log(`Render progress frame ${promises[i].frame} ${i}/${promises.length}`,'D')
 		const buffer = await promises[i].promise
 		output.writePNGFrame(buffer, promises[i].frame)
 	}
 	await output.end()
 	renderer.end()
-	log('Rendering completed')
+	logger.log('Rendering completed')
 }

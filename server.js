@@ -4,8 +4,9 @@ import express from 'express'
 import cors from 'cors'
 import fileUpload from 'express-fileupload'
 import fs from 'fs'
-import {log, logObj, logs} from 'xeue-logs'
-import config from 'xeue-config'
+import {Server} from 'xeue-webserver'
+import {Logs} from 'xeue-logs'
+import {Config} from 'xeue-config'
 import render from './render.js'
 import path from 'path'
 import {fileURLToPath} from 'url'
@@ -20,10 +21,14 @@ const {version} = require('./package.json')
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-config.useLogger(logs)
+
+const logger = new Logs(false, 'CreditsLogging', __dirname, 'W', false)
+const config = new Config(logger)
+const webServer = new Server(expressRoutes, logger, version, config)
 
 { /* Config setup */
-	console.clear()
+	logger.printHeader('Credits Generator')
+
 	config.default('port', 8080)
 	config.default('installName', 'Unknown Site')
 	config.default('debugLineNum', false)
@@ -39,41 +44,41 @@ config.useLogger(logs)
 	config.require('allowRender', [true, false], 'Allow FFMPEG based rendering')
 
 	if (!await config.fromFile(__dirname + '/config.conf')) {
-		logs.printHeader('Credits Generator')
 		await config.fromCLI(__dirname + '/config.conf')
 	}
 
-	logs.setConf({
-		'createLogFile': config.get('createLogFile'),
-		'logsFileName': 'CreditsLogging',
-		'configLocation': __dirname,
-		'loggingLevel': config.get('loggingLevel'),
-		'debugLineNum': config.get('debugLineNum')
-	})
-	logs.printHeader('Credits Generator')
+	logger.setConf(
+		config.get('createLogFile'),
+		'CreditsLogging',
+		__dirname,
+		config.get('loggingLevel'),
+		config.get('debugLineNum')
+	)
 
 	config.userInput(async (command)=>{
 		switch (command) {
 		case 'config':
 			await config.fromCLI(__dirname + '/config.conf')
-			logs.setConf({
-				'createLogFile': config.get('createLogFile'),
-				'logsFileName': 'CreditsLogging',
-				'configLocation': __dirname,
-				'loggingLevel': config.get('loggingLevel'),
-				'debugLineNum': config.get('debugLineNum')
-			})
+			logger.setConf(
+				config.get('createLogFile'),
+				'CreditsLogging',
+				__dirname,
+				config.get('loggingLevel'),
+				config.get('debugLineNum')
+			)
 			return true
 		}
 	})
-	log('Running version: v'+version, ['H', 'SERVER', logs.g])
+
+	logger.log('Running version: v'+version, ['H', 'SERVER', logger.g])
+	webServer.start(config.get('port'))
+	logger.log(`Credits Generator can be accessed at http://localhost:${config.get('port')}`, ['C', 'SERVER', logger.g])
 	config.print()
 }
 
-const app = express()
 await folderExists(__dirname+'/public/saves', true)
 
-{ /* Express setup & Endpoints */
+function expressRoutes(app) {
 	app.set('views', __dirname + '/views')
 	app.set('view engine', 'ejs')
 	app.use(cors())
@@ -84,10 +89,6 @@ await folderExists(__dirname+'/public/saves', true)
 		createParentPath: true
 	}))
 
-	app.listen(config.get('port'), '0.0.0.0', () => {
-		log(`Credits Generator can be accessed at http://localhost:${config.get('port')}`, ['C', 'SERVER', logs.g])
-	})
-
 	app.get('/',  (req, res) =>  {
 		doHome(req, res)
 	})
@@ -97,7 +98,7 @@ await folderExists(__dirname+'/public/saves', true)
 	})
 
 	app.get('/run', (req, res) => {
-		log('Requesting run dialog', 'A')
+		logger.log('Requesting run dialog', 'A')
 		res.header('Content-type', 'text/html')
 		res.render('run', {})
 	})
@@ -111,7 +112,7 @@ await folderExists(__dirname+'/public/saves', true)
 
 
 	app.get('/fonts', (req, res) => {
-		log('Request for fonts', 'D')
+		logger.log('Request for fonts', 'D')
 		const project = req.query.project
 		sendZip(res, ['public/fonts',`public/saves/${project}/fonts`], project+'_fonts')
 	})
@@ -126,7 +127,7 @@ await folderExists(__dirname+'/public/saves', true)
 		doUpload(req, res, 'images')
 	})
 	app.get('/images', (req, res) => {
-		log('Request for images', 'D')
+		logger.log('Request for images', 'D')
 		const project = req.query.project
 		sendZip(res, [`public/saves/${project}/images`], project+'_images')
 	})
@@ -135,7 +136,7 @@ await folderExists(__dirname+'/public/saves', true)
 	})
 
 	app.get('/template', async (req, res) => {
-		log('Request for template', 'D')
+		logger.log('Request for template', 'D')
 		const [saves, fonts] = await getSavesAndFonts()
 		const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0]
 		const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count
@@ -178,7 +179,7 @@ await folderExists(__dirname+'/public/saves', true)
 		const version = req.query.version
 		const fps = parseInt(req.query.fps)
 		const frames = parseInt(req.query.frames)
-		log(`Starting render of project: ${project} version: ${version} at frame rate: ${fps}`, 'D')
+		logger.log(`Starting render of project: ${project} version: ${version} at frame rate: ${fps}`, 'D')
 		let width = 1920
 		let height = 1080
 		switch (parseInt(req.query.resolution)) {
@@ -207,7 +208,7 @@ await folderExists(__dirname+'/public/saves', true)
 					sendZip(res, [`public/saves/${project}/renders/${version}/`], `${project}_credits`)
 				},1000)
 			}).catch((err)=>{
-				logObj('Rendering error', err, 'E')
+				logger.object('Rendering error', err, 'E')
 			})
 	})
 }
@@ -215,7 +216,7 @@ await folderExists(__dirname+'/public/saves', true)
 /* Request functions */
 
 async function doHome(req, res) {
-	log('Client requesting home page', 'A')
+	logger.log('Client requesting home page', 'A')
 	res.header('Content-type', 'text/html')
 	const [saves, fonts] = await getSavesAndFonts()
 	let hasFFMPEG = false
@@ -227,7 +228,7 @@ async function doHome(req, res) {
 			await commandExists('FFMPEG')
 			hasFFMPEG = true
 		} catch (error) {
-			log('FFMPEG not installed on this server', 'W')
+			logger.log('FFMPEG not installed on this server', 'W')
 		}
 	}
 
@@ -242,7 +243,7 @@ async function doHome(req, res) {
 	})
 }
 async function doFrame(req, res) {
-	log('New Render Page Spawned', 'A')
+	logger.log('New Render Page Spawned', 'A')
 	res.header('Content-type', 'text/html')
 
 	const [saves, fonts] = await getSavesAndFonts()
@@ -256,7 +257,7 @@ async function doFrame(req, res) {
 	})
 }
 async function getSave(req, res) {
-	log('Getting saved credits', 'D')
+	logger.log('Getting saved credits', 'D')
 	const [saves, font] = await getSavesAndFonts()
 	const project = typeof req.query.project !== 'undefined' ? req.query.project : Object.keys(saves)[0]
 	const version = typeof req.query.version !== 'undefined' ? req.query.version : saves[project].count
@@ -266,8 +267,8 @@ async function getSave(req, res) {
 		data.images = await imageList(project)
 		res.json(data)
 	} catch (error) {
-		log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W')
-		logObj('Error message', error, 'W')
+		logger.log(`Cannot load save file: ${project}/${version}.json doesn't exist?`, 'W')
+		logger.object('Error message', error, 'W')
 		res.status(500)
 		res.send(JSON.stringify({
 			'status': 'error',
@@ -277,12 +278,12 @@ async function getSave(req, res) {
 	}
 }
 async function doSave(req, res) {
-	log('Saving uploaded credits', 'D')
+	logger.log('Saving uploaded credits', 'D')
 	const project = req.body.project
 	let version = req.body.version
 
 	if (project === undefined || version === undefined) {
-		log(`Failed to get Project (${project}) or Version (${version})`)
+		logger.log(`Failed to get Project (${project}) or Version (${version})`)
 		res.send({
 			status: false,
 			message: 'Invalid data'
@@ -332,19 +333,19 @@ async function doSave(req, res) {
 			})
 		}
 	} catch (err) {
-		logObj('File upload error', err, 'E')
+		logger.object('File upload error', err, 'E')
 		res.status(500).send(err)
 	}
 }
 async function doUpload(req, res, uploadType) {
-	log('Saving uploaded Images/Fonts', 'D')
+	logger.log('Saving uploaded Images/Fonts', 'D')
 	const project = req.body.project
 	const newProject = req.body.new
 
 	const returnObj = {}
 
 	if (project === undefined) {
-		log(`Failed to get Project (${project})`)
+		logger.log(`Failed to get Project (${project})`)
 		res.send({
 			status: false,
 			message: 'Invalid data'
@@ -389,14 +390,14 @@ async function doUpload(req, res, uploadType) {
 			res.send(returnObj)
 		}
 	} catch (err) {
-		logObj('File upload error', err, 'E')
+		logger.object('File upload error', err, 'E')
 		res.status(500).send(err)
 	}
 }
 async function doDelete(req, res, deleteType) {
 	const file = req.query.file
 	const project = req.query.project
-	log(`Deleting file: ${file} from: ${project}`, 'A')
+	logger.log(`Deleting file: ${file} from: ${project}`, 'A')
 	const returnObj = {}
 	try {
 		await fs.promises.unlink(`public/saves/${project}/${deleteType}/${file}`)
@@ -406,7 +407,7 @@ async function doDelete(req, res, deleteType) {
 		res.send(returnObj)
 	} catch (error) {
 		const saves = await getUpdatedProjects()
-		logObj('File error', error, 'W')
+		logger.object('File error', error, 'W')
 		res.status(500)
 		returnObj.type = 'fail'
 		returnObj.save = saves[project]
@@ -416,7 +417,7 @@ async function doDelete(req, res, deleteType) {
 }
 
 async function getUpdatedProjects(project) {
-	log('Getting new projects list', 'A')
+	logger.log('Getting new projects list', 'A')
 	const files = await globby(['public/saves'])
 	let output = {}
 	files.forEach(function(path) {
@@ -437,7 +438,7 @@ async function getUpdatedProjects(project) {
 	return typeof project === 'undefined' ? output : output[project]
 }
 async function getSavesAndFonts() {
-	log('Getting updated saves and fonts', 'A')
+	logger.log('Getting updated saves and fonts', 'A')
 	const [_saves, _fonts] = await Promise.all([
 		globby(['public/saves']),
 		globby(['public/fonts'])
@@ -474,7 +475,7 @@ async function getSavesAndFonts() {
 }
 
 function imageList(project) {
-	log('Getting list of images', 'A')
+	logger.log('Getting list of images', 'A')
 	const promise = new Promise((resolve) => {
 		globby([`public/saves/${project}/images`]).then((files)=>{
 			let output = {}
@@ -496,7 +497,7 @@ function imageList(project) {
 }
 
 async function sendZip(res, pathArray, zipName) {
-	log(`Creating and sending zip: ${zipName}`, 'A')
+	logger.log(`Creating and sending zip: ${zipName}`, 'A')
 	const zip = new AdmZip()
 	for (const folder of pathArray) {
 		if (await folderExists(folder)) {
@@ -517,15 +518,15 @@ async function folderExists(path, makeIfNotPresent = false) {
 	} catch (error) {
 		found = false
 		if (makeIfNotPresent) {
-			log(`Folder: ${logs.y}(${path})${logs.reset} not found, creating it`, 'D')
+			logger.log(`Folder: ${logger.y}(${path})${logger.reset} not found, creating it`, 'D')
 			try {
 				await fs.promises.mkdir(path, {'recursive': true})
 			} catch (error) {
-				log(`Couldn't create folder: ${logs.y}(${path})${logs.reset}`, 'W')
-				logObj('Message', error, 'W')
+				logger.log(`Couldn't create folder: ${logger.y}(${path})${logger.reset}`, 'W')
+				logger.object('Message', error, 'W')
 			}
 		} else {
-			log(`Folder: ${logs.y}(${path})${logs.reset} not found`, 'D')
+			logger.log(`Folder: ${logger.y}(${path})${logger.reset} not found`, 'D')
 		}
 	}
 	return found

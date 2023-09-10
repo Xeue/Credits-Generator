@@ -1,6 +1,6 @@
 {
   "name": "credits-generator",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "description": "Node based Credits Generating website",
   "main": "server.js",
   "type": "module",
@@ -19,20 +19,16 @@
   },
   "homepage": "https://github.com/Xeue/Credits-Generator#readme",
   "dependencies": {
-    "adm-zip": "^0.5.9",
+    "adm-zip": "^0.5.10",
     "command-exists": "^1.2.9",
     "cors": "^2.8.5",
-    "ejs": "^3.1.8",
+    "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
-    "globby": "^13.1.2",
-    "puppeteer": "^19.3.0",
-    "readline-sync": "^1.4.10",
-    "ws": "^8.11.0",
-    "xeue-config": "^1.3.2",
-    "xeue-logs": "^1.5.2"
-  },
-  "devDependencies": {
-    "eslint": "^8.28.0"
+    "globby": "^13.2.2",
+    "puppeteer": "^21.1.1",
+    "xeue-config": "^2.1.0",
+    "xeue-logs": "^2.0.1",
+    "xeue-webserver": "^2.0.1"
   }
 }

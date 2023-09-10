@@ -313,7 +313,7 @@ function makeBlocksObject($blocks) {
 		const block = {
 			'type': $block.attr('data-direction'),
 			'content': makeContentsArray($block.children()),
-			'settings': getStylesObject($block[0], content.type)
+			'settings': getStylesObject($block[0])
 		}
 		if ($block.attr('data-flipped') == 'true') block.namesFlipped = true
 		if ($block.attr('data-rolealign') == 'true') block.roleFlipped = true
