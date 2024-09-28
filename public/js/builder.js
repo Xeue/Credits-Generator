@@ -449,6 +449,7 @@ function resetCredits() {
 	let sections = document.getElementsByClassName('creditsSection')
 	for (let index = 0; index < sections.length; index++) {
 		const section = sections[index]
+		section.style.transition = `0s linear`
 		section.style.top = `0px`
 		section.classList.remove('fade')
 		section.classList.remove('active')
