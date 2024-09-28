@@ -444,6 +444,17 @@ function waitForClick() {
 	isRunClick = isRunClick ? false : true;
 }
 
+function resetCredits() {
+	resetNow = true;
+	let sections = document.getElementsByClassName('creditsSection')
+	for (let index = 0; index < sections.length; index++) {
+		const section = sections[index]
+		section.style.top = `0px`
+		section.classList.remove('fade')
+		section.classList.remove('active')
+	}
+}
+
 async function runCredits() {
 	$('.creditsSection').removeClass('active')
 	$('header').addClass('hidden')
@@ -468,6 +479,10 @@ async function runCredits() {
 			$(section).css('animation-duration', duration+'s')
 		}
 		await sleep(duration)
+		if (resetNow) {
+			resetNow = false
+			return
+		}
 		if (index + 1 < sections.length) {
 			section.classList.remove('active')
 			section.classList.remove('fade')

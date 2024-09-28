@@ -550,10 +550,18 @@ if(window.history && history.pushState){ // check for history api support
 window.addEventListener('next', function(){
 	console.log('forward button clicked');
 	if (isRunClick) runCredits()
+	else {
+		$('#toutorial').addClass('hidden')
+		toggleUI()
+	}
 }, false);
 
-window.addEventListener('previous', function(){
-	console.log('back button clicked');
+window.addEventListener('previous', function(e){
+	if (isRunClick) {
+		e.preventDefault()
+		console.log('back button clicked');
+		resetCredits()
+	}
 }, false);
 
 // Onloads
