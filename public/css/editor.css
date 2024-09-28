@@ -205,6 +205,7 @@ header>div {
   margin-bottom: 5px
 }
 
+.hardHidden,
 .hidden {
   display: none !important
 }

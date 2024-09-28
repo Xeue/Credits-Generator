@@ -60,7 +60,7 @@
   <body id="mainBody" class="background">
     <iframe id="downloadIframe" style="display:none;"></iframe>
     <main id="scene" class="background creditsBody">
-      <header>
+      <header <% if (vmix) { %>class="hidden"<% } %>>
         <div>Project:</div>
         <select id="loadFile" data-projects="<%- Object.keys(saves).join(",") %>">
             <% for (const save in saves) {%>
@@ -93,7 +93,7 @@
         </div>
       </div>
 
-      <footer id="creditsFooter">
+      <footer id="creditsFooter" <% if (vmix) { %>class="hidden"<% } %>>
         <button id="creditsButton" class="tabButton active">Main</button>
         <button id='newArticle'>New Fade/Scroll</button>
       </footer>
@@ -255,7 +255,7 @@
       </form>
     </dialog>
 
-    <dialog id="toutorial" class="hidden">
+    <dialog id="toutorial" class="hidden<% if (vmix) { %>hardHidden<% } %>">
       <div>
         <header id="tutHead">Help/Info</header>
         <section id="tutBody">
