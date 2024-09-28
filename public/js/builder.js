@@ -440,6 +440,10 @@ function toggleUI() {
 	$('#editorCont').removeClass('open')
 }
 
+function waitForClick() {
+	isRunClick = isRunClick ? false : true;
+}
+
 async function runCredits() {
 	$('.creditsSection').removeClass('active')
 	$('header').addClass('hidden')

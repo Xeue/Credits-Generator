@@ -1,5 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
+
+let isRunClick = false;
+
 function firstTimeCheck() {
 	let firstTime = Cookies.get('tutorial')
 	if (firstTime != 'done') {
@@ -521,6 +524,38 @@ function contentLastRoleCheck($target) {
 
 let moveTimer /* for the mousedown event to trigger dragging */
 
+if(window.history && history.pushState){ // check for history api support
+	window.addEventListener('load', function(){
+		// create history states
+		history.pushState(-1, null); // back state
+		history.pushState(0, null); // main state
+		history.pushState(1, null); // forward state
+		history.go(-1); // start in main state
+				
+		this.addEventListener('popstate', function(event, state){
+			// check history state and fire custom events
+			if(state = event.state){
+	
+				event = document.createEvent('Event');
+				event.initEvent(state > 0 ? 'next' : 'previous', true, true);
+				this.dispatchEvent(event);
+				
+				// reset state
+				history.go(-state);
+			}
+		}, false);
+	}, false);
+}
+
+window.addEventListener('next', function(){
+	console.log('forward button clicked');
+	if (isRunClick) runCredits()
+}, false);
+
+window.addEventListener('previous', function(){
+	console.log('back button clicked');
+}, false);
+
 // Onloads
 $(function() {
 	window.addEventListener('message', runCommand, false)
@@ -807,6 +842,9 @@ $(document).on('click', function(e) {
 		settingsOpen()
 	} else if ($target.is('#run')) {
 		initRunInBrowser()
+	} else if ($target.is('#runClick')) {
+		toggleUI()
+		waitForClick()
 	} else if ($target.hasClass('settingNewRule')) {
 		let $group = $target.parent().prev()
 		let $pair = $('<div class=\'settingRulePair\'></div>')
