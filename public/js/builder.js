@@ -458,6 +458,7 @@ function resetCredits() {
 }
 
 async function runCredits() {
+	resetNow = false;
 	$('.creditsSection').removeClass('active')
 	$('header').addClass('hidden')
 	$('footer').addClass('hidden')
