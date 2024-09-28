@@ -90,7 +90,11 @@ function expressRoutes(app) {
 	}))
 
 	app.get('/',  (req, res) =>  {
-		doHome(req, res)
+		doHome(req, res, false)
+	})
+
+	app.get('/vmix',  (req, res) =>  {
+		doHome(req, res, true)
 	})
 
 	app.get('/frame',  (req, res) =>  {
@@ -215,7 +219,7 @@ function expressRoutes(app) {
 
 /* Request functions */
 
-async function doHome(req, res) {
+async function doHome(req, res, vmix) {
 	logger.log('Client requesting home page', 'A')
 	res.header('Content-type', 'text/html')
 	const [saves, fonts] = await getSavesAndFonts()
@@ -239,7 +243,8 @@ async function doHome(req, res) {
 		project: req.query.project,
 		render: hasFFMPEG,
 		allowRender: config.get('allowRender'),
-		version: version
+		version: version,
+		vmix: vmix
 	})
 }
 async function doFrame(req, res) {
