@@ -49,6 +49,7 @@
         const loadedEvent = new Event('loaded');
         let loaded = false;
         const defaultProject = "<%=defaultProject%>";
+        let isRunClick = <% if (vmix) { %>true<% } else {%>false<%}%>;
     </script>
     <script src="js/builder.js"></script>
     <script src="js/editor.js"></script>
@@ -255,7 +256,7 @@
       </form>
     </dialog>
 
-    <dialog id="toutorial" class="hidden<% if (vmix) { %>hardHidden<% } %>">
+    <dialog id="toutorial" class="hidden<% if (vmix) { %> hardHidden<% } %>">
       <div>
         <header id="tutHead">Help/Info</header>
         <section id="tutBody">

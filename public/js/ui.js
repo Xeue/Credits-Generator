@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 
-let isRunClick = false;
-
 function firstTimeCheck() {
 	let firstTime = Cookies.get('tutorial')
 	if (firstTime != 'done') {
