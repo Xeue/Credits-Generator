@@ -453,6 +453,7 @@ function resetCredits() {
 		section.classList.remove('fade')
 		section.classList.remove('active')
 	}
+	sections[0].classList.add('active')
 }
 
 async function runCredits() {

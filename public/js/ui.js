@@ -547,10 +547,12 @@ if(window.history && history.pushState){ // check for history api support
 	}, false);
 }
 
-window.addEventListener('next', function(){
+window.addEventListener('next', function(e){
+	e.preventDefault()
 	console.log('forward button clicked');
 	if (isRunClick) runCredits()
 	else {
+		isRunClick = true;
 		$('#toutorial').addClass('hidden')
 		toggleUI()
 	}
